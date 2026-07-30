@@ -1,0 +1,21 @@
+{
+  "jsPlugins": [
+    {
+      "name": "effect-v4",
+      "specifier": "../../dist/index.js"
+    }
+  ],
+  "categories": {
+    "correctness": "off"
+  },
+  "rules": {
+    "effect-v4/no-ambient-console": [
+      "error",
+      {
+        "technology": "effect-v3",
+        "role": "application",
+        "platform": "portable"
+      }
+    ]
+  }
+}

@@ -15,8 +15,10 @@ import type { Rule, RuleContext } from "../plugin-api.js";
 import {
   classifyAmbientUse,
   collectAmbientReferences,
+  DOMAIN_SCHEMA_PROPERTIES,
   domainOptionsOf,
   formatMessage,
+  REQUIRED_DOMAIN_SCHEMA_KEYS,
   ruleOptionRecord,
 } from "../rule-support.js";
 
@@ -131,14 +133,13 @@ export const noAmbientAuthority: Rule = {
       {
         type: "object",
         properties: {
-          role: { type: "string" },
-          platform: { type: "string" },
-          boundaries: { type: "array", items: { type: "string" } },
+          ...DOMAIN_SCHEMA_PROPERTIES,
           capabilities: {
             type: "array",
             items: { type: "string", enum: [...CAPABILITIES] },
           },
         },
+        required: REQUIRED_DOMAIN_SCHEMA_KEYS,
         additionalProperties: false,
       },
     ],

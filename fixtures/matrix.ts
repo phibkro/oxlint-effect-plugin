@@ -38,7 +38,12 @@ export const MATRIX: readonly FixtureGroup[] = [
   { dir: "portable-service", role: "service", platform: "portable" },
   { dir: "portable-application", role: "application", platform: "portable", strictness: "strict" },
   { dir: "portable-composition-root", role: "composition-root", platform: "portable" },
-  { dir: "portable-runtime-adapter", role: "runtime-adapter", platform: "portable", strictness: "strict" },
+  {
+    dir: "portable-runtime-adapter",
+    role: "runtime-adapter",
+    platform: "portable",
+    strictness: "strict",
+  },
   { dir: "portable-test", role: "test", platform: "portable", strictness: "strict" },
   { dir: "node-composition-root", role: "composition-root", platform: "node" },
   { dir: "node-service", role: "service", platform: "node" },
@@ -46,6 +51,9 @@ export const MATRIX: readonly FixtureGroup[] = [
   { dir: "bun-composition-root", role: "composition-root", platform: "bun" },
   { dir: "bun-runtime-adapter", role: "runtime-adapter", platform: "bun", strictness: "strict" },
   { dir: "deno-composition-root", role: "composition-root", platform: "deno" },
+  { dir: "deno-runtime-adapter", role: "runtime-adapter", platform: "deno", strictness: "strict" },
   { dir: "browser-application", role: "application", platform: "browser" },
+  { dir: "browser-composition-root", role: "composition-root", platform: "browser" },
   { dir: "web-worker-service", role: "service", platform: "web-worker" },
+  { dir: "web-worker-composition-root", role: "composition-root", platform: "web-worker" },
 ];

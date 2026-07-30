@@ -10,7 +10,8 @@
     "effect": "4.0.0-beta.102",
     "@effect/platform-node": "4.0.0-beta.102",
     "@effect/platform-bun": "4.0.0-beta.102",
-    "@effect/tsgo": "0.24.3"
+    "@effect/tsgo": "0.24.3",
+    "oxlint-tsgolint": "7.0.2001"
   },
   "runtimes": {
     "bun": {
@@ -20,7 +21,7 @@
     "node": {
       "role": "packed consumer",
       "reviewed": "24.x",
-      "engines": "^20.19.0 || >=22.12.0 (inherited from oxlint)"
+      "engines": "^20.19.0 || >=22.12.0"
     },
     "deno": {
       "role": "declared compatibility journey only",
@@ -32,5 +33,18 @@
     "module": "ESM",
     "typescriptRuntimeLoaderRequired": false,
     "analysisClaim": "Syntax and scope diagnostics only; type-aware Effect diagnostics are delegated to @effect/tsgo."
+  },
+  "typedCompanions": {
+    "oxlint": {
+      "package": "oxlint-tsgolint",
+      "reviewed": "7.0.2001",
+      "scope": "Generic built-in typed Oxlint rules via options.typeAware; custom JavaScript plugin rules do not receive type information."
+    },
+    "effect": {
+      "package": "@effect/tsgo",
+      "reviewed": "0.24.3",
+      "scope": "Effect-specific type diagnostics and language-service features. Overlapping syntax-only diagnostics stay disabled when this plugin owns them."
+    },
+    "residual": "The pinned companions expose no domain-aware general rule for arbitrary typed .then/.catch/.finally chains; that policy remains an explicit typed-analysis gap."
   }
 }

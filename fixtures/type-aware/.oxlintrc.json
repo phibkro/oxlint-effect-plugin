@@ -1,0 +1,13 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "options": {
+    "typeAware": true
+  },
+  "categories": {
+    "correctness": "off",
+    "suspicious": "off"
+  },
+  "rules": {
+    "typescript/no-unsafe-type-assertion": "error"
+  }
+}

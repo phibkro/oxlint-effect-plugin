@@ -121,6 +121,7 @@ export const DOMAIN_DESCRIPTIONS: readonly DomainDescription[] = [
 ];
 
 export interface DomainSelection {
+  readonly technology: Technology;
   readonly role: Role;
   readonly platform: Platform;
   readonly boundaries?: readonly Boundary[];
@@ -128,6 +129,7 @@ export interface DomainSelection {
 
 export function describeSelection(selection: Partial<DomainSelection>): string {
   const parts: string[] = [];
+  if (selection.technology !== undefined) parts.push(`technology=${selection.technology}`);
   if (selection.role !== undefined) parts.push(`role=${selection.role}`);
   if (selection.platform !== undefined) parts.push(`platform=${selection.platform}`);
   if (selection.boundaries !== undefined && selection.boundaries.length > 0) {
@@ -138,6 +140,10 @@ export function describeSelection(selection: Partial<DomainSelection>): string {
 
 export function isRole(value: unknown): value is Role {
   return typeof value === "string" && (ROLES as readonly string[]).includes(value);
+}
+
+export function isTechnology(value: unknown): value is Technology {
+  return typeof value === "string" && (TECHNOLOGIES as readonly string[]).includes(value);
 }
 
 export function isPlatform(value: unknown): value is Platform {

@@ -13,7 +13,7 @@ Ambient console output bypasses the Effect observability capability (levels, spa
 
 ## Limitation
 
-Detects ambient `console` member access and `globalThis`/`window`/`self.console`; aliased references (`const c = console`) escape syntax analysis. Native oxlint/eslint disable comments bypass this policy and should be restricted in review.
+Detects ambient `console` member access and statically named `globalThis`/`window`/`self.console` (including computed string properties); aliased references (`const c = console`) escape syntax analysis. Native oxlint/eslint disables bypass rule execution, so the exported independent suppression audit must be a host gate.
 
 ## Suppression contract
 

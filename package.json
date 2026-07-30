@@ -2,40 +2,56 @@
   "name": "@phibkro/oxlint-effect-v4",
   "version": "0.1.0",
   "description": "Reusable compiled Oxlint JavaScript plugin for explicit Effect v4 architecture, capability, runtime-platform, and semantic-boundary policies. Syntax and scope diagnostics only; type-aware Effect diagnostics are delegated to @effect/tsgo.",
-  "license": "MIT",
-  "type": "module",
-  "sideEffects": false,
   "keywords": [
-    "oxlint",
-    "oxlint-plugin",
-    "eslint-plugin",
+    "architecture",
     "effect",
     "effect-v4",
-    "architecture",
-    "lint"
+    "eslint-plugin",
+    "lint",
+    "oxlint",
+    "oxlint-plugin"
   ],
+  "license": "MIT",
+  "files": [
+    "dist",
+    "docs/rules",
+    "docs/tsgo-boundary.md",
+    "docs/suppression-audit.md",
+    "compatibility.json",
+    "PROVENANCE.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./package.json": "./package.json",
-    "./compatibility.json": "./compatibility.json"
+    "./compatibility.json": "./compatibility.json",
+    "./suppression-audit": {
+      "types": "./dist/suppression-audit.d.ts",
+      "import": "./dist/suppression-audit.js"
+    }
   },
-  "files": [
-    "dist",
-    "docs/rules",
-    "docs/tsgo-boundary.md",
-    "compatibility.json",
-    "PROVENANCE.md",
-    "LICENSE",
-    "README.md"
-  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "check": "bun run scripts/check.ts",
     "accept:0001": "bun run scripts/accept-0001.ts",
     "gen": "bun run scripts/generate.ts write"
+  },
+  "devDependencies": {
+    "@effect/platform-bun": "4.0.0-beta.102",
+    "@effect/platform-node": "4.0.0-beta.102",
+    "@effect/tsgo": "0.24.3",
+    "@types/bun": "1.3.14",
+    "effect": "4.0.0-beta.102",
+    "oxfmt": "0.61.0",
+    "oxlint": "1.76.0",
+    "oxlint-tsgolint": "7.0.2001",
+    "typescript": "7.0.2"
   },
   "peerDependencies": {
     "oxlint": "1.76.0"
@@ -45,11 +61,7 @@
       "optional": true
     }
   },
-  "devDependencies": {
-    "@types/bun": "1.3.14",
-    "effect": "4.0.0-beta.102",
-    "oxfmt": "0.61.0",
-    "oxlint": "1.76.0",
-    "typescript": "7.0.2"
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

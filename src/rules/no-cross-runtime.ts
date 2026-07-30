@@ -14,9 +14,11 @@ import type { Rule, RuleContext } from "../plugin-api.js";
 import type { Platform, Role } from "../domains.js";
 import {
   collectAmbientReferences,
+  DOMAIN_SCHEMA_PROPERTIES,
   domainOptionsOf,
   formatMessage,
   platformPackageTarget,
+  REQUIRED_DOMAIN_SCHEMA_KEYS,
   ruleOptionRecord,
 } from "../rule-support.js";
 
@@ -124,11 +126,10 @@ export const noCrossRuntime: Rule = {
       {
         type: "object",
         properties: {
-          role: { type: "string" },
-          platform: { type: "string" },
-          boundaries: { type: "array", items: { type: "string" } },
+          ...DOMAIN_SCHEMA_PROPERTIES,
           extraAllowedModules: { type: "array", items: { type: "string" } },
         },
+        required: REQUIRED_DOMAIN_SCHEMA_KEYS,
         additionalProperties: false,
       },
     ],

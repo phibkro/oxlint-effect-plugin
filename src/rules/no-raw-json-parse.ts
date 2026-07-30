@@ -12,8 +12,10 @@ import type { Rule, RuleContext } from "../plugin-api.js";
 import {
   classifyAmbientUse,
   collectAmbientReferences,
+  DOMAIN_SCHEMA_PROPERTIES,
   domainOptionsOf,
   formatMessage,
+  REQUIRED_DOMAIN_SCHEMA_KEYS,
 } from "../rule-support.js";
 
 export const RULE_NAME = "no-raw-json-parse";
@@ -28,11 +30,8 @@ export const noRawJsonParse: Rule = {
     schema: [
       {
         type: "object",
-        properties: {
-          role: { type: "string" },
-          platform: { type: "string" },
-          boundaries: { type: "array", items: { type: "string" } },
-        },
+        properties: DOMAIN_SCHEMA_PROPERTIES,
+        required: REQUIRED_DOMAIN_SCHEMA_KEYS,
         additionalProperties: false,
       },
     ],

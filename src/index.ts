@@ -80,4 +80,7 @@ export type {
 
 export { recommended, strict } from "./config/presets.js";
 
+export { auditNativeDisableDirectives } from "./suppression-audit.js";
+export type { NativeDisableFinding, SuppressionAuditOptions } from "./suppression-audit.js";
+
 export { PLUGIN_VERSION } from "./version.js";

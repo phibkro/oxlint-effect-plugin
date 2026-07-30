@@ -1,9 +1,8 @@
-
 === matrix run (config form: json, plugin: ./dist/index.js) ===
-expected=52 actual-plugin-diagnostics=52 missing=0 unexpected=0
+expected=67 actual-plugin-diagnostics=67 missing=0 unexpected=0
 
 === matrix run (config form: ts, plugin: ./dist/index.js) ===
-expected=52 actual-plugin-diagnostics=52 missing=0 unexpected=0
+expected=67 actual-plugin-diagnostics=67 missing=0 unexpected=0
 
 config-form equivalence: .oxlintrc.json and oxlint.config.ts diagnostics identical
 runner exit: 0

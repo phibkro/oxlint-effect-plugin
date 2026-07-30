@@ -1,36 +1,38 @@
 /**
- * Effect execution topology: native Promise control flow bypasses Effect's
- * structured concurrency, error channel, and interruption model.
+ * Reject high-confidence native Promise control flow in Effect-owned roles.
  *
- * Severe in `effect-library`, `service`, and `application` roles for:
- * async functions/methods/arrows, `await` expressions, `new Promise`,
- * ambient `Promise` static control-flow methods (`all`, `allSettled`, `any`,
- * `race`, `resolve`, `reject`, `try`, `withResolvers`), and
- * `Effect.runPromise*` variants outside admitted composition-root/test
- * domains.
- *
- * Runtime adapters may use native Promise mechanics only inside the argument
- * of `Effect.tryPromise`, `Effect.promise` (genuinely non-rejecting
- * promises), or `Effect.async` (with cancellation mapped where available).
- *
- * Not diagnosed (syntax/scope cannot establish them): `Promise` type
- * references and declared external Promise signatures, promise-returning
- * expressions, and `.then`/`.catch`/`.finally` on arbitrary values — those
- * belong to the type-aware `@effect/tsgo` companion.
- * Local shadowing of `Promise` and Effect bindings is respected.
+ * Detection is Oxc AST + lexical-scope analysis. Imported Effect APIs and
+ * immutable Promise aliases are matched by resolved binding identity, never
+ * identifier spelling. Type-dependent promise-returning expressions and
+ * arbitrary `.then`/`.catch`/`.finally` remain @effect/tsgo's responsibility.
  */
 
-import type { CallExpression, MemberExpression, Node, Program } from "../ast.js";
+import type {
+  CallExpression,
+  Identifier,
+  MemberExpression,
+  NewExpression,
+  Node,
+  Program,
+  VariableDeclarator,
+} from "../ast.js";
 import { isIdentifier, staticPropertyName } from "../ast.js";
-import type { Rule, RuleContext } from "../plugin-api.js";
 import {
-  classifyAmbientUse,
-  collectAmbientReferences,
   collectImportedBindings,
+  declaredVariable,
+  importedBindingForReference,
+  isAmbientReference,
+  variableOwnsReference,
+  type ImportedBinding,
+} from "../bindings.js";
+import type { Rule, RuleContext, ScopeVariable } from "../plugin-api.js";
+import {
+  DOMAIN_SCHEMA_PROPERTIES,
   domainOptionsOf,
   findEnclosing,
   formatMessage,
   isEffectModule,
+  REQUIRED_DOMAIN_SCHEMA_KEYS,
 } from "../rule-support.js";
 import { RUN_PROMISE_MEMBERS } from "./no-premature-execution.js";
 
@@ -46,30 +48,39 @@ const PROMISE_STATIC_CONTROL_FLOW = new Set([
   "try",
   "withResolvers",
 ]);
-
 const EFFECT_PROMISE_WRAPPERS = new Set(["tryPromise", "promise", "async"]);
-
 const ASYNC_FUNCTION_TYPES = new Set([
   "FunctionDeclaration",
   "FunctionExpression",
   "ArrowFunctionExpression",
 ]);
 
+function isEffectNamespace(binding: ImportedBinding): boolean {
+  return (
+    (binding.source === "effect/Effect" &&
+      (binding.kind === "namespace" || binding.kind === "default")) ||
+    (binding.source === "effect" && binding.kind === "named" && binding.imported === "Effect")
+  );
+}
+
+function isNamedEffectApi(binding: ImportedBinding, member: string): boolean {
+  return (
+    binding.kind === "named" && binding.imported === member && binding.source === "effect/Effect"
+  );
+}
+
 export const noNativePromiseControlFlow: Rule = {
   meta: {
     type: "problem",
     docs: {
       description:
-        "Reject native Promise control flow (async/await, new Promise, Promise combinators, Effect.runPromise*) in Effect-bearing roles outside composition roots and tests.",
+        "Reject native Promise control flow (async/await, Promise construction/combinators, Effect.runPromise*) in Effect-owned roles outside composition roots and tests.",
     },
     schema: [
       {
         type: "object",
-        properties: {
-          role: { type: "string" },
-          platform: { type: "string" },
-          boundaries: { type: "array", items: { type: "string" } },
-        },
+        properties: DOMAIN_SCHEMA_PROPERTIES,
+        required: REQUIRED_DOMAIN_SCHEMA_KEYS,
         additionalProperties: false,
       },
     ],
@@ -77,35 +88,36 @@ export const noNativePromiseControlFlow: Rule = {
   create(context: RuleContext) {
     const domains = domainOptionsOf(context);
     const role = domains.role;
-
     if (role === "composition-root" || role === "test") return {};
 
     const adapterMode = role === "runtime-adapter";
+    let effectBindings = new Map<string, ImportedBinding>();
+    const promiseAliases = new Set<ScopeVariable>();
 
-    let effectBindings = new Map<string, string>();
-
-    const isEffectNamespaceName = (name: string): boolean => {
-      const source = effectBindings.get(name);
-      return source === "effect" || source === "effect/Effect";
+    const effectCallMember = (call: CallExpression): string | null => {
+      const callee = call.callee;
+      if (isIdentifier(callee)) {
+        const binding = importedBindingForReference(effectBindings, callee);
+        if (binding === null) return null;
+        for (const member of [...EFFECT_PROMISE_WRAPPERS, ...RUN_PROMISE_MEMBERS]) {
+          if (isNamedEffectApi(binding, member)) return member;
+        }
+        return null;
+      }
+      if (callee.type !== "MemberExpression") return null;
+      const member = callee as MemberExpression;
+      if (!isIdentifier(member.object)) return null;
+      const binding = importedBindingForReference(effectBindings, member.object);
+      if (binding === null || !isEffectNamespace(binding)) return null;
+      return staticPropertyName(member);
     };
 
-    /**
-     * Runtime-adapter allowance: the node lives inside an argument of
-     * `Effect.tryPromise`, `Effect.promise`, or `Effect.async`.
-     */
-    const isInsideEffectPromiseWrapper = (node: Node): boolean => {
-      const wrapper = findEnclosing(node, (candidate) => {
+    const isInsideEffectPromiseWrapper = (node: Node): boolean =>
+      findEnclosing(node, (candidate) => {
         if (candidate.type !== "CallExpression") return false;
-        const callee = (candidate as CallExpression).callee;
-        if (callee.type !== "MemberExpression") return false;
-        const member = callee as MemberExpression;
-        if (!isIdentifier(member.object) || !isEffectNamespaceName(member.object.name))
-          return false;
-        const property = staticPropertyName(member);
-        return property !== null && EFFECT_PROMISE_WRAPPERS.has(property);
-      });
-      return wrapper !== null;
-    };
+        const member = effectCallMember(candidate as CallExpression);
+        return member !== null && EFFECT_PROMISE_WRAPPERS.has(member);
+      }) !== null;
 
     const report = (node: Node, finding: string): void => {
       if (adapterMode && isInsideEffectPromiseWrapper(node)) return;
@@ -115,11 +127,29 @@ export const noNativePromiseControlFlow: Rule = {
           rule: RULE_NAME,
           finding,
           remedy: adapterMode
-            ? "Runtime adapters may use native Promise mechanics only inside Effect.tryPromise, Effect.promise (non-rejecting), or Effect.async with cancellation mapped where available."
-            : "Model the computation as an Effect (Effect.gen, Effect.tryPromise at a runtime adapter, structured concurrency combinators); only the composition root or a test may run promises.",
+            ? "Runtime adapters may use native Promise mechanics only inside an imported Effect.tryPromise, Effect.promise (non-rejecting), or Effect.async boundary with cancellation mapped where available."
+            : "Model the computation as an Effect and keep final promise execution in a composition root or controlled test.",
           domains,
         }),
       });
+    };
+
+    const isAmbientGlobalObject = (node: Node): node is Identifier =>
+      isIdentifier(node) &&
+      (node.name === "globalThis" || node.name === "window" || node.name === "self") &&
+      isAmbientReference(context, node);
+
+    const isPromiseValue = (node: Node): boolean => {
+      if (isIdentifier(node)) {
+        if (node.name === "Promise" && isAmbientReference(context, node)) return true;
+        for (const alias of promiseAliases) {
+          if (variableOwnsReference(alias, node)) return true;
+        }
+        return false;
+      }
+      if (node.type !== "MemberExpression") return false;
+      const member = node as MemberExpression;
+      return isAmbientGlobalObject(member.object) && staticPropertyName(member) === "Promise";
     };
 
     const checkFunction = (node: Node): void => {
@@ -131,15 +161,20 @@ export const noNativePromiseControlFlow: Rule = {
     return {
       Program(program: Program) {
         const body = (program as { body?: readonly Node[] }).body ?? [];
-        effectBindings = collectImportedBindings(body, isEffectModule);
+        effectBindings = collectImportedBindings(context, body, isEffectModule);
+      },
+      VariableDeclarator(node: VariableDeclarator) {
+        const parent = node.parent;
+        if (parent?.type !== "VariableDeclaration") return;
+        if ((parent as { kind?: string }).kind !== "const") return;
+        if (!isIdentifier(node.id) || node.init === null || !isPromiseValue(node.init)) return;
+        const variable = declaredVariable(context, node, node.id);
+        if (variable !== null) promiseAliases.add(variable);
       },
       FunctionDeclaration: checkFunction,
       FunctionExpression: checkFunction,
       ArrowFunctionExpression: checkFunction,
       AwaitExpression(node: Node) {
-        // The enclosing async function is already reported; still report the
-        // await site when it is not inside a reported async function in the
-        // same file (top-level await).
         const enclosing = findEnclosing(node, (candidate) =>
           ASYNC_FUNCTION_TYPES.has(candidate.type),
         );
@@ -147,43 +182,50 @@ export const noNativePromiseControlFlow: Rule = {
           report(node, "Top-level await executes native Promise control flow outside Effect.");
         }
       },
-      "Program:exit"(program: Program) {
-        const globalScope = context.sourceCode.getScope(program);
-        const ambient = collectAmbientReferences(globalScope);
-        for (const identifier of ambient.get("Promise") ?? []) {
-          const use = classifyAmbientUse(identifier);
-          if (use.kind === "new") {
-            report(
-              use.reportNode,
-              "`new Promise` constructs native promise control flow outside Effect.",
-            );
-          } else if (
-            use.kind === "member" &&
-            use.property !== null &&
-            PROMISE_STATIC_CONTROL_FLOW.has(use.property)
-          ) {
-            report(
-              use.reportNode,
-              `\`Promise.${use.property}\` orchestrates native promise control flow outside Effect.`,
-            );
-          }
+      ForOfStatement(node: Node) {
+        if ((node as { await?: boolean }).await !== true) return;
+        const enclosing = findEnclosing(node, (candidate) =>
+          ASYNC_FUNCTION_TYPES.has(candidate.type),
+        );
+        if (enclosing === null) {
+          report(
+            node,
+            "Top-level `for await` executes native Promise control flow outside Effect.",
+          );
+        }
+      },
+      NewExpression(node: NewExpression) {
+        if (isPromiseValue(node.callee)) {
+          report(node, "`new Promise` constructs native promise control flow outside Effect.");
         }
       },
       CallExpression(node: CallExpression) {
-        if (node.callee.type !== "MemberExpression") return;
-        const member = node.callee as MemberExpression;
-        if (!isIdentifier(member.object) || !isEffectNamespaceName(member.object.name)) return;
-        const property = staticPropertyName(member);
-        if (property !== null && RUN_PROMISE_MEMBERS.has(property)) {
+        const effectMember = effectCallMember(node);
+        if (effectMember !== null && RUN_PROMISE_MEMBERS.has(effectMember)) {
           context.report({
             node,
             message: formatMessage({
               rule: RULE_NAME,
-              finding: `\`${member.object.name}.${property}\` executes an Effect as a native promise outside an admitted composition-root or test domain.`,
+              finding: `Imported Effect.${effectMember} executes an Effect as a native promise outside an admitted composition-root or test domain.`,
               remedy: "Move final promise execution to the composition root.",
               domains,
             }),
           });
+          return;
+        }
+
+        if (node.callee.type !== "MemberExpression") return;
+        const member = node.callee as MemberExpression;
+        const property = staticPropertyName(member);
+        if (
+          property !== null &&
+          PROMISE_STATIC_CONTROL_FLOW.has(property) &&
+          isPromiseValue(member.object)
+        ) {
+          report(
+            node,
+            `\`Promise.${property}\` orchestrates native promise control flow outside Effect.`,
+          );
         }
       },
     };

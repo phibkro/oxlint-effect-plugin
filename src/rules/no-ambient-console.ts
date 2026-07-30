@@ -6,13 +6,15 @@
  */
 
 import type { Identifier, MemberExpression, Program } from "../ast.js";
-import { isIdentifier } from "../ast.js";
+import { staticPropertyName } from "../ast.js";
 import type { Rule, RuleContext } from "../plugin-api.js";
 import {
   classifyAmbientUse,
   collectAmbientReferences,
+  DOMAIN_SCHEMA_PROPERTIES,
   domainOptionsOf,
   formatMessage,
+  REQUIRED_DOMAIN_SCHEMA_KEYS,
 } from "../rule-support.js";
 import { collectDirectives } from "../suppression.js";
 
@@ -30,11 +32,8 @@ export const noAmbientConsole: Rule = {
     schema: [
       {
         type: "object",
-        properties: {
-          role: { type: "string" },
-          platform: { type: "string" },
-          boundaries: { type: "array", items: { type: "string" } },
-        },
+        properties: DOMAIN_SCHEMA_PROPERTIES,
+        required: REQUIRED_DOMAIN_SCHEMA_KEYS,
         additionalProperties: false,
       },
     ],
@@ -68,7 +67,7 @@ export const noAmbientConsole: Rule = {
             if (parent === null || parent.type !== "MemberExpression") continue;
             const member = parent as MemberExpression;
             if (member.object !== identifier) continue;
-            if (!member.computed && isIdentifier(member.property, "console")) {
+            if (staticPropertyName(member) === "console") {
               hits.push({ identifier, reportNode: member, line: member.loc.start.line });
             }
           }
@@ -80,15 +79,18 @@ export const noAmbientConsole: Rule = {
           RULE_NAME,
         );
 
-        const suppressedLines = new Set<number>();
+        const suppressorByLine = new Map<number, (typeof directives)[number]>();
         for (const directive of directives) {
-          if (directive.problems.length === 0) suppressedLines.add(directive.appliesToLine);
+          if (directive.problems.length === 0 && !suppressorByLine.has(directive.appliesToLine)) {
+            suppressorByLine.set(directive.appliesToLine, directive);
+          }
         }
 
-        const usedDirectiveLines = new Set<number>();
+        const usedDirectives = new Set<(typeof directives)[number]>();
         for (const hit of hits) {
-          if (suppressedLines.has(hit.line)) {
-            usedDirectiveLines.add(hit.line);
+          const suppressor = suppressorByLine.get(hit.line);
+          if (suppressor !== undefined) {
+            usedDirectives.add(suppressor);
             continue;
           }
           context.report({
@@ -126,7 +128,7 @@ export const noAmbientConsole: Rule = {
                 domains,
               }),
             });
-          } else if (!usedDirectiveLines.has(directive.appliesToLine)) {
+          } else if (!usedDirectives.has(directive)) {
             context.report({
               loc: directive.comment.loc,
               message: formatMessage({

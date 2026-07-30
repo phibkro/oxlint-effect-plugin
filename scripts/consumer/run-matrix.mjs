@@ -42,10 +42,25 @@ if (existsSync(join(installedRoot, "src", "index.ts"))) {
 }
 
 const api = await import(PKG);
+const auditApi = await import(`${PKG}/suppression-audit`);
 const plugin = api.default;
 if (plugin.meta.name !== "effect-v4") fail(`unexpected plugin name ${plugin.meta.name}`);
 if (Object.keys(plugin.rules).length !== api.RULE_REGISTRY.length) {
   fail("plugin rules and registry disagree");
+}
+if (
+  auditApi.auditNativeDisableDirectives("// oxlint-disable").at(0)?.reason !==
+  "broad-native-disable"
+) {
+  fail("portable suppression-audit subpath did not detect native bypass");
+}
+for (const invalid of [{ groups: [] }, { technology: "effect-v3", groups: [] }]) {
+  try {
+    api.expandDomains(invalid);
+    fail(`invalid technology declaration was accepted: ${JSON.stringify(invalid)}`);
+  } catch (error) {
+    if (!String(error).includes('requires "effect-v4"')) throw error;
+  }
 }
 
 // --- 2. expand the matrix through the installed package ---------------------

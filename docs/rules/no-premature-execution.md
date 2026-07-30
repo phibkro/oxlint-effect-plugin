@@ -13,7 +13,7 @@ Libraries may describe Effects but only composition roots may execute them or pr
 
 ## Limitation
 
-Recognizes Effect/ManagedRuntime bindings imported from `effect` modules and platform bindings from `@effect/platform-*`; execution reached through re-exports or aliases escapes analysis. When `no-native-promise-control-flow` is active for the same files, `Effect.runPromise*` is reported by that rule alone.
+Recognizes namespace and named Effect/ManagedRuntime/platform imports by resolved lexical binding identity; execution reached through re-exports or value aliases escapes analysis. When `no-native-promise-control-flow` is active for the same files, `Effect.runPromise*` is reported by that rule alone.
 
 ## Type-aware companion (@effect/tsgo)
 

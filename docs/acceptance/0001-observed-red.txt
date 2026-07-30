@@ -1,6 +1,5 @@
-
-=== matrix run (config form: json, plugin: /tmp/claude-1000/-tmp-oxlint-effect-v4-tracer-9f6e05e/d68782ac-a545-4b96-8cae-7d67bb24f173/scratchpad/stub-plugin.mjs) ===
-expected=52 actual-plugin-diagnostics=0 missing=52 unexpected=0
+=== matrix run (config form: json, plugin: ./scripts/non-reporting-stub.mjs) ===
+expected=67 actual-plugin-diagnostics=0 missing=67 unexpected=0
 
 missing (expected but not reported):
   fixtures/portable-pure-library/ambient-clock.red.ts:3 no-ambient-authority
@@ -14,11 +13,19 @@ missing (expected but not reported):
   fixtures/portable-effect-library/ambient-authority.red.ts:15 no-ambient-authority
   fixtures/portable-effect-library/ambient-authority.red.ts:15 no-cross-runtime
   fixtures/portable-effect-library/ambient-authority.red.ts:18 no-ambient-authority
+  fixtures/portable-effect-library/console-computed.red.ts:3 no-ambient-console
   fixtures/portable-effect-library/console.red.ts:8 no-ambient-console
   fixtures/portable-effect-library/console.red.ts:10 no-ambient-console
   fixtures/portable-effect-library/final-provision.red.ts:6 no-cross-runtime
   fixtures/portable-effect-library/final-provision.red.ts:10 no-premature-execution
   fixtures/portable-effect-library/json-raw.red.ts:4 no-raw-json-parse
+  fixtures/portable-effect-library/named-execution.red.ts:9 no-premature-execution
+  fixtures/portable-effect-library/named-execution.red.ts:10 no-premature-execution
+  fixtures/portable-effect-library/promise-syntax.red.ts:9 no-native-promise-control-flow
+  fixtures/portable-effect-library/promise-syntax.red.ts:10 no-native-promise-control-flow
+  fixtures/portable-effect-library/promise-syntax.red.ts:13 no-native-promise-control-flow
+  fixtures/portable-effect-library/promise-syntax.red.ts:15 no-native-promise-control-flow
+  fixtures/portable-effect-library/promise-syntax.red.ts:19 no-native-promise-control-flow
   fixtures/portable-effect-library/promise.red.ts:4 no-native-promise-control-flow
   fixtures/portable-effect-library/promise.red.ts:5 no-native-promise-control-flow
   fixtures/portable-effect-library/promise.red.ts:9 no-native-promise-control-flow
@@ -28,6 +35,7 @@ missing (expected but not reported):
   fixtures/portable-effect-library/runs.red.ts:14 no-premature-execution
   fixtures/portable-effect-library/suppress-broad.red.ts:6 no-ambient-console
   fixtures/portable-effect-library/suppress-broad.red.ts:7 no-ambient-console
+  fixtures/portable-effect-library/suppress-duplicate.red.ts:4 no-ambient-console
   fixtures/portable-effect-library/suppress-missing-reason.red.ts:6 no-ambient-console
   fixtures/portable-effect-library/suppress-missing-reason.red.ts:7 no-ambient-console
   fixtures/portable-effect-library/suppress-unused.red.ts:9 no-ambient-console
@@ -37,6 +45,7 @@ missing (expected but not reported):
   fixtures/portable-application/runs.red.ts:10 no-premature-execution
   fixtures/portable-runtime-adapter/bare-async.red.ts:4 no-native-promise-control-flow
   fixtures/portable-runtime-adapter/bare-async.red.ts:8 no-native-promise-control-flow
+  fixtures/portable-runtime-adapter/named-wrapper.ts:13 no-native-promise-control-flow
   fixtures/node-composition-root/cross-runtime.red.ts:4 no-cross-runtime
   fixtures/node-composition-root/cross-runtime.red.ts:8 no-cross-runtime
   fixtures/node-composition-root/cross-runtime.red.ts:10 no-cross-runtime
@@ -44,12 +53,17 @@ missing (expected but not reported):
   fixtures/node-service/ambient.red.ts:8 no-ambient-authority
   fixtures/node-runtime-adapter/cross-runtime.red.ts:8 no-cross-runtime
   fixtures/node-runtime-adapter/cross-runtime.red.ts:12 no-cross-runtime
+  fixtures/node-runtime-adapter/run-main.red.ts:7 no-premature-execution
   fixtures/bun-composition-root/cross-runtime.red.ts:5 no-cross-runtime
   fixtures/bun-composition-root/cross-runtime.red.ts:6 no-cross-runtime
   fixtures/bun-composition-root/cross-runtime.red.ts:12 no-cross-runtime
+  fixtures/bun-runtime-adapter/cross-runtime.red.ts:4 no-cross-runtime
+  fixtures/bun-runtime-adapter/cross-runtime.red.ts:7 no-cross-runtime
   fixtures/deno-composition-root/cross-runtime.red.ts:4 no-cross-runtime
   fixtures/deno-composition-root/cross-runtime.red.ts:8 no-cross-runtime
   fixtures/deno-composition-root/cross-runtime.red.ts:10 no-cross-runtime
+  fixtures/deno-runtime-adapter/cross-runtime.red.ts:4 no-cross-runtime
+  fixtures/deno-runtime-adapter/cross-runtime.red.ts:7 no-cross-runtime
   fixtures/browser-application/worker-globals.red.ts:4 no-cross-runtime
   fixtures/browser-application/worker-globals.red.ts:6 no-cross-runtime
   fixtures/browser-application/worker-globals.red.ts:6 no-ambient-authority
@@ -58,10 +72,10 @@ missing (expected but not reported):
 
 missing per rule family:
   no-ambient-authority: 13
-  no-cross-runtime: 17
-  no-ambient-console: 8
-  no-premature-execution: 4
+  no-cross-runtime: 21
+  no-ambient-console: 10
+  no-premature-execution: 7
   no-raw-json-parse: 1
-  no-native-promise-control-flow: 8
+  no-native-promise-control-flow: 14
   no-untyped-throw: 1
 runner exit: 1

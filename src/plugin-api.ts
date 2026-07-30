@@ -15,6 +15,7 @@ export interface ScopeVariable {
   readonly name: string;
   /** Empty for environment-provided globals such as `Date` or `console`. */
   readonly defs: readonly unknown[];
+  readonly identifiers?: readonly Node[];
   readonly references: readonly ScopeReference[];
 }
 
@@ -29,6 +30,7 @@ export interface Scope {
 export interface SourceCode {
   readonly text: string;
   getScope(node: Node): Scope;
+  getDeclaredVariables(node: Node): readonly ScopeVariable[];
   getAllComments(): readonly Comment[];
 }
 

@@ -8,7 +8,7 @@
 import type { CallExpression, Identifier, MemberExpression, Node } from "./ast.js";
 import { isIdentifier, staticPropertyName } from "./ast.js";
 import type { DomainSelection } from "./domains.js";
-import { describeSelection, isBoundary, isPlatform, isRole } from "./domains.js";
+import { describeSelection, isBoundary, isPlatform, isRole, isTechnology } from "./domains.js";
 import type { RuleContext, Scope } from "./plugin-api.js";
 
 export const LIMITATION = "limitation: syntax and scope analysis only, not type-aware verification";
@@ -35,17 +35,38 @@ export function formatMessage(parts: MessageParts): string {
 /** Domain selection passed to every rule by the config expansion. */
 export function domainOptionsOf(context: RuleContext): Partial<DomainSelection> {
   const raw = context.options[0];
-  if (typeof raw !== "object" || raw === null) return {};
+  if (typeof raw !== "object" || raw === null) {
+    throw new Error(
+      'oxlint-effect-v4: rule configuration requires an options object with technology: "effect-v4"',
+    );
+  }
   const record = raw as Record<string, unknown>;
+  const technology = record["technology"];
+  if (!isTechnology(technology)) {
+    throw new Error(
+      `oxlint-effect-v4: rule configuration requires technology "effect-v4"; received ${JSON.stringify(technology)}`,
+    );
+  }
   const role = record["role"];
   const platform = record["platform"];
   const boundaries = record["boundaries"];
   return {
+    technology,
     ...(isRole(role) ? { role } : {}),
     ...(isPlatform(platform) ? { platform } : {}),
     ...(Array.isArray(boundaries) ? { boundaries: boundaries.filter(isBoundary) } : {}),
   };
 }
+
+/** Shared JSON-schema fragments for every rule's authoritative domains. */
+export const DOMAIN_SCHEMA_PROPERTIES = {
+  technology: { type: "string", enum: ["effect-v4"] },
+  role: { type: "string" },
+  platform: { type: "string" },
+  boundaries: { type: "array", items: { type: "string" } },
+} as const;
+
+export const REQUIRED_DOMAIN_SCHEMA_KEYS = ["technology"] as const;
 
 export function ruleOptionRecord(context: RuleContext): Record<string, unknown> {
   const raw = context.options[0];
@@ -141,28 +162,6 @@ export function classifyAmbientUse(identifier: Identifier): AmbientUse {
     };
   }
   return { identifier, kind: "other", property: null, reportNode: identifier, argumentCount: null };
-}
-
-/**
- * Local bindings imported from a module whose specifier satisfies the
- * predicate. Maps local name -> imported source specifier.
- */
-export function collectImportedBindings(
-  programBody: readonly Node[],
-  matchesSource: (specifier: string) => boolean,
-): Map<string, string> {
-  const bindings = new Map<string, string>();
-  for (const statement of programBody) {
-    if (statement.type !== "ImportDeclaration") continue;
-    const declaration = statement as { source: { value: unknown }; specifiers: readonly Node[] };
-    const specifier = declaration.source.value;
-    if (typeof specifier !== "string" || !matchesSource(specifier)) continue;
-    for (const spec of declaration.specifiers) {
-      const local = (spec as { local?: Node }).local;
-      if (local !== undefined && isIdentifier(local)) bindings.set(local.name, specifier);
-    }
-  }
-  return bindings;
 }
 
 const EFFECT_MODULE_PATTERN = /^effect(?:\/|$)/;

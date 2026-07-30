@@ -20,7 +20,8 @@ Bun and Node; Deno has a narrower [declared journey](./compatibility.json).
 
 ## Use
 
-Quick start with a preset (assumes `role: application, platform: portable`
+Quick start with an explicit rule (the technology axis is required and
+authoritative):
 for all files):
 
 ```jsonc
@@ -28,7 +29,7 @@ for all files):
 {
   "jsPlugins": [{ "name": "effect-v4", "specifier": "@phibkro/oxlint-effect-v4" }],
   "rules": {
-    "effect-v4/no-ambient-console": ["error", { "role": "application", "platform": "portable" }]
+    "effect-v4/no-ambient-console": ["error", { "technology": "effect-v4", "role": "application", "platform": "portable" }]
   }
 }
 ```
@@ -87,6 +88,18 @@ console.dir(payload);
 ```
 
 Broad, missing-reason, and unused directives are themselves reported.
+Because native Oxlint/ESLint disable directives run before plugin rules, use
+the independent [`auditNativeDisableDirectives`](./docs/suppression-audit.md)
+host gate to prevent bypass.
+
+## AST, scope, and typed companions
+
+Custom rules use Oxc AST plus resolved lexical binding identity. Oxlint does
+not expose TypeScript types to JavaScript plugin rules. Generic typed rules can
+run through the pinned Oxlint typed engine, while Effect-specific typed
+diagnostics run through the pinned `@effect/tsgo` language service; the
+[companion boundary](./docs/tsgo-boundary.md) records the non-duplicating split
+and the remaining typed Promise-chain gap.
 
 ## Development
 

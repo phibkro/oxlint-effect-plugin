@@ -14,3 +14,7 @@ export const blockScoped = (): number => {
   console.log("shadowed");
   return 1;
 };
+
+export const localGlobalObject = (
+  globalThis: { console: Sink },
+): void => globalThis.console.log("injected object");

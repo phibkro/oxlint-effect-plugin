@@ -62,6 +62,20 @@ export interface ImportDeclaration extends BaseNode {
 export interface ImportSpecifierNode extends BaseNode {
   readonly type: "ImportSpecifier" | "ImportDefaultSpecifier" | "ImportNamespaceSpecifier";
   readonly local: Identifier;
+  /** Present only for `ImportSpecifier`; Oxc follows the ESTree shape. */
+  readonly imported?: Identifier | Literal;
+}
+
+export interface VariableDeclarator extends BaseNode {
+  readonly type: "VariableDeclarator";
+  readonly id: Node;
+  readonly init: Node | null;
+}
+
+export interface VariableDeclaration extends BaseNode {
+  readonly type: "VariableDeclaration";
+  readonly kind: "const" | "let" | "var" | "using" | "await using";
+  readonly declarations: readonly VariableDeclarator[];
 }
 
 export interface ExportNamedDeclaration extends BaseNode {
@@ -101,6 +115,8 @@ export type Node =
   | NewExpression
   | ImportDeclaration
   | ImportSpecifierNode
+  | VariableDeclarator
+  | VariableDeclaration
   | ExportNamedDeclaration
   | ExportAllDeclaration
   | ImportExpression

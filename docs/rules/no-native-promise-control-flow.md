@@ -13,8 +13,8 @@ Native Promise control flow (async/await, new Promise, Promise combinators, reso
 
 ## Limitation
 
-Owns obvious syntax/scope cases only: async/await syntax, ambient `new Promise`, ambient `Promise` static control-flow members, and `Effect.runPromise*` variants. Promise type references and declared external Promise signatures are never diagnosed. Type-aware detection of promise-returning expressions and `.then`/`.catch`/`.finally` belongs to @effect/tsgo and is not claimed here.
+Owns high-confidence AST/scope cases only: async/await and top-level for-await syntax, ambient/globalThis Promise construction and static control flow, direct immutable Promise aliases, and imported Effect.runPromise* variants. Promise type references and declared external Promise signatures are never diagnosed. The reviewed typed companions currently expose no domain-aware general `.then`/`.catch`/`.finally` policy, so arbitrary typed chains remain an explicit gap.
 
 ## Type-aware companion (@effect/tsgo)
 
-@effect/tsgo is authoritative for promise-returning expressions and typed `.then`/`.catch`/`.finally` misuse; this rule is authoritative for promise syntax and ambient Promise globals.
+@effect/tsgo is authoritative for Effect-specific typed promise diagnostics such as lazyPromiseInEffectSync; this rule is authoritative for the listed Promise syntax and ambient globals. A general typed chain policy requires a future type-and-domain-aware companion hook.

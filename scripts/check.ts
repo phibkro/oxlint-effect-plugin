@@ -7,7 +7,7 @@
  * than degrading to a warning.
  */
 
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { chmodSync, existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const repoRoot = join(import.meta.dir, "..");
@@ -27,6 +27,25 @@ async function exec(cmd: readonly string[], opts: { cwd?: string } = {}): Promis
   });
   const exitCode = await proc.exited;
   if (exitCode !== 0) throw new Error(`${cmd.join(" ")} exited ${exitCode}`);
+}
+
+async function capture(
+  cmd: readonly string[],
+  opts: { cwd?: string } = {},
+): Promise<{ readonly stdout: string; readonly stderr: string; readonly exitCode: number }> {
+  const bin = cmd[0];
+  if (bin === undefined) throw new Error("empty command");
+  const proc = Bun.spawn([...cmd], {
+    cwd: opts.cwd ?? repoRoot,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
+    proc.exited,
+  ]);
+  return { stdout, stderr, exitCode };
 }
 
 const local = (bin: string): string => {
@@ -57,10 +76,89 @@ const steps: Step[] = [
     run: () => exec(["bun", "test", "tests/unit"]),
   },
   {
+    name: "native suppression host-gate",
+    run: () => exec(["bun", "run", "scripts/audit-suppressions.ts", "src", "fixtures"]),
+  },
+  {
+    name: "typed companions (Oxlint generic + Effect TSGO observed-red probes)",
+    run: async () => {
+      const nodeShell = ["nix", "shell", "nixpkgs#nodejs", "-c"] as const;
+      const generic = await capture([
+        ...nodeShell,
+        "bun",
+        local("oxlint"),
+        "--config",
+        "fixtures/type-aware/.oxlintrc.json",
+        "fixtures/type-aware/unsafe-assertion.ts",
+      ]);
+      if (
+        generic.exitCode !== 1 ||
+        !`${generic.stdout}\n${generic.stderr}`.includes("no-unsafe-type-assertion")
+      ) {
+        throw new Error(
+          `Oxlint --type-aware probe did not produce the pinned typed diagnostic\n${generic.stdout}\n${generic.stderr}`,
+        );
+      }
+
+      const executable = await capture([...nodeShell, local("effect-tsgo"), "get-exe-path"]);
+      if (executable.exitCode !== 0) {
+        throw new Error(`effect-tsgo get-exe-path failed:\n${executable.stderr}`);
+      }
+      const executablePath = executable.stdout.trim();
+      if (!executablePath.includes("node_modules/@effect/tsgo-")) {
+        throw new Error(`effect-tsgo returned unexpected executable path: ${executablePath}`);
+      }
+      // @effect/tsgo 0.24.3's platform package is extracted mode 0644 by
+      // Bun 1.3.13. The dev-only probe repairs that cache-local mode; no
+      // distributed artifact or consumer source is mutated.
+      chmodSync(executablePath, 0o755);
+      const effect = await capture([
+        ...nodeShell,
+        local("effect-tsgo"),
+        "diagnostics",
+        "--project",
+        "fixtures/type-aware/tsconfig.json",
+        "--format",
+        "json",
+      ]);
+      if (
+        effect.exitCode !== 1 ||
+        !effect.stdout.includes('"name": "floatingEffect"') ||
+        !effect.stdout.includes('"errors": 1')
+      ) {
+        throw new Error(
+          `@effect/tsgo probe did not produce the pinned floatingEffect diagnostic\n${effect.stdout}\n${effect.stderr}`,
+        );
+      }
+    },
+  },
+  {
     name: "build (tsc -p tsconfig.build.json)",
     run: async () => {
       await exec(["rm", "-rf", join(repoRoot, "dist")]);
       await exec(["bun", local("tsc"), "-p", "tsconfig.build.json"]);
+    },
+  },
+  {
+    name: "authoritative technology runtime rejection",
+    run: async () => {
+      for (const config of [
+        "fixtures/domain-validation/missing-technology.json",
+        "fixtures/domain-validation/invalid-technology.json",
+      ]) {
+        const result = await capture([
+          "bun",
+          local("oxlint"),
+          "--config",
+          config,
+          "fixtures/domain-validation/input.ts",
+        ]);
+        if (result.exitCode === 0 || !`${result.stdout}\n${result.stderr}`.includes("technology")) {
+          throw new Error(
+            `${config} was not rejected for its technology declaration\n${result.stdout}\n${result.stderr}`,
+          );
+        }
+      }
     },
   },
   {
@@ -97,6 +195,7 @@ const steps: Step[] = [
       const module = (await import(distIndex)) as {
         default: { meta: { name: string; version: string }; rules: Record<string, unknown> };
         expandDomains: unknown;
+        auditNativeDisableDirectives: unknown;
         recommended: { overrides: readonly unknown[] };
         strict: unknown;
         RULE_REGISTRY: readonly { name: string }[];
@@ -105,6 +204,8 @@ const steps: Step[] = [
         version: string;
         files: readonly string[];
         exports: Record<string, unknown>;
+        engines: { node: string };
+        devDependencies: Record<string, string>;
       };
       if (module.default.meta.name !== "effect-v4") throw new Error("plugin meta.name drifted");
       if (module.default.meta.version !== pkg.version) throw new Error("plugin version drifted");
@@ -117,7 +218,27 @@ const steps: Step[] = [
           throw new Error(`registry rule not exported: ${info.name}`);
       }
       if (typeof module.expandDomains !== "function") throw new Error("expandDomains missing");
+      if (typeof module.auditNativeDisableDirectives !== "function") {
+        throw new Error("suppression audit export missing");
+      }
       if (module.recommended.overrides.length === 0) throw new Error("recommended preset empty");
+      if (pkg.engines.node !== "^20.19.0 || >=22.12.0") {
+        throw new Error(`Node engine floor drifted: ${pkg.engines.node}`);
+      }
+      for (const [name, expected] of Object.entries({
+        "@effect/platform-node": "4.0.0-beta.102",
+        "@effect/platform-bun": "4.0.0-beta.102",
+        "@effect/tsgo": "0.24.3",
+        "oxlint-tsgolint": "7.0.2001",
+      })) {
+        if (pkg.devDependencies[name] !== expected) {
+          throw new Error(`${name} must remain exactly pinned to ${expected}`);
+        }
+        const lock = readFileSync(join(repoRoot, "bun.lock"), "utf8");
+        if (!lock.includes(`"${name}": ["${name}@${expected}"`)) {
+          throw new Error(`bun.lock does not bind ${name} to ${expected}`);
+        }
+      }
       for (const file of [
         "dist/index.js",
         "dist/index.d.ts",
@@ -126,6 +247,7 @@ const steps: Step[] = [
         "PROVENANCE.md",
         "compatibility.json",
         "docs/tsgo-boundary.md",
+        "docs/suppression-audit.md",
       ]) {
         if (!existsSync(join(repoRoot, file))) throw new Error(`distributed file missing: ${file}`);
       }
@@ -134,6 +256,10 @@ const steps: Step[] = [
   {
     name: "generation consistency (docs, compatibility, version, matrix)",
     run: () => exec(["bun", "run", "scripts/generate.ts", "check"]),
+  },
+  {
+    name: "observed-red/green oracle evidence consistency",
+    run: () => exec(["bun", "run", "scripts/record-oracle-evidence.ts", "check"]),
   },
   {
     name: "oracle matrix (json + ts config forms, equivalence)",

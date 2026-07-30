@@ -63,7 +63,7 @@ export const RULE_REGISTRY: readonly RuleInfo[] = [
     rationale:
       "Ambient console output bypasses the Effect observability capability (levels, spans, structured output, redaction). Severe in Effect-bearing operational code; a genuinely developer-only statement carries one targeted nonempty `dev only:` suppression.",
     limitation:
-      "Detects ambient `console` member access and `globalThis`/`window`/`self.console`; aliased references (`const c = console`) escape syntax analysis. Native oxlint/eslint disable comments bypass this policy and should be restricted in review.",
+      "Detects ambient `console` member access and statically named `globalThis`/`window`/`self.console` (including computed string properties); aliased references (`const c = console`) escape syntax analysis. Native oxlint/eslint disables bypass rule execution, so the exported independent suppression audit must be a host gate.",
     tsgoOverlap: null,
   },
   {
@@ -102,7 +102,7 @@ export const RULE_REGISTRY: readonly RuleInfo[] = [
     rationale:
       "Libraries may describe Effects but only composition roots may execute them or provide the final platform environment. Layer construction and internal service composition remain admitted.",
     limitation:
-      "Recognizes Effect/ManagedRuntime bindings imported from `effect` modules and platform bindings from `@effect/platform-*`; execution reached through re-exports or aliases escapes analysis. When `no-native-promise-control-flow` is active for the same files, `Effect.runPromise*` is reported by that rule alone.",
+      "Recognizes namespace and named Effect/ManagedRuntime/platform imports by resolved lexical binding identity; execution reached through re-exports or value aliases escapes analysis. When `no-native-promise-control-flow` is active for the same files, `Effect.runPromise*` is reported by that rule alone.",
     tsgoOverlap:
       "@effect/tsgo detects floating Effects, leaking requirements, and strict provision type-aware; it is authoritative for whether requirements are actually closed. This rule is authoritative for the syntactic execution site.",
   },
@@ -116,9 +116,9 @@ export const RULE_REGISTRY: readonly RuleInfo[] = [
     rationale:
       "Native Promise control flow (async/await, new Promise, Promise combinators, resolve/reject) bypasses Effect's structured concurrency, typed failures, and interruption. Runtime adapters may use native Promise mechanics only inside Effect.tryPromise, Effect.promise for genuinely non-rejecting promises, or Effect.async with cancellation mapped where available; composition roots perform final Effect.runPromise; tests may execute explicitly.",
     limitation:
-      "Owns obvious syntax/scope cases only: async/await syntax, ambient `new Promise`, ambient `Promise` static control-flow members, and `Effect.runPromise*` variants. Promise type references and declared external Promise signatures are never diagnosed. Type-aware detection of promise-returning expressions and `.then`/`.catch`/`.finally` belongs to @effect/tsgo and is not claimed here.",
+      "Owns high-confidence AST/scope cases only: async/await and top-level for-await syntax, ambient/globalThis Promise construction and static control flow, direct immutable Promise aliases, and imported Effect.runPromise* variants. Promise type references and declared external Promise signatures are never diagnosed. The reviewed typed companions currently expose no domain-aware general `.then`/`.catch`/`.finally` policy, so arbitrary typed chains remain an explicit gap.",
     tsgoOverlap:
-      "@effect/tsgo is authoritative for promise-returning expressions and typed `.then`/`.catch`/`.finally` misuse; this rule is authoritative for promise syntax and ambient Promise globals.",
+      "@effect/tsgo is authoritative for Effect-specific typed promise diagnostics such as lazyPromiseInEffectSync; this rule is authoritative for the listed Promise syntax and ambient globals. A general typed chain policy requires a future type-and-domain-aware companion hook.",
   },
   {
     name: "no-raw-json-parse",

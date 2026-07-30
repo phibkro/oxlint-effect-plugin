@@ -1,28 +1,23 @@
 /**
- * Effect execution topology: libraries may describe Effects but only
- * composition roots may execute them.
- *
- * Rejects `Effect.run*`, `ManagedRuntime.make`, and platform `*Runtime.runMain`
- * outside a `composition-root` (tests are also admitted for controlled
- * execution), and rejects final provision of official platform layers that
- * prematurely closes a reusable library's requirements. Layer construction
- * and internal service composition remain admitted.
- *
- * Family split: when the companion `no-native-promise-control-flow` rule is
- * active for the same file group (`promiseRuleActive: true`), the
- * `Effect.runPromise*` variants are reported by that rule alone, keeping one
- * diagnostic per violation.
+ * Effect execution topology. Imported APIs are recognized through Oxc lexical
+ * binding identity, so same-spelled locals never inherit import authority.
  */
 
-import type { CallExpression, MemberExpression, Program } from "../ast.js";
+import type { CallExpression, MemberExpression, Node, Program } from "../ast.js";
 import { isIdentifier, staticPropertyName } from "../ast.js";
-import type { Rule, RuleContext } from "../plugin-api.js";
 import {
   collectImportedBindings,
+  importedBindingForReference,
+  type ImportedBinding,
+} from "../bindings.js";
+import type { Rule, RuleContext } from "../plugin-api.js";
+import {
+  DOMAIN_SCHEMA_PROPERTIES,
   domainOptionsOf,
   formatMessage,
   isEffectModule,
   platformPackageTarget,
+  REQUIRED_DOMAIN_SCHEMA_KEYS,
   ruleOptionRecord,
 } from "../rule-support.js";
 
@@ -47,23 +42,45 @@ export const RUN_PROMISE_MEMBERS = new Set([
 
 const FINAL_LAYER_IDENTIFIER = /^(Node|Bun|Deno|Browser)[A-Za-z]*(Services|Context)$/;
 
+function isEffectNamespace(binding: ImportedBinding): boolean {
+  return (
+    (binding.source === "effect/Effect" &&
+      (binding.kind === "namespace" || binding.kind === "default")) ||
+    (binding.source === "effect" && binding.kind === "named" && binding.imported === "Effect")
+  );
+}
+
+function isManagedRuntimeNamespace(binding: ImportedBinding): boolean {
+  return (
+    (binding.source === "effect/ManagedRuntime" &&
+      (binding.kind === "namespace" || binding.kind === "default")) ||
+    (binding.source === "effect" &&
+      binding.kind === "named" &&
+      binding.imported === "ManagedRuntime")
+  );
+}
+
+function isNamedApi(binding: ImportedBinding, module: "Effect" | "ManagedRuntime", name: string) {
+  const path = `effect/${module}`;
+  return binding.kind === "named" && binding.imported === name && binding.source === path;
+}
+
 export const noPrematureExecution: Rule = {
   meta: {
     type: "problem",
     docs: {
       description:
-        "Reject Effect execution (Effect.run*, ManagedRuntime.make, platform runMain) and final platform-layer provision outside a composition root.",
+        "Reject imported Effect execution, ManagedRuntime construction, platform runMain, and final platform-layer provision outside a composition root.",
     },
     schema: [
       {
         type: "object",
         properties: {
-          role: { type: "string" },
-          platform: { type: "string" },
-          boundaries: { type: "array", items: { type: "string" } },
+          ...DOMAIN_SCHEMA_PROPERTIES,
           promiseRuleActive: { type: "boolean" },
           additionalFinalLayerIdentifiers: { type: "array", items: { type: "string" } },
         },
+        required: REQUIRED_DOMAIN_SCHEMA_KEYS,
         additionalProperties: false,
       },
     ],
@@ -80,60 +97,96 @@ export const noPrematureExecution: Rule = {
           )
         : [],
     );
+    if (role === "composition-root" || role === "test") return {};
 
-    // Roles admitted to execute; the expansion normally disables this rule
-    // for them, so this is defense in depth for manual configuration.
-    if (role === "composition-root" || role === "test") {
-      return {};
-    }
+    let effectBindings = new Map<string, ImportedBinding>();
+    let platformBindings = new Map<string, ImportedBinding>();
 
-    let effectBindings = new Map<string, string>();
-    let platformBindings = new Map<string, string>();
+    const effectMember = (
+      call: CallExpression,
+    ): { member: string; module: "Effect" | "ManagedRuntime" } | null => {
+      const callee = call.callee;
+      if (isIdentifier(callee)) {
+        const binding = importedBindingForReference(effectBindings, callee);
+        if (binding === null) return null;
+        for (const member of [...RUN_MEMBERS, ...RUN_PROMISE_MEMBERS, "provide"]) {
+          if (isNamedApi(binding, "Effect", member)) return { member, module: "Effect" };
+        }
+        if (isNamedApi(binding, "ManagedRuntime", "make")) {
+          return { member: "make", module: "ManagedRuntime" };
+        }
+        return null;
+      }
+      if (callee.type !== "MemberExpression") return null;
+      const memberExpression = callee as MemberExpression;
+      if (!isIdentifier(memberExpression.object)) return null;
+      const binding = importedBindingForReference(effectBindings, memberExpression.object);
+      if (binding === null) return null;
+      const member = staticPropertyName(memberExpression);
+      if (member === null) return null;
+      if (isEffectNamespace(binding)) return { member, module: "Effect" };
+      if (isManagedRuntimeNamespace(binding)) return { member, module: "ManagedRuntime" };
+      return null;
+    };
 
-    // A final-layer expression is rooted at a binding imported from an
-    // official @effect/platform-* package (e.g. `NodeServices.layer`), or at
-    // an identifier the consumer declared as final. The name pattern alone is
-    // not sufficient evidence without the platform import.
-    const isFinalLayerExpression = (node: import("../ast.js").Node): boolean => {
+    const isFinalLayerExpression = (node: Node): boolean => {
       let root = node;
       while (root.type === "MemberExpression") root = (root as MemberExpression).object;
       if (!isIdentifier(root)) return false;
       if (extraFinalLayers.has(root.name)) return true;
-      return platformBindings.has(root.name) && FINAL_LAYER_IDENTIFIER.test(root.name);
+      const binding = importedBindingForReference(platformBindings, root);
+      if (binding === null) return false;
+      return (
+        FINAL_LAYER_IDENTIFIER.test(binding.local.name) ||
+        FINAL_LAYER_IDENTIFIER.test(binding.imported) ||
+        /\/(?:Node|Bun|Deno|Browser)[A-Za-z]*(?:Services|Context)$/.test(binding.source)
+      );
+    };
+
+    const platformRunMain = (call: CallExpression): ImportedBinding | null => {
+      const callee = call.callee;
+      if (isIdentifier(callee)) {
+        const binding = importedBindingForReference(platformBindings, callee);
+        return binding !== null &&
+          binding.kind === "named" &&
+          binding.imported === "runMain" &&
+          /\/[^/]*Runtime$/.test(binding.source)
+          ? binding
+          : null;
+      }
+      if (callee.type !== "MemberExpression") return null;
+      const member = callee as MemberExpression;
+      if (staticPropertyName(member) !== "runMain" || !isIdentifier(member.object)) return null;
+      const binding = importedBindingForReference(platformBindings, member.object);
+      if (binding === null) return null;
+      const runtimeNamespace =
+        binding.local.name.endsWith("Runtime") ||
+        binding.imported.endsWith("Runtime") ||
+        /\/[^/]*Runtime$/.test(binding.source);
+      return runtimeNamespace ? binding : null;
     };
 
     return {
       Program(program: Program) {
-        const body = (program as { body?: readonly import("../ast.js").Node[] }).body ?? [];
-        effectBindings = collectImportedBindings(body, isEffectModule);
+        const body = (program as { body?: readonly Node[] }).body ?? [];
+        effectBindings = collectImportedBindings(context, body, isEffectModule);
         platformBindings = collectImportedBindings(
+          context,
           body,
           (specifier) => platformPackageTarget(specifier) !== null,
         );
       },
       CallExpression(node: CallExpression) {
-        if (node.callee.type !== "MemberExpression") return;
-        const member = node.callee as MemberExpression;
-        if (!isIdentifier(member.object)) return;
-        const objectName = member.object.name;
-        const property = staticPropertyName(member);
-        if (property === null) return;
-
-        // Effect.run* — only for bindings imported from effect modules;
-        // local shadowing therefore never triggers.
-        const bindingSource = effectBindings.get(objectName);
-        if (bindingSource !== undefined) {
-          const isEffectNamespace = bindingSource === "effect" || bindingSource === "effect/Effect";
-          const isManagedRuntimeNamespace =
-            bindingSource === "effect" || bindingSource === "effect/ManagedRuntime";
-          const isRun = RUN_MEMBERS.has(property);
-          const isRunPromise = RUN_PROMISE_MEMBERS.has(property);
-          if ((isRun || (isRunPromise && !promiseRuleActive)) && isEffectNamespace) {
+        const effect = effectMember(node);
+        if (effect !== null) {
+          const isRun = RUN_MEMBERS.has(effect.member);
+          const isRunPromise = RUN_PROMISE_MEMBERS.has(effect.member);
+          if (effect.module === "Effect" && (isRun || (isRunPromise && !promiseRuleActive))) {
             context.report({
               node,
               message: formatMessage({
                 rule: RULE_NAME,
-                finding: `\`Effect.${property}\` executes an Effect outside a composition root; libraries and applications may only describe programs.`,
+                finding: `Imported Effect.${effect.member} executes an Effect outside a composition root; libraries and applications may only describe programs.`,
                 remedy:
                   "Move execution to the composition root (or a test with controlled execution).",
                 domains,
@@ -141,47 +194,44 @@ export const noPrematureExecution: Rule = {
             });
             return;
           }
-          if (objectName === "ManagedRuntime" && property === "make" && isManagedRuntimeNamespace) {
+          if (effect.module === "ManagedRuntime" && effect.member === "make") {
             context.report({
               node,
               message: formatMessage({
                 rule: RULE_NAME,
                 finding:
-                  "`ManagedRuntime.make` builds an executable runtime outside a composition root.",
+                  "Imported ManagedRuntime.make builds an executable runtime outside a composition root.",
                 remedy: "Construct runtimes in the composition root; describe layers here instead.",
                 domains,
               }),
             });
             return;
           }
-          if (isEffectNamespace && property === "provide") {
-            for (const argument of node.arguments) {
-              if (isFinalLayerExpression(argument)) {
-                context.report({
-                  node,
-                  message: formatMessage({
-                    rule: RULE_NAME,
-                    finding:
-                      "Final provision of an official platform layer prematurely closes this code's requirements.",
-                    remedy:
-                      "Leave requirements open; the composition root selects live layers. Layer construction and internal service composition remain admitted.",
-                    domains,
-                  }),
-                });
-                return;
-              }
+          if (effect.module === "Effect" && effect.member === "provide") {
+            if (node.arguments.some(isFinalLayerExpression)) {
+              context.report({
+                node,
+                message: formatMessage({
+                  rule: RULE_NAME,
+                  finding:
+                    "Final provision of an official platform layer prematurely closes this code's requirements.",
+                  remedy:
+                    "Leave requirements open; the composition root selects live layers. Layer construction and internal service composition remain admitted.",
+                  domains,
+                }),
+              });
             }
+            return;
           }
-          return;
         }
 
-        // Platform runtime entry points, e.g. NodeRuntime.runMain.
-        if (platformBindings.has(objectName) && property === "runMain") {
+        const platformRuntime = platformRunMain(node);
+        if (platformRuntime !== null) {
           context.report({
             node,
             message: formatMessage({
               rule: RULE_NAME,
-              finding: `\`${objectName}.runMain\` runs a program outside a composition root.`,
+              finding: `Imported ${platformRuntime.imported}.runMain runs a program outside a composition root.`,
               remedy: "Only the composition root may run the final program.",
               domains,
             }),

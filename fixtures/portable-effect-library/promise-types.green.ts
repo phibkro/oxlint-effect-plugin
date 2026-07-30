@@ -12,3 +12,7 @@ export declare function externalLoad(url: string): Promise<Uint8Array>;
 
 export const withLocalPromise = (Promise: { resolve: (n: number) => number }): number =>
   Promise.resolve(42);
+
+export const withLocalGlobalObject = (
+  globalThis: { Promise: { resolve: (n: number) => number } },
+): number => globalThis.Promise.resolve(42);

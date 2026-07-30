@@ -9,7 +9,7 @@
  */
 
 import type { Boundary, Platform, Role, Technology } from "../domains.js";
-import { BOUNDARIES, PLATFORMS, ROLES } from "../domains.js";
+import { BOUNDARIES, PLATFORMS, ROLES, TECHNOLOGIES } from "../domains.js";
 import type { RuleName } from "../registry.js";
 import { RULE_REGISTRY } from "../registry.js";
 
@@ -34,7 +34,7 @@ export interface DomainGroup {
 }
 
 export interface ExpandInput {
-  readonly technology?: Technology;
+  readonly technology: Technology;
   readonly groups: readonly DomainGroup[];
   readonly pluginName?: string;
   readonly pluginSpecifier?: string;
@@ -73,8 +73,14 @@ function assertValidGroup(group: DomainGroup, index: number): void {
 /** Rules enabled for one domain group, with their expanded options. */
 export function expandGroupRules(
   group: DomainGroup,
+  technology: Technology,
   pluginName: string = DEFAULT_PLUGIN_NAME,
 ): Record<string, unknown> {
+  if (!(TECHNOLOGIES as readonly string[]).includes(technology)) {
+    throw new Error(
+      `oxlint-effect-v4: unknown technology ${JSON.stringify(technology)}; v0 requires "effect-v4"`,
+    );
+  }
   const strict = (group.strictness ?? "recommended") === "strict";
   const boundaries = [...(group.boundaries ?? [])].toSorted();
   const rules: Record<string, unknown> = {};
@@ -100,6 +106,7 @@ export function expandGroupRules(
     if (severity === "off") continue;
 
     const options: Record<string, unknown> = {
+      technology,
       role: group.role,
       platform: group.platform,
       ...(boundaries.length > 0 ? { boundaries } : {}),
@@ -119,6 +126,11 @@ export function expandGroupRules(
  * keeps both config forms equivalent by construction.
  */
 export function expandDomains(input: ExpandInput): OxlintConfigFragment {
+  if (!(TECHNOLOGIES as readonly string[]).includes(input.technology)) {
+    throw new Error(
+      `oxlint-effect-v4: unknown or omitted technology ${JSON.stringify(input.technology)}; v0 requires "effect-v4"`,
+    );
+  }
   if (input.groups.length === 0) {
     throw new Error("oxlint-effect-v4: at least one domain group is required");
   }
@@ -132,7 +144,7 @@ export function expandDomains(input: ExpandInput): OxlintConfigFragment {
     rules: {},
     overrides: input.groups.map((group) => ({
       files: [...group.files],
-      rules: expandGroupRules(group, pluginName),
+      rules: expandGroupRules(group, input.technology, pluginName),
     })),
   };
 }

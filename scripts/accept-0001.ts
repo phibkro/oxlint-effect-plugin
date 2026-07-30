@@ -22,6 +22,8 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { satisfiesNodeEngine } from "./node-engine.js";
+
 const repoRoot = join(import.meta.dir, "..");
 const evidence: string[] = [];
 const note = (line: string): void => {
@@ -59,9 +61,8 @@ const nodeVersion = (
 const denoVersion = (await exec(["deno", "--version"])).split("\n")[0] ?? "";
 note(`runtimes: bun ${bunVersion}; node ${nodeVersion}; ${denoVersion}`);
 
-const nodeMajor = Number.parseInt(nodeVersion.replace(/^v/, ""), 10);
-if (!Number.isFinite(nodeMajor) || nodeMajor < 20) {
-  throw new Error(`node ${nodeVersion} does not satisfy oxlint engines (>=20.19)`);
+if (!satisfiesNodeEngine(nodeVersion)) {
+  throw new Error(`node ${nodeVersion} does not satisfy package engines (^20.19.0 || >=22.12.0)`);
 }
 
 // --- build and pack ----------------------------------------------------------
@@ -89,6 +90,9 @@ const required = [
   "package/dist/rules/no-ambient-console.js",
   "package/docs/rules/no-ambient-console.md",
   "package/docs/tsgo-boundary.md",
+  "package/docs/suppression-audit.md",
+  "package/dist/suppression-audit.js",
+  "package/dist/suppression-audit.d.ts",
   "package/compatibility.json",
   "package/PROVENANCE.md",
   "package/LICENSE",
@@ -137,6 +141,13 @@ const auditWalk = (dir: string): void => {
 };
 auditWalk(extracted);
 note("tarball audit: no consumer-repository path knowledge in distributed files");
+const packedPackage = JSON.parse(
+  readFileSync(join(extracted, "package", "package.json"), "utf8"),
+) as { engines?: { node?: string } };
+if (packedPackage.engines?.node !== "^20.19.0 || >=22.12.0") {
+  throw new Error(`packed Node engine floor drifted: ${packedPackage.engines?.node ?? "missing"}`);
+}
+note("tarball audit: Node engine floor is ^20.19.0 || >=22.12.0");
 
 // --- consumers ---------------------------------------------------------------
 const makeConsumer = (name: string): string => {

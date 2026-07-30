@@ -75,13 +75,29 @@
       "platform": "deno"
     },
     {
+      "dir": "deno-runtime-adapter",
+      "role": "runtime-adapter",
+      "platform": "deno",
+      "strictness": "strict"
+    },
+    {
       "dir": "browser-application",
       "role": "application",
       "platform": "browser"
     },
     {
+      "dir": "browser-composition-root",
+      "role": "composition-root",
+      "platform": "browser"
+    },
+    {
       "dir": "web-worker-service",
       "role": "service",
+      "platform": "web-worker"
+    },
+    {
+      "dir": "web-worker-composition-root",
+      "role": "composition-root",
       "platform": "web-worker"
     }
   ]

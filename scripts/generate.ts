@@ -29,6 +29,7 @@ const pkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")) as 
   version: string;
   devDependencies: Record<string, string>;
   peerDependencies: Record<string, string>;
+  engines: { node: string };
 };
 
 interface Derivation {
@@ -60,16 +61,17 @@ const compatibility = {
     oxfmt: devPin("oxfmt"),
     typescript: devPin("typescript"),
     effect: devPin("effect"),
-    "@effect/platform-node": "4.0.0-beta.102",
-    "@effect/platform-bun": "4.0.0-beta.102",
-    "@effect/tsgo": "0.24.3",
+    "@effect/platform-node": devPin("@effect/platform-node"),
+    "@effect/platform-bun": devPin("@effect/platform-bun"),
+    "@effect/tsgo": devPin("@effect/tsgo"),
+    "oxlint-tsgolint": devPin("oxlint-tsgolint"),
   },
   runtimes: {
     bun: { role: "default development runtime and packed consumer", reviewed: "1.3.13" },
     node: {
       role: "packed consumer",
       reviewed: "24.x",
-      engines: "^20.19.0 || >=22.12.0 (inherited from oxlint)",
+      engines: pkg.engines.node,
     },
     deno: {
       role: "declared compatibility journey only",
@@ -83,6 +85,22 @@ const compatibility = {
     typescriptRuntimeLoaderRequired: false,
     analysisClaim:
       "Syntax and scope diagnostics only; type-aware Effect diagnostics are delegated to @effect/tsgo.",
+  },
+  typedCompanions: {
+    oxlint: {
+      package: "oxlint-tsgolint",
+      reviewed: devPin("oxlint-tsgolint"),
+      scope:
+        "Generic built-in typed Oxlint rules via options.typeAware; custom JavaScript plugin rules do not receive type information.",
+    },
+    effect: {
+      package: "@effect/tsgo",
+      reviewed: devPin("@effect/tsgo"),
+      scope:
+        "Effect-specific type diagnostics and language-service features. Overlapping syntax-only diagnostics stay disabled when this plugin owns them.",
+    },
+    residual:
+      "The pinned companions expose no domain-aware general rule for arbitrary typed .then/.catch/.finally chains; that policy remains an explicit typed-analysis gap.",
   },
 } as const;
 
@@ -144,10 +162,46 @@ for (const info of RULE_REGISTRY) {
   lines.push("# Type-aware companion boundary (@effect/tsgo)");
   lines.push("");
   lines.push(
-    "Oxlint JavaScript plugins receive syntax, scope, code-path, and project APIs — not TypeScript type information. This package therefore never claims type-aware analysis and delegates the following Effect diagnostics to `@effect/tsgo`: floating Effects, leaking requirements, strict provision, unsafe Effect assertions, unknown error values, outdated Effect APIs, promise-returning expressions, and typed `.then`/`.catch`/`.finally` misuse.",
+    "Oxlint JavaScript plugins receive syntax, lexical scope, code-path, and project APIs — not TypeScript type information. This package's custom rules therefore remain AST/scope rules even when Oxlint runs with `options.typeAware: true`.",
   );
   lines.push("");
-  lines.push("Installing or patching TSGO is outside this plugin's runtime.");
+  lines.push("## Three non-overlapping analysis layers");
+  lines.push("");
+  lines.push(
+    "1. **This package:** domain-aware custom policy over Oxc AST and resolved lexical bindings.",
+  );
+  lines.push(
+    `2. **Oxlint typed engine:** generic built-in typed rules via \`options.typeAware: true\`, backed by exactly pinned \`oxlint-tsgolint@${devPin("oxlint-tsgolint")}\`. This does not inject types into JavaScript plugin rules.`,
+  );
+  lines.push(
+    `3. **Effect language service:** Effect-specific typed diagnostics via exactly pinned \`@effect/tsgo@${devPin("@effect/tsgo")}\`, including floating Effects, requirements/error-channel diagnostics, strict provision, unsafe assertions, and outdated APIs.`,
+  );
+  lines.push("");
+  lines.push(
+    "The repository gate observes one real generic Oxlint typed diagnostic and one real `floatingEffect` diagnostic from @effect/tsgo. Both companions are development-only and absent from this package's runtime graph.",
+  );
+  lines.push("");
+  lines.push("```jsonc");
+  lines.push("// .oxlintrc.json — generic built-in typed Oxlint rules");
+  lines.push('{ "options": { "typeAware": true } }');
+  lines.push("```");
+  lines.push("");
+  lines.push("```jsonc");
+  lines.push("// tsconfig.json — Effect-specific typed diagnostics");
+  lines.push(
+    '{ "compilerOptions": { "plugins": [{ "name": "@effect/language-service", "diagnosticSeverity": { "floatingEffect": "error", "asyncFunction": "off", "newPromise": "off", "globalConsole": "off", "globalConsoleInEffect": "off" } }] } }',
+  );
+  lines.push("```");
+  lines.push("");
+  lines.push("## Non-duplicating Effect TSGO configuration");
+  lines.push("");
+  lines.push(
+    "When this plugin owns syntax policy, keep the corresponding @effect/tsgo syntax diagnostics off: `asyncFunction`, `globalConsole`, `globalConsoleInEffect`, `globalDate`, `globalDateInEffect`, `globalFetch`, `globalFetchInEffect`, `globalRandom`, `globalRandomInEffect`, `globalTimers`, `globalTimersInEffect`, `newPromise`, `nodeBuiltinImport`, `preferSchemaOverJson`, `processEnv`, and `processEnvInEffect`. They are off by default in the reviewed release. Keep typed diagnostics such as `floatingEffect`, `missingEffectContext`, `missingEffectError`, `strictEffectProvide`, `unsafeEffectTypeAssertion`, and `lazyPromiseInEffectSync` under @effect/tsgo authority.",
+  );
+  lines.push("");
+  lines.push(
+    "The pinned companions expose no domain-aware general diagnostic for arbitrary typed `.then`/`.catch`/`.finally` chains. This package deliberately does not guess from member spelling; that requested policy remains an explicit typed-analysis gap until a companion exposes the required type-and-domain hook.",
+  );
   lines.push("");
   lines.push("## Overlaps and authority");
   lines.push("");
