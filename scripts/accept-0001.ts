@@ -1,0 +1,214 @@
+/**
+ * `bun run accept:0001` — executable acceptance for design spec 0001.
+ *
+ * Builds and packs the artifact, audits tarball contents, installs the
+ * tarball without lifecycle scripts into isolated Bun, Node, and
+ * Deno-oriented consumers outside the repository, runs the complete
+ * positive/negative domain matrix under Bun and Node, runs the declared
+ * Deno journey, and verifies consumers load compiled JavaScript rather than
+ * repository TypeScript. A missing required tool fails rather than
+ * degrading to a warning. Evidence: docs/acceptance/0001-accept-run.txt.
+ */
+
+import {
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+const repoRoot = join(import.meta.dir, "..");
+const evidence: string[] = [];
+const note = (line: string): void => {
+  evidence.push(line);
+  console.log(line);
+};
+
+async function exec(
+  cmd: readonly string[],
+  opts: { cwd?: string; label?: string } = {},
+): Promise<string> {
+  const proc = Bun.spawn([...cmd], {
+    cwd: opts.cwd ?? repoRoot,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const stdout = await new Response(proc.stdout).text();
+  const stderr = await new Response(proc.stderr).text();
+  const exitCode = await proc.exited;
+  if (exitCode !== 0) {
+    throw new Error(
+      `${opts.label ?? cmd.join(" ")} exited ${exitCode}\nstdout:\n${stdout}\nstderr:\n${stderr}`,
+    );
+  }
+  return stdout;
+}
+
+// --- required tools (missing tools fail) -------------------------------------
+const bunVersion = Bun.version;
+const nodeVersion = (
+  await exec(["nix", "shell", "nixpkgs#nodejs", "-c", "node", "--version"], {
+    label: "node (via nix shell nixpkgs#nodejs)",
+  })
+).trim();
+const denoVersion = (await exec(["deno", "--version"])).split("\n")[0] ?? "";
+note(`runtimes: bun ${bunVersion}; node ${nodeVersion}; ${denoVersion}`);
+
+const nodeMajor = Number.parseInt(nodeVersion.replace(/^v/, ""), 10);
+if (!Number.isFinite(nodeMajor) || nodeMajor < 20) {
+  throw new Error(`node ${nodeVersion} does not satisfy oxlint engines (>=20.19)`);
+}
+
+// --- build and pack ----------------------------------------------------------
+rmSync(join(repoRoot, "dist"), { recursive: true, force: true });
+await exec(["bun", join(repoRoot, "node_modules", ".bin", "tsc"), "-p", "tsconfig.build.json"]);
+
+const scratch = mkdtempSync(join(tmpdir(), "oxlint-effect-v4-accept-"));
+note(`scratch: ${scratch}`);
+
+await exec(["bun", "pm", "pack", "--destination", scratch], { label: "bun pm pack" });
+const tarball = readdirSync(scratch).find((name) => name.endsWith(".tgz"));
+if (tarball === undefined) throw new Error("bun pm pack produced no tarball");
+const tarballPath = join(scratch, tarball);
+note(`tarball: ${tarball}`);
+
+// --- tarball audit -----------------------------------------------------------
+const entries = (await exec(["tar", "-tzf", tarballPath]))
+  .trim()
+  .split("\n")
+  .map((entry) => entry.trim());
+
+const required = [
+  "package/dist/index.js",
+  "package/dist/index.d.ts",
+  "package/dist/index.js.map",
+  "package/dist/rules/no-ambient-console.js",
+  "package/docs/rules/no-ambient-console.md",
+  "package/docs/tsgo-boundary.md",
+  "package/compatibility.json",
+  "package/PROVENANCE.md",
+  "package/LICENSE",
+  "package/README.md",
+  "package/package.json",
+];
+for (const entry of required) {
+  if (!entries.includes(entry)) throw new Error(`tarball missing required entry: ${entry}`);
+}
+const forbiddenEntries = entries.filter(
+  (entry) =>
+    entry.startsWith("package/src/") ||
+    entry.startsWith("package/fixtures/") ||
+    entry.startsWith("package/scripts/") ||
+    (entry.endsWith(".ts") && !entry.endsWith(".d.ts")),
+);
+if (forbiddenEntries.length > 0) {
+  throw new Error(`tarball contains non-distributable entries: ${forbiddenEntries.join(", ")}`);
+}
+note(`tarball entries: ${entries.length} (required present, no sources/fixtures/scripts)`);
+
+// No consumer-repository path knowledge in distributed files.
+const extracted = join(scratch, "audit");
+mkdirSync(extracted, { recursive: true });
+await exec(["tar", "-xzf", tarballPath, "-C", extracted]);
+const forbiddenPatterns = [
+  /\/srv\//,
+  /\/tmp\/oxlint-effect-v4/,
+  /semantic-systems\//i,
+  /workgraph\//i,
+  /reef\//i,
+];
+const auditWalk = (dir: string): void => {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) auditWalk(path);
+    else {
+      const text = readFileSync(path, "utf8");
+      for (const pattern of forbiddenPatterns) {
+        if (pattern.test(text)) {
+          throw new Error(`distributed file ${path} matches forbidden path pattern ${pattern}`);
+        }
+      }
+    }
+  }
+};
+auditWalk(extracted);
+note("tarball audit: no consumer-repository path knowledge in distributed files");
+
+// --- consumers ---------------------------------------------------------------
+const makeConsumer = (name: string): string => {
+  const dir = join(scratch, name);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(
+    join(dir, "package.json"),
+    `${JSON.stringify(
+      {
+        name,
+        private: true,
+        type: "module",
+        dependencies: {
+          "@phibkro/oxlint-effect-v4": `file:${tarballPath}`,
+          oxlint: "1.76.0",
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  cpSync(join(repoRoot, "fixtures"), join(dir, "fixtures"), {
+    recursive: true,
+    filter: (source) => !source.endsWith("matrix.ts"),
+  });
+  cpSync(join(repoRoot, "generated", "matrix.json"), join(dir, "matrix.json"));
+  cpSync(join(repoRoot, "scripts", "consumer", "run-matrix.mjs"), join(dir, "run-matrix.mjs"));
+  return dir;
+};
+
+// Bun consumer: install tarball without lifecycle scripts, run full matrix.
+{
+  const dir = makeConsumer("bun-consumer");
+  await exec(["bun", "install", "--ignore-scripts"], { cwd: dir, label: "bun consumer install" });
+  const output = await exec(["bun", "run-matrix.mjs"], { cwd: dir, label: "bun consumer matrix" });
+  note(`bun-consumer: ${output.trim().split("\n").join("\n  ")}`);
+}
+
+// Node consumer: same tarball, loaded and executed under Node.
+{
+  const dir = makeConsumer("node-consumer");
+  await exec(["bun", "install", "--ignore-scripts"], { cwd: dir, label: "node consumer install" });
+  const output = await exec(["nix", "shell", "nixpkgs#nodejs", "-c", "node", "run-matrix.mjs"], {
+    cwd: dir,
+    label: "node consumer matrix",
+  });
+  note(`node-consumer: ${output.trim().split("\n").join("\n  ")}`);
+}
+
+// Deno-oriented consumer: declared journey over the compiled artifact only.
+{
+  const dir = makeConsumer("deno-consumer");
+  const packageDir = join(dir, "node_modules", "@phibkro", "oxlint-effect-v4");
+  mkdirSync(join(dir, "node_modules", "@phibkro"), { recursive: true });
+  const stage = join(scratch, "deno-stage");
+  mkdirSync(stage, { recursive: true });
+  await exec(["tar", "-xzf", tarballPath, "-C", stage]);
+  cpSync(join(stage, "package"), packageDir, { recursive: true });
+  cpSync(join(repoRoot, "scripts", "consumer", "deno-journey.mjs"), join(dir, "deno-journey.mjs"));
+  const output = await exec(["deno", "run", "--allow-read", "deno-journey.mjs"], {
+    cwd: dir,
+    label: "deno declared journey",
+  });
+  note(`deno-consumer: ${output.trim()}`);
+}
+
+// --- record evidence ---------------------------------------------------------
+const stamp = (await exec(["git", "log", "-1", "--format=%H"])).trim();
+writeFileSync(
+  join(repoRoot, "docs", "acceptance", "0001-accept-run.txt"),
+  `accept:0001 evidence (repo commit at run start: ${stamp})\n\n${evidence.join("\n")}\n\nresult: PASS\n`,
+);
+rmSync(scratch, { recursive: true, force: true });
+console.log("\naccept:0001: PASS (evidence in docs/acceptance/0001-accept-run.txt)");
