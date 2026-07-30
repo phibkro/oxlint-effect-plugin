@@ -13,4 +13,4 @@ Clock, random, cryptographic, network, timer, environment, filesystem, process, 
 
 ## Limitation
 
-Syntax/scope detection over known ambient globals and authority-bearing module imports; authority reached through aliases, dependency wrappers, or dynamic access escapes analysis. Composition roots and runtime adapters are exempt by role.
+Syntax/scope detection over known bare or statically global-object-qualified ambient globals plus static import(), import, and re-export module edges; authority reached through aliases, dependency wrappers, or computed dynamic access escapes analysis. Composition roots and runtime adapters are exempt by role.

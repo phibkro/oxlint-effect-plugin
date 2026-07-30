@@ -13,4 +13,4 @@ A declared runtime-platform domain admits only its own built-ins, globals, and p
 
 ## Limitation
 
-Classifies static import specifiers and runtime-identifying globals; computed dynamic imports and feature detection escape analysis. `self`/`navigator`/`location` are admitted in both browser and web-worker domains.
+Classifies static import/re-export specifiers and bare or statically global-object-qualified runtime-identifying globals; computed dynamic imports and feature detection escape analysis. `self`/`navigator`/`location` are admitted in both browser and web-worker domains.

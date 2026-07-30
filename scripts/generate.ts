@@ -16,6 +16,11 @@ import { join } from "node:path";
 import { MATRIX } from "../fixtures/matrix.js";
 import { BOUNDARIES, PLATFORMS, ROLES } from "../src/domains.js";
 import { RULE_REGISTRY } from "../src/registry.js";
+import {
+  REVIEWED_DEPENDENCIES,
+  REVIEWED_NODE_ENGINE,
+  REVIEWED_RUNTIMES,
+} from "./compatibility-policy.js";
 
 const repoRoot = join(import.meta.dir, "..");
 const mode = process.argv[2];
@@ -51,13 +56,23 @@ derivations.push({
 const devPin = (name: string): string => {
   const version = pkg.devDependencies[name];
   if (version === undefined) throw new Error(`package.json devDependencies missing ${name}`);
+  const reviewed = REVIEWED_DEPENDENCIES[name as keyof typeof REVIEWED_DEPENDENCIES];
+  if (reviewed !== undefined && version !== reviewed) {
+    throw new Error(`package.json ${name} must equal reviewed ${reviewed}; received ${version}`);
+  }
   return version;
 };
+if (pkg.peerDependencies["oxlint"] !== REVIEWED_DEPENDENCIES.oxlint) {
+  throw new Error(`package.json peer oxlint must equal ${REVIEWED_DEPENDENCIES.oxlint}`);
+}
+if (pkg.engines.node !== REVIEWED_NODE_ENGINE) {
+  throw new Error(`package.json Node engines must equal ${REVIEWED_NODE_ENGINE}`);
+}
 
 const compatibility = {
   package: { name: pkg.name, version: pkg.version },
   reviewed: {
-    oxlint: pkg.peerDependencies["oxlint"],
+    oxlint: devPin("oxlint"),
     oxfmt: devPin("oxfmt"),
     typescript: devPin("typescript"),
     effect: devPin("effect"),
@@ -67,15 +82,21 @@ const compatibility = {
     "oxlint-tsgolint": devPin("oxlint-tsgolint"),
   },
   runtimes: {
-    bun: { role: "default development runtime and packed consumer", reviewed: "1.3.13" },
+    bun: {
+      role: "default development runtime and packed consumer",
+      reviewed: REVIEWED_RUNTIMES.bun,
+      reviewPolicy: "exact",
+    },
     node: {
       role: "packed consumer",
-      reviewed: "24.x",
+      reviewed: REVIEWED_RUNTIMES.node,
+      reviewPolicy: "exact",
       engines: pkg.engines.node,
     },
     deno: {
       role: "declared compatibility journey only",
-      reviewed: "2.9.2",
+      reviewed: REVIEWED_RUNTIMES.deno,
+      reviewPolicy: "exact",
       declaredSurface:
         "Load the compiled ESM artifact from node_modules (BYONM), read plugin/rule/domain metadata, and expand typed configuration. Running the oxlint CLI under Deno is not part of the declared surface.",
     },

@@ -11,6 +11,7 @@ import type { Program } from "../ast.js";
 import type { Rule, RuleContext } from "../plugin-api.js";
 import {
   classifyAmbientUse,
+  collectAmbientGlobalObjectMembers,
   collectAmbientReferences,
   DOMAIN_SCHEMA_PROPERTIES,
   domainOptionsOf,
@@ -47,6 +48,22 @@ export const noRawJsonParse: Rule = {
           if (use.kind === "member" && use.property === "parse") {
             context.report({
               node: use.reportNode,
+              message: formatMessage({
+                rule: RULE_NAME,
+                finding:
+                  "Raw JSON.parse at a declared external-data boundary produces unvalidated data.",
+                remedy:
+                  "Decode through an explicit effect/Schema seam (e.g. Schema.decodeUnknownEffect over the parsed value, or a Schema JSON codec). Lint cannot validate data; it only enforces the decoding seam.",
+                domains,
+              }),
+            });
+          }
+        }
+        for (const qualified of collectAmbientGlobalObjectMembers(ambient)) {
+          if (qualified.globalName !== "JSON") continue;
+          if (qualified.use.kind === "member" && qualified.use.property === "parse") {
+            context.report({
+              node: qualified.use.reportNode,
               message: formatMessage({
                 rule: RULE_NAME,
                 finding:

@@ -76,7 +76,7 @@ export const RULE_REGISTRY: readonly RuleInfo[] = [
     rationale:
       "Clock, random, cryptographic, network, timer, environment, filesystem, process, and runtime authority belong to declared Effect services so tests and platforms can replace them. Deterministic `new Date(capturedMilliseconds)` is admitted; observations such as `new Date()`/`Date.now()` are not, and wrapping them in a thunk does not surface the hidden authority to the Effect environment.",
     limitation:
-      "Syntax/scope detection over known ambient globals and authority-bearing module imports; authority reached through aliases, dependency wrappers, or dynamic access escapes analysis. Composition roots and runtime adapters are exempt by role.",
+      "Syntax/scope detection over known bare or statically global-object-qualified ambient globals plus static import(), import, and re-export module edges; authority reached through aliases, dependency wrappers, or computed dynamic access escapes analysis. Composition roots and runtime adapters are exempt by role.",
     tsgoOverlap: null,
   },
   {
@@ -89,7 +89,7 @@ export const RULE_REGISTRY: readonly RuleInfo[] = [
     rationale:
       "A declared runtime-platform domain admits only its own built-ins, globals, and platform layers. Compatibility APIs provided by another runtime are not silently portable, and official platform live layers belong only to a matching composition-root or runtime-adapter.",
     limitation:
-      "Classifies static import specifiers and runtime-identifying globals; computed dynamic imports and feature detection escape analysis. `self`/`navigator`/`location` are admitted in both browser and web-worker domains.",
+      "Classifies static import/re-export specifiers and bare or statically global-object-qualified runtime-identifying globals; computed dynamic imports and feature detection escape analysis. `self`/`navigator`/`location` are admitted in both browser and web-worker domains.",
     tsgoOverlap: null,
   },
   {
@@ -130,7 +130,7 @@ export const RULE_REGISTRY: readonly RuleInfo[] = [
     rationale:
       "External JSON must cross an explicit Effect Schema decoding seam instead of raw JSON.parse. Only JSON syntax is claimed; other syntaxes require their own parser/Schema seam.",
     limitation:
-      "Flags ambient `JSON.parse` only; parsing behind wrappers or other syntaxes escapes analysis. Lint enforces the seam, it does not validate data.",
+      "Flags ambient bare or statically global-object-qualified `JSON.parse`; parsing behind aliases, wrappers, computed dynamic properties, or other syntaxes escapes analysis. Lint enforces the seam, it does not validate data.",
     tsgoOverlap: null,
   },
   {

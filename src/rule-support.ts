@@ -97,7 +97,7 @@ export function collectAmbientReferences(globalScope: Scope): Map<string, Identi
 
 /** Syntactic classification of how an ambient global identifier is used. */
 export interface AmbientUse {
-  readonly identifier: Identifier;
+  readonly expression: Node;
   readonly kind: "call" | "new" | "member" | "other";
   /** For `member`: static property name, e.g. `now` for `Date.now`. */
   readonly property: string | null;
@@ -107,11 +107,11 @@ export interface AmbientUse {
   readonly argumentCount: number | null;
 }
 
-export function classifyAmbientUse(identifier: Identifier): AmbientUse {
-  const parent = identifier.parent ?? null;
+export function classifyAmbientExpression(expression: Node): AmbientUse {
+  const parent = expression.parent ?? null;
   if (parent !== null && parent.type === "MemberExpression") {
     const member = parent as MemberExpression;
-    if (member.object === identifier) {
+    if (member.object === expression) {
       const grand = member.parent ?? null;
       if (
         grand !== null &&
@@ -119,7 +119,7 @@ export function classifyAmbientUse(identifier: Identifier): AmbientUse {
         (grand as CallExpression).callee === member
       ) {
         return {
-          identifier,
+          expression,
           kind: "member",
           property: staticPropertyName(member),
           reportNode: grand,
@@ -127,7 +127,7 @@ export function classifyAmbientUse(identifier: Identifier): AmbientUse {
         };
       }
       return {
-        identifier,
+        expression,
         kind: "member",
         property: staticPropertyName(member),
         reportNode: member,
@@ -138,10 +138,10 @@ export function classifyAmbientUse(identifier: Identifier): AmbientUse {
   if (
     parent !== null &&
     parent.type === "CallExpression" &&
-    (parent as CallExpression).callee === identifier
+    (parent as CallExpression).callee === expression
   ) {
     return {
-      identifier,
+      expression,
       kind: "call",
       property: null,
       reportNode: parent,
@@ -151,17 +151,70 @@ export function classifyAmbientUse(identifier: Identifier): AmbientUse {
   if (
     parent !== null &&
     parent.type === "NewExpression" &&
-    (parent as { callee?: Node }).callee === identifier
+    (parent as { callee?: Node }).callee === expression
   ) {
     return {
-      identifier,
+      expression,
       kind: "new",
       property: null,
       reportNode: parent,
       argumentCount: (parent as { arguments: readonly Node[] }).arguments.length,
     };
   }
-  return { identifier, kind: "other", property: null, reportNode: identifier, argumentCount: null };
+  return { expression, kind: "other", property: null, reportNode: expression, argumentCount: null };
+}
+
+export function classifyAmbientUse(identifier: Identifier): AmbientUse {
+  return classifyAmbientExpression(identifier);
+}
+
+export interface AmbientGlobalObjectMember {
+  /** Ambient global object (`globalThis`, `window`, `self`, or Node `global`). */
+  readonly object: Identifier;
+  /** First statically named member, e.g. `fetch` in `globalThis.fetch(...)`. */
+  readonly globalName: string;
+  readonly expression: MemberExpression;
+  /** Use relative to the qualified global value, not to the global object. */
+  readonly use: AmbientUse;
+}
+
+const AMBIENT_GLOBAL_OBJECTS = ["globalThis", "window", "self", "global"] as const;
+
+/**
+ * Resolve statically named members reached through ambient global objects.
+ *
+ * The input map already excludes lexically shadowed roots. Computed
+ * non-literals are intentionally skipped because their authority cannot be
+ * established by AST/scope evidence alone.
+ */
+export function collectAmbientGlobalObjectMembers(
+  ambient: ReadonlyMap<string, readonly Identifier[]>,
+): AmbientGlobalObjectMember[] {
+  const members: AmbientGlobalObjectMember[] = [];
+  for (const objectName of AMBIENT_GLOBAL_OBJECTS) {
+    for (const object of ambient.get(objectName) ?? []) {
+      const parent = object.parent;
+      if (parent?.type !== "MemberExpression") continue;
+      const expression = parent as MemberExpression;
+      if (expression.object !== object) continue;
+      const globalName = staticPropertyName(expression);
+      if (globalName === null) continue;
+      members.push({
+        object,
+        globalName,
+        expression,
+        use: classifyAmbientExpression(expression),
+      });
+    }
+  }
+  return members;
+}
+
+/** String value of a statically analyzable module/source literal. */
+export function staticStringValue(node: Node | null | undefined): string | null {
+  if (node?.type !== "Literal") return null;
+  const value = (node as import("./ast.js").Literal).value;
+  return typeof value === "string" ? value : null;
 }
 
 const EFFECT_MODULE_PATTERN = /^effect(?:\/|$)/;

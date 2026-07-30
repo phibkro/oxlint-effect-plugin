@@ -24,6 +24,13 @@ verified unclaimed on the npm registry on 2026-07-30 (both returned
 | `joelhooks/effectts-skills` | GitHub repository | (advisory) | **Advisory only.** Treated as opinion; every Effect claim used here was independently corroborated against the pinned Effect release. |
 | Semantic Systems repository-local rules | six independently tested rules at source commit above | (internal) | **Semantics generalized, code not vendored.** The tracer re-implements the families against the frozen spec 0001 with repository path policy removed; fixtures were written fresh for the orthogonal domain model. |
 
+The qualified-global correction reuses this repository's existing
+`collectAmbientReferences`, `staticPropertyName`, and Oxc parent/scope data in
+one shared classifier; no parser, text matcher, or new runtime dependency was
+introduced. Compatibility mutation resistance likewise centralizes the frozen
+review table for generation, package/lock validation, runtime probes, and
+packed-artifact checks instead of maintaining independent assertions.
+
 ## Tooling note
 
 One-off disposable scratch probes during research used ad-hoc tooling

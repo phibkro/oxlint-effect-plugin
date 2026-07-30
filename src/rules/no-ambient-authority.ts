@@ -14,12 +14,14 @@ import type { Program } from "../ast.js";
 import type { Rule, RuleContext } from "../plugin-api.js";
 import {
   classifyAmbientUse,
+  collectAmbientGlobalObjectMembers,
   collectAmbientReferences,
   DOMAIN_SCHEMA_PROPERTIES,
   domainOptionsOf,
   formatMessage,
   REQUIRED_DOMAIN_SCHEMA_KEYS,
   ruleOptionRecord,
+  staticStringValue,
 } from "../rule-support.js";
 
 export const RULE_NAME = "no-ambient-authority";
@@ -112,7 +114,7 @@ function moduleAuthority(specifier: string): Capability | null {
     : specifier.startsWith("bun:")
       ? "bun"
       : specifier;
-  return MODULE_AUTHORITIES.get(bare) ?? null;
+  return MODULE_AUTHORITIES.get(bare) ?? MODULE_AUTHORITIES.get(bare.split("/")[0] ?? "") ?? null;
 }
 
 function isEnvironmentMember(globalName: string, property: string | null): boolean {
@@ -173,84 +175,120 @@ export const noAmbientAuthority: Rule = {
       });
     };
 
-    return {
-      ImportDeclaration(node: import("../ast.js").ImportDeclaration) {
-        const specifier = node.source.value;
-        if (typeof specifier !== "string") return;
-        const capability = moduleAuthority(specifier);
-        if (capability !== null) {
+    const checkModuleSpecifier = (node: import("../ast.js").Node, specifier: string): void => {
+      const capability = moduleAuthority(specifier);
+      if (capability !== null) {
+        report(
+          node,
+          capability,
+          `Importing or re-exporting "${specifier}" takes ambient ${capability} authority instead of a declared Effect capability.`,
+        );
+      }
+    };
+
+    const checkDateUse = (use: ReturnType<typeof classifyAmbientUse>): void => {
+      if (use.kind === "new") {
+        if (use.argumentCount === 0) {
           report(
-            node,
-            capability,
-            `Importing "${specifier}" takes ambient ${capability} authority instead of a declared Effect capability.`,
+            use.reportNode,
+            "clock",
+            "`new Date()` observes the ambient clock; deterministic `new Date(capturedMilliseconds)` is admitted.",
           );
         }
+        return;
+      }
+      if (use.kind === "call") {
+        report(use.reportNode, "clock", "`Date()` observes the ambient clock.");
+        return;
+      }
+      if (use.kind === "member" && (use.property === "now" || use.property === null)) {
+        report(use.reportNode, "clock", "`Date.now()` observes the ambient clock.");
+      }
+    };
+
+    const checkGlobalUse = (
+      globalName: string,
+      authority: GlobalAuthority,
+      use: ReturnType<typeof classifyAmbientUse>,
+    ): void => {
+      const capability = isEnvironmentMember(globalName, use.property)
+        ? "environment"
+        : authority.capability;
+      if (use.kind === "member") {
+        if (
+          authority.members === null ||
+          use.property === null ||
+          authority.members.includes(use.property)
+        ) {
+          report(
+            use.reportNode,
+            capability,
+            `Ambient \`${globalName}${use.property === null ? "[...]" : `.${use.property}`}\` exercises ${capability} authority outside the Effect environment.`,
+          );
+        }
+        return;
+      }
+      if (use.kind === "call" && authority.callable) {
+        report(
+          use.reportNode,
+          capability,
+          `Ambient \`${globalName}(...)\` exercises ${capability} authority outside the Effect environment.`,
+        );
+        return;
+      }
+      if (
+        use.kind === "new" &&
+        (globalName === "XMLHttpRequest" ||
+          globalName === "WebSocket" ||
+          globalName === "EventSource")
+      ) {
+        report(
+          use.reportNode,
+          capability,
+          `Ambient \`new ${globalName}(...)\` exercises ${capability} authority outside the Effect environment.`,
+        );
+      }
+    };
+
+    return {
+      ImportDeclaration(node: import("../ast.js").ImportDeclaration) {
+        const specifier = staticStringValue(node.source);
+        if (specifier !== null) checkModuleSpecifier(node, specifier);
+      },
+      ImportExpression(node: import("../ast.js").ImportExpression) {
+        const specifier = staticStringValue(node.source);
+        if (specifier !== null) checkModuleSpecifier(node, specifier);
+      },
+      ExportNamedDeclaration(node: import("../ast.js").ExportNamedDeclaration) {
+        const specifier = staticStringValue(node.source);
+        if (specifier !== null) checkModuleSpecifier(node, specifier);
+      },
+      ExportAllDeclaration(node: import("../ast.js").ExportAllDeclaration) {
+        const specifier = staticStringValue(node.source);
+        if (specifier !== null) checkModuleSpecifier(node, specifier);
       },
       "Program:exit"(program: Program) {
         const globalScope = context.sourceCode.getScope(program);
         const ambient = collectAmbientReferences(globalScope);
 
         for (const identifier of ambient.get("Date") ?? []) {
-          const use = classifyAmbientUse(identifier);
-          if (use.kind === "new") {
-            if (use.argumentCount === 0) {
-              report(
-                use.reportNode,
-                "clock",
-                "`new Date()` observes the ambient clock; deterministic `new Date(capturedMilliseconds)` is admitted.",
-              );
-            }
-            continue;
-          }
-          if (use.kind === "call") {
-            report(use.reportNode, "clock", "`Date()` observes the ambient clock.");
-            continue;
-          }
-          if (use.kind === "member" && (use.property === "now" || use.property === null)) {
-            report(use.reportNode, "clock", "`Date.now()` observes the ambient clock.");
-          }
+          checkDateUse(classifyAmbientUse(identifier));
         }
 
         for (const [globalName, authority] of GLOBAL_AUTHORITIES) {
           for (const identifier of ambient.get(globalName) ?? []) {
-            const use = classifyAmbientUse(identifier);
-            const capability = isEnvironmentMember(globalName, use.property)
-              ? "environment"
-              : authority.capability;
-            if (use.kind === "member") {
-              if (
-                authority.members === null ||
-                use.property === null ||
-                authority.members.includes(use.property)
-              ) {
-                report(
-                  use.reportNode,
-                  capability,
-                  `Ambient \`${globalName}${use.property === null ? "[...]" : `.${use.property}`}\` exercises ${capability} authority outside the Effect environment.`,
-                );
-              }
-              continue;
-            }
-            if (use.kind === "call" && authority.callable) {
-              report(
-                use.reportNode,
-                capability,
-                `Ambient \`${globalName}(...)\` exercises ${capability} authority outside the Effect environment.`,
-              );
-              continue;
-            }
-            if (
-              use.kind === "new" &&
-              (globalName === "XMLHttpRequest" ||
-                globalName === "WebSocket" ||
-                globalName === "EventSource")
-            ) {
-              report(
-                use.reportNode,
-                capability,
-                `Ambient \`new ${globalName}(...)\` exercises ${capability} authority outside the Effect environment.`,
-              );
-            }
+            checkGlobalUse(globalName, authority, classifyAmbientUse(identifier));
+          }
+        }
+
+        for (const qualified of collectAmbientGlobalObjectMembers(ambient)) {
+          if (qualified.globalName === "Date") {
+            checkDateUse(qualified.use);
+            continue;
+          }
+          const authority = GLOBAL_AUTHORITIES.get(qualified.globalName);
+          if (authority !== undefined) {
+            checkGlobalUse(qualified.globalName, authority, qualified.use);
           }
         }
       },

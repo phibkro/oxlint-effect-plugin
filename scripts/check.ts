@@ -10,6 +10,12 @@
 import { chmodSync, existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
+import {
+  assertCompatibilityState,
+  assertReviewedRuntimeVersions,
+  parseRuntimeVersion,
+} from "./compatibility-policy.js";
+
 const repoRoot = join(import.meta.dir, "..");
 
 interface Step {
@@ -78,6 +84,26 @@ const steps: Step[] = [
   {
     name: "native suppression host-gate",
     run: () => exec(["bun", "run", "scripts/audit-suppressions.ts", "src", "fixtures"]),
+  },
+  {
+    name: "full compatibility table, lock, and exact reviewed runtimes",
+    run: async () => {
+      const compatibility = JSON.parse(readFileSync(join(repoRoot, "compatibility.json"), "utf8"));
+      assertCompatibilityState({
+        packageJson: JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")),
+        compatibility,
+        lock: Bun.JSONC.parse(readFileSync(join(repoRoot, "bun.lock"), "utf8")),
+      });
+      const node = await capture(["nix", "shell", "nixpkgs#nodejs", "-c", "node", "--version"]);
+      if (node.exitCode !== 0) throw new Error(`Node version probe failed: ${node.stderr}`);
+      const deno = await capture(["deno", "--version"]);
+      if (deno.exitCode !== 0) throw new Error(`Deno version probe failed: ${deno.stderr}`);
+      assertReviewedRuntimeVersions(compatibility, {
+        bun: Bun.version,
+        node: parseRuntimeVersion("node", node.stdout),
+        deno: parseRuntimeVersion("deno", deno.stdout),
+      });
+    },
   },
   {
     name: "typed companions (Oxlint generic + Effect TSGO observed-red probes)",
@@ -222,23 +248,6 @@ const steps: Step[] = [
         throw new Error("suppression audit export missing");
       }
       if (module.recommended.overrides.length === 0) throw new Error("recommended preset empty");
-      if (pkg.engines.node !== "^20.19.0 || >=22.12.0") {
-        throw new Error(`Node engine floor drifted: ${pkg.engines.node}`);
-      }
-      for (const [name, expected] of Object.entries({
-        "@effect/platform-node": "4.0.0-beta.102",
-        "@effect/platform-bun": "4.0.0-beta.102",
-        "@effect/tsgo": "0.24.3",
-        "oxlint-tsgolint": "7.0.2001",
-      })) {
-        if (pkg.devDependencies[name] !== expected) {
-          throw new Error(`${name} must remain exactly pinned to ${expected}`);
-        }
-        const lock = readFileSync(join(repoRoot, "bun.lock"), "utf8");
-        if (!lock.includes(`"${name}": ["${name}@${expected}"`)) {
-          throw new Error(`bun.lock does not bind ${name} to ${expected}`);
-        }
-      }
       for (const file of [
         "dist/index.js",
         "dist/index.d.ts",

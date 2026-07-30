@@ -1,5 +1,5 @@
 === matrix run (config form: json, plugin: ./scripts/non-reporting-stub.mjs) ===
-expected=67 actual-plugin-diagnostics=0 missing=67 unexpected=0
+expected=84 actual-plugin-diagnostics=0 missing=84 unexpected=0
 
 missing (expected but not reported):
   fixtures/portable-pure-library/ambient-clock.red.ts:3 no-ambient-authority
@@ -19,6 +19,12 @@ missing (expected but not reported):
   fixtures/portable-effect-library/final-provision.red.ts:6 no-cross-runtime
   fixtures/portable-effect-library/final-provision.red.ts:10 no-premature-execution
   fixtures/portable-effect-library/json-raw.red.ts:4 no-raw-json-parse
+  fixtures/portable-effect-library/module-authority.red.ts:3 no-ambient-authority
+  fixtures/portable-effect-library/module-authority.red.ts:3 no-cross-runtime
+  fixtures/portable-effect-library/module-authority.red.ts:4 no-ambient-authority
+  fixtures/portable-effect-library/module-authority.red.ts:4 no-cross-runtime
+  fixtures/portable-effect-library/module-authority.red.ts:5 no-ambient-authority
+  fixtures/portable-effect-library/module-authority.red.ts:5 no-cross-runtime
   fixtures/portable-effect-library/named-execution.red.ts:9 no-premature-execution
   fixtures/portable-effect-library/named-execution.red.ts:10 no-premature-execution
   fixtures/portable-effect-library/promise-syntax.red.ts:9 no-native-promise-control-flow
@@ -30,6 +36,16 @@ missing (expected but not reported):
   fixtures/portable-effect-library/promise.red.ts:5 no-native-promise-control-flow
   fixtures/portable-effect-library/promise.red.ts:9 no-native-promise-control-flow
   fixtures/portable-effect-library/promise.red.ts:11 no-native-promise-control-flow
+  fixtures/portable-effect-library/qualified-globals.red.ts:4 no-ambient-authority
+  fixtures/portable-effect-library/qualified-globals.red.ts:5 no-ambient-authority
+  fixtures/portable-effect-library/qualified-globals.red.ts:6 no-ambient-authority
+  fixtures/portable-effect-library/qualified-globals.red.ts:7 no-ambient-authority
+  fixtures/portable-effect-library/qualified-globals.red.ts:7 no-cross-runtime
+  fixtures/portable-effect-library/qualified-globals.red.ts:8 no-ambient-authority
+  fixtures/portable-effect-library/qualified-globals.red.ts:8 no-cross-runtime
+  fixtures/portable-effect-library/qualified-globals.red.ts:9 no-ambient-authority
+  fixtures/portable-effect-library/qualified-globals.red.ts:9 no-cross-runtime
+  fixtures/portable-effect-library/qualified-globals.red.ts:10 no-raw-json-parse
   fixtures/portable-effect-library/runs.red.ts:10 no-premature-execution
   fixtures/portable-effect-library/runs.red.ts:12 no-native-promise-control-flow
   fixtures/portable-effect-library/runs.red.ts:14 no-premature-execution
@@ -51,6 +67,7 @@ missing (expected but not reported):
   fixtures/node-composition-root/cross-runtime.red.ts:10 no-cross-runtime
   fixtures/node-service/ambient.red.ts:6 no-ambient-authority
   fixtures/node-service/ambient.red.ts:8 no-ambient-authority
+  fixtures/node-service/dynamic-import.red.ts:4 no-ambient-authority
   fixtures/node-runtime-adapter/cross-runtime.red.ts:8 no-cross-runtime
   fixtures/node-runtime-adapter/cross-runtime.red.ts:12 no-cross-runtime
   fixtures/node-runtime-adapter/run-main.red.ts:7 no-premature-execution
@@ -71,11 +88,11 @@ missing (expected but not reported):
   fixtures/web-worker-service/dom.red.ts:6 no-cross-runtime
 
 missing per rule family:
-  no-ambient-authority: 13
-  no-cross-runtime: 21
+  no-ambient-authority: 23
+  no-cross-runtime: 27
   no-ambient-console: 10
   no-premature-execution: 7
-  no-raw-json-parse: 1
+  no-raw-json-parse: 2
   no-native-promise-control-flow: 14
   no-untyped-throw: 1
 runner exit: 1

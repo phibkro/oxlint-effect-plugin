@@ -16,16 +16,19 @@
   "runtimes": {
     "bun": {
       "role": "default development runtime and packed consumer",
-      "reviewed": "1.3.13"
+      "reviewed": "1.3.13",
+      "reviewPolicy": "exact"
     },
     "node": {
       "role": "packed consumer",
-      "reviewed": "24.x",
+      "reviewed": "24.18.0",
+      "reviewPolicy": "exact",
       "engines": "^20.19.0 || >=22.12.0"
     },
     "deno": {
       "role": "declared compatibility journey only",
       "reviewed": "2.9.2",
+      "reviewPolicy": "exact",
       "declaredSurface": "Load the compiled ESM artifact from node_modules (BYONM), read plugin/rule/domain metadata, and expand typed configuration. Running the oxlint CLI under Deno is not part of the declared surface."
     }
   },

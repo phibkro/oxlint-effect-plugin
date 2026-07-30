@@ -22,6 +22,12 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import {
+  assertCompatibilityDocument,
+  assertCompatibilityState,
+  assertReviewedRuntimeVersions,
+  parseRuntimeVersion,
+} from "./compatibility-policy.js";
 import { satisfiesNodeEngine } from "./node-engine.js";
 
 const repoRoot = join(import.meta.dir, "..");
@@ -60,6 +66,19 @@ const nodeVersion = (
 ).trim();
 const denoVersion = (await exec(["deno", "--version"])).split("\n")[0] ?? "";
 note(`runtimes: bun ${bunVersion}; node ${nodeVersion}; ${denoVersion}`);
+
+const compatibility = JSON.parse(readFileSync(join(repoRoot, "compatibility.json"), "utf8"));
+assertCompatibilityState({
+  packageJson: JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")),
+  compatibility,
+  lock: Bun.JSONC.parse(readFileSync(join(repoRoot, "bun.lock"), "utf8")),
+});
+assertReviewedRuntimeVersions(compatibility, {
+  bun: bunVersion,
+  node: parseRuntimeVersion("node", nodeVersion),
+  deno: parseRuntimeVersion("deno", denoVersion),
+});
+note("compatibility: full reviewed table, lock resolutions, and exact runtimes verified");
 
 if (!satisfiesNodeEngine(nodeVersion)) {
   throw new Error(`node ${nodeVersion} does not satisfy package engines (^20.19.0 || >=22.12.0)`);
@@ -144,6 +163,10 @@ note("tarball audit: no consumer-repository path knowledge in distributed files"
 const packedPackage = JSON.parse(
   readFileSync(join(extracted, "package", "package.json"), "utf8"),
 ) as { engines?: { node?: string } };
+const packedCompatibility = JSON.parse(
+  readFileSync(join(extracted, "package", "compatibility.json"), "utf8"),
+);
+assertCompatibilityDocument(packedCompatibility);
 if (packedPackage.engines?.node !== "^20.19.0 || >=22.12.0") {
   throw new Error(`packed Node engine floor drifted: ${packedPackage.engines?.node ?? "missing"}`);
 }

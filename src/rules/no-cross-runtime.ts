@@ -14,12 +14,14 @@ import type { Rule, RuleContext } from "../plugin-api.js";
 import type { Platform, Role } from "../domains.js";
 import {
   collectAmbientReferences,
+  collectAmbientGlobalObjectMembers,
   DOMAIN_SCHEMA_PROPERTIES,
   domainOptionsOf,
   formatMessage,
   platformPackageTarget,
   REQUIRED_DOMAIN_SCHEMA_KEYS,
   ruleOptionRecord,
+  staticStringValue,
 } from "../rule-support.js";
 
 export const RULE_NAME = "no-cross-runtime";
@@ -188,21 +190,20 @@ export const noCrossRuntime: Rule = {
 
     return {
       ImportDeclaration(node: import("../ast.js").ImportDeclaration) {
-        if (typeof node.source.value === "string") checkSpecifier(node, node.source.value);
+        const specifier = staticStringValue(node.source);
+        if (specifier !== null) checkSpecifier(node, specifier);
       },
       ImportExpression(node: import("../ast.js").ImportExpression) {
-        const source = node.source;
-        if (source.type === "Literal" && typeof (source as { value: unknown }).value === "string") {
-          checkSpecifier(node, (source as { value: string }).value);
-        }
+        const specifier = staticStringValue(node.source);
+        if (specifier !== null) checkSpecifier(node, specifier);
       },
       ExportNamedDeclaration(node: import("../ast.js").ExportNamedDeclaration) {
-        if (node.source !== null && typeof node.source.value === "string") {
-          checkSpecifier(node, node.source.value);
-        }
+        const specifier = staticStringValue(node.source);
+        if (specifier !== null) checkSpecifier(node, specifier);
       },
       ExportAllDeclaration(node: import("../ast.js").ExportAllDeclaration) {
-        if (typeof node.source.value === "string") checkSpecifier(node, node.source.value);
+        const specifier = staticStringValue(node.source);
+        if (specifier !== null) checkSpecifier(node, specifier);
       },
       "Program:exit"(program: Program) {
         const globalScope = context.sourceCode.getScope(program);
@@ -223,6 +224,22 @@ export const noCrossRuntime: Rule = {
               }),
             });
           }
+        }
+        for (const qualified of collectAmbientGlobalObjectMembers(ambient)) {
+          const runtimes = GLOBAL_RUNTIMES.get(qualified.globalName);
+          if (runtimes === undefined || runtimes.includes(platform)) continue;
+          context.report({
+            node: qualified.use.reportNode,
+            message: formatMessage({
+              rule: RULE_NAME,
+              finding: `Qualified global \`${qualified.object.name}.${qualified.globalName}\` identifies the ${runtimes.join("/")} runtime inside the declared ${platform} platform domain.`,
+              remedy:
+                platform === "portable"
+                  ? "Keep portable code free of runtime-identifying globals; inject the capability as an Effect service."
+                  : `Use the declared ${platform} surface, or re-declare this file's runtime-platform domain.`,
+              domains,
+            }),
+          });
         }
       },
     };

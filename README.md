@@ -22,7 +22,6 @@ Bun and Node; Deno has a narrower [declared journey](./compatibility.json).
 
 Quick start with an explicit rule (the technology axis is required and
 authoritative):
-for all files):
 
 ```jsonc
 // .oxlintrc.json
