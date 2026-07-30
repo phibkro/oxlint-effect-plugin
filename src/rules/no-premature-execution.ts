@@ -29,11 +29,20 @@ import {
 export const RULE_NAME = "no-premature-execution";
 
 export const RUN_MEMBERS = new Set([
-  "runSync", "runSyncExit", "runSyncWith", "runSyncExitWith",
-  "runFork", "runForkWith", "runCallback", "runCallbackWith",
+  "runSync",
+  "runSyncExit",
+  "runSyncWith",
+  "runSyncExitWith",
+  "runFork",
+  "runForkWith",
+  "runCallback",
+  "runCallbackWith",
 ]);
 export const RUN_PROMISE_MEMBERS = new Set([
-  "runPromise", "runPromiseExit", "runPromiseWith", "runPromiseExitWith",
+  "runPromise",
+  "runPromiseExit",
+  "runPromiseWith",
+  "runPromiseExitWith",
 ]);
 
 const FINAL_LAYER_IDENTIFIER = /^(Node|Bun|Deno|Browser)[A-Za-z]*(Services|Context)$/;
@@ -125,7 +134,8 @@ export const noPrematureExecution: Rule = {
               message: formatMessage({
                 rule: RULE_NAME,
                 finding: `\`Effect.${property}\` executes an Effect outside a composition root; libraries and applications may only describe programs.`,
-                remedy: "Move execution to the composition root (or a test with controlled execution).",
+                remedy:
+                  "Move execution to the composition root (or a test with controlled execution).",
                 domains,
               }),
             });
@@ -136,7 +146,8 @@ export const noPrematureExecution: Rule = {
               node,
               message: formatMessage({
                 rule: RULE_NAME,
-                finding: "`ManagedRuntime.make` builds an executable runtime outside a composition root.",
+                finding:
+                  "`ManagedRuntime.make` builds an executable runtime outside a composition root.",
                 remedy: "Construct runtimes in the composition root; describe layers here instead.",
                 domains,
               }),

@@ -1,0 +1,36 @@
+{
+  "package": {
+    "name": "@phibkro/oxlint-effect-v4",
+    "version": "0.1.0"
+  },
+  "reviewed": {
+    "oxlint": "1.76.0",
+    "oxfmt": "0.61.0",
+    "typescript": "7.0.2",
+    "effect": "4.0.0-beta.102",
+    "@effect/platform-node": "4.0.0-beta.102",
+    "@effect/platform-bun": "4.0.0-beta.102",
+    "@effect/tsgo": "0.24.3"
+  },
+  "runtimes": {
+    "bun": {
+      "role": "default development runtime and packed consumer",
+      "reviewed": "1.3.13"
+    },
+    "node": {
+      "role": "packed consumer",
+      "reviewed": "24.x",
+      "engines": "^20.19.0 || >=22.12.0 (inherited from oxlint)"
+    },
+    "deno": {
+      "role": "declared compatibility journey only",
+      "reviewed": "2.9.2",
+      "declaredSurface": "Load the compiled ESM artifact from node_modules (BYONM), read plugin/rule/domain metadata, and expand typed configuration. Running the oxlint CLI under Deno is not part of the declared surface."
+    }
+  },
+  "distribution": {
+    "module": "ESM",
+    "typescriptRuntimeLoaderRequired": false,
+    "analysisClaim": "Syntax and scope diagnostics only; type-aware Effect diagnostics are delegated to @effect/tsgo."
+  }
+}

@@ -37,7 +37,7 @@ const EXPECT_NEXT_LINE = /\/\/\s*expect-next-line:\s*([a-z-,\s]+)$/;
 export function listFixtureFiles(fixturesRoot: string, group: FixtureGroup): string[] {
   return readdirSync(join(fixturesRoot, group.dir))
     .filter((name) => name.endsWith(".ts"))
-    .sort()
+    .toSorted()
     .map((name) => join(fixturesRoot, group.dir, name));
 }
 
@@ -106,7 +106,11 @@ interface OxlintJsonDiagnostic {
 
 const CODE_PATTERN = /^effect-v4\((.+)\)$/;
 
-export function parseOxlintOutput(stdout: string, repoRoot: string, cwd: string): ActualDiagnostic[] {
+export function parseOxlintOutput(
+  stdout: string,
+  repoRoot: string,
+  cwd: string,
+): ActualDiagnostic[] {
   const parsed = JSON.parse(stdout) as { diagnostics: readonly OxlintJsonDiagnostic[] };
   const actual: ActualDiagnostic[] = [];
   for (const diagnostic of parsed.diagnostics) {
@@ -196,7 +200,8 @@ export function formatComparison(comparison: MatrixComparison): string {
   }
   if (comparison.unexpected.length > 0) {
     lines.push("", "unexpected (reported but not expected):");
-    for (const d of comparison.unexpected) lines.push(`  ${d.file}:${d.line} ${d.rule} — ${d.message}`);
+    for (const d of comparison.unexpected)
+      lines.push(`  ${d.file}:${d.line} ${d.rule} — ${d.message}`);
   }
   return lines.join("\n");
 }

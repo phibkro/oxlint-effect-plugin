@@ -38,23 +38,85 @@ export interface DomainDescription {
 }
 
 export const DOMAIN_DESCRIPTIONS: readonly DomainDescription[] = [
-  { id: "effect-v4", axis: "technology", summary: "Code written against Effect v4. Explicit configuration is authoritative; import detection may only suggest it." },
-  { id: "pure-library", axis: "role", summary: "Deterministic values and functions; no Effect execution or ambient capability." },
-  { id: "effect-library", axis: "role", summary: "May describe Effects, services, schemas, and layers but cannot execute a runtime or bind a concrete platform." },
-  { id: "service", axis: "role", summary: "Stateful or capability-bearing implementation behind declared Effect services." },
-  { id: "application", axis: "role", summary: "Portable orchestration that leaves final requirements open." },
-  { id: "composition-root", axis: "role", summary: "Selects live layers, provides the final environment, and runs the program." },
+  {
+    id: "effect-v4",
+    axis: "technology",
+    summary:
+      "Code written against Effect v4. Explicit configuration is authoritative; import detection may only suggest it.",
+  },
+  {
+    id: "pure-library",
+    axis: "role",
+    summary: "Deterministic values and functions; no Effect execution or ambient capability.",
+  },
+  {
+    id: "effect-library",
+    axis: "role",
+    summary:
+      "May describe Effects, services, schemas, and layers but cannot execute a runtime or bind a concrete platform.",
+  },
+  {
+    id: "service",
+    axis: "role",
+    summary: "Stateful or capability-bearing implementation behind declared Effect services.",
+  },
+  {
+    id: "application",
+    axis: "role",
+    summary: "Portable orchestration that leaves final requirements open.",
+  },
+  {
+    id: "composition-root",
+    axis: "role",
+    summary: "Selects live layers, provides the final environment, and runs the program.",
+  },
   { id: "runtime-adapter", axis: "role", summary: "Implements one declared platform capability." },
   { id: "test", axis: "role", summary: "Controlled execution and replacement services." },
-  { id: "portable", axis: "platform", summary: "No concrete-runtime built-ins, globals, or platform layers. Conflicts with every concrete runtime." },
-  { id: "node", axis: "platform", summary: "Admits Node built-ins and globals only. Compatibility APIs provided by other runtimes are not silently portable." },
+  {
+    id: "portable",
+    axis: "platform",
+    summary:
+      "No concrete-runtime built-ins, globals, or platform layers. Conflicts with every concrete runtime.",
+  },
+  {
+    id: "node",
+    axis: "platform",
+    summary:
+      "Admits Node built-ins and globals only. Compatibility APIs provided by other runtimes are not silently portable.",
+  },
   { id: "bun", axis: "platform", summary: "Admits Bun built-ins and globals only." },
-  { id: "deno", axis: "platform", summary: "Admits the Deno namespace and Deno-style specifiers only." },
-  { id: "browser", axis: "platform", summary: "Admits browser document/window globals; rejects worker-only and server-runtime surfaces." },
-  { id: "web-worker", axis: "platform", summary: "Admits worker self/importScripts globals; rejects document/window and server-runtime surfaces." },
-  { id: "external-data", axis: "boundary", summary: "Data crossing from outside the type system; enables explicit decoding rules." },
-  { id: "observability", axis: "boundary", summary: "Logging, metrics, and tracing seams; enables observability-capability rules." },
-  { id: "security-sensitive", axis: "boundary", summary: "Code handling secrets or security decisions; enables stricter capability rules." },
+  {
+    id: "deno",
+    axis: "platform",
+    summary: "Admits the Deno namespace and Deno-style specifiers only.",
+  },
+  {
+    id: "browser",
+    axis: "platform",
+    summary:
+      "Admits browser document/window globals; rejects worker-only and server-runtime surfaces.",
+  },
+  {
+    id: "web-worker",
+    axis: "platform",
+    summary:
+      "Admits worker self/importScripts globals; rejects document/window and server-runtime surfaces.",
+  },
+  {
+    id: "external-data",
+    axis: "boundary",
+    summary: "Data crossing from outside the type system; enables explicit decoding rules.",
+  },
+  {
+    id: "observability",
+    axis: "boundary",
+    summary: "Logging, metrics, and tracing seams; enables observability-capability rules.",
+  },
+  {
+    id: "security-sensitive",
+    axis: "boundary",
+    summary: "Code handling secrets or security decisions; enables stricter capability rules.",
+  },
   { id: "persistence", axis: "boundary", summary: "Durable storage seams." },
 ];
 
@@ -69,7 +131,7 @@ export function describeSelection(selection: Partial<DomainSelection>): string {
   if (selection.role !== undefined) parts.push(`role=${selection.role}`);
   if (selection.platform !== undefined) parts.push(`platform=${selection.platform}`);
   if (selection.boundaries !== undefined && selection.boundaries.length > 0) {
-    parts.push(`boundaries=${[...selection.boundaries].sort().join("+")}`);
+    parts.push(`boundaries=${[...selection.boundaries].toSorted().join("+")}`);
   }
   return parts.length > 0 ? parts.join(" ") : "none declared";
 }

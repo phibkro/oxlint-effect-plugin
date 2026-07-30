@@ -1,13 +1,110 @@
 # Oxlint Effect v4
 
-A reusable Oxlint JavaScript plugin for explicit Effect v4 architectural,
-capability, runtime-platform, and semantic-boundary policies.
+`@phibkro/oxlint-effect-v4` is a reusable, compiled Oxlint JavaScript plugin
+for explicit Effect v4 architecture, capability, runtime-platform, and
+semantic-boundary policies. It provides high-confidence **syntax and scope**
+diagnostics only — never type-aware proof; type-aware Effect diagnostics are
+delegated to the [`@effect/tsgo`](./docs/tsgo-boundary.md) companion.
+
+This package is third-party and does not imply Effect project endorsement.
+
+## Install
+
+```sh
+bun add -d @phibkro/oxlint-effect-v4 oxlint
+```
+
+The package ships compiled ESM JavaScript with declarations and source maps;
+consumers never need a TypeScript runtime loader. Loading is verified under
+Bun and Node; Deno has a narrower [declared journey](./compatibility.json).
+
+## Use
+
+Quick start with a preset (assumes `role: application, platform: portable`
+for all files):
+
+```jsonc
+// .oxlintrc.json
+{
+  "jsPlugins": [{ "name": "effect-v4", "specifier": "@phibkro/oxlint-effect-v4" }],
+  "rules": {
+    "effect-v4/no-ambient-console": ["error", { "role": "application", "platform": "portable" }]
+  }
+}
+```
+
+Real projects declare their domain structure once and expand it:
+
+```ts
+// oxlint.config.ts
+import { defineConfig } from "oxlint";
+import { expandDomains } from "@phibkro/oxlint-effect-v4";
+
+export default defineConfig({
+  ...expandDomains({
+    technology: "effect-v4",
+    groups: [
+      { files: ["src/domain/**"], role: "effect-library", platform: "portable", strictness: "strict" },
+      { files: ["src/services/**"], role: "service", platform: "portable" },
+      { files: ["src/main.ts"], role: "composition-root", platform: "node" },
+      { files: ["src/adapters/node/**"], role: "runtime-adapter", platform: "node" },
+      { files: ["**/*.test.ts"], role: "test", platform: "portable" },
+    ],
+  }),
+});
+```
+
+Domains determine **applicability, not severity**: a rule is enabled for a
+file group exactly when the group's declared role (and, where required,
+boundary) is in the rule's applicability set. Severity can be overridden per
+group via `severityOverrides`.
+
+## Rules
+
+<!-- BEGIN GENERATED RULES (bun run gen) -->
+
+| rule | family | roles | boundary | preset |
+| --- | --- | --- | --- | --- |
+| [`effect-v4/no-ambient-console`](./docs/rules/no-ambient-console.md) | observability-capability | pure-library, effect-library, service, application, composition-root, runtime-adapter | — | recommended |
+| [`effect-v4/no-ambient-authority`](./docs/rules/no-ambient-authority.md) | ambient-capability | pure-library, effect-library, service, application | — | recommended |
+| [`effect-v4/no-cross-runtime`](./docs/rules/no-cross-runtime.md) | platform-portability | pure-library, effect-library, service, application, composition-root, runtime-adapter, test | — | recommended |
+| [`effect-v4/no-premature-execution`](./docs/rules/no-premature-execution.md) | execution-topology | pure-library, effect-library, service, application, runtime-adapter | — | recommended |
+| [`effect-v4/no-native-promise-control-flow`](./docs/rules/no-native-promise-control-flow.md) | execution-topology | effect-library, service, application, runtime-adapter | — | strict |
+| [`effect-v4/no-raw-json-parse`](./docs/rules/no-raw-json-parse.md) | external-decoding | pure-library, effect-library, service, application, composition-root, runtime-adapter | external-data | recommended |
+| [`effect-v4/no-untyped-throw`](./docs/rules/no-untyped-throw.md) | typed-failure | pure-library, effect-library, service, application | — | strict |
+
+Domains — roles: pure-library, effect-library, service, application, composition-root, runtime-adapter, test; platforms: portable, node, bun, deno, browser, web-worker; boundaries: external-data, observability, security-sensitive, persistence.
+<!-- END GENERATED RULES -->
+
+## Suppressing the console rule
+
+A genuinely developer-only statement may carry one targeted suppression with
+a nonempty `dev only:` reason:
+
+```ts
+// oxlint-effect-v4 allow(no-ambient-console): dev only: inspecting raw webhook payloads
+console.dir(payload);
+```
+
+Broad, missing-reason, and unused directives are themselves reported.
+
+## Development
+
+```sh
+bun install --frozen-lockfile --ignore-scripts
+bun run check        # format, lint, types, unit tests, generation drift, oracle matrix
+bun run accept:0001  # pack + isolated Bun/Node/Deno consumer journeys
+```
 
 The first tracer is specified in
-`design-specs/0001-reusable-effect-v4-domains.md`. Implementation has not yet
-been accepted.
+[`design-specs/0001-reusable-effect-v4-domains.md`](./design-specs/0001-reusable-effect-v4-domains.md);
+prior art and provenance are recorded in [`PROVENANCE.md`](./PROVENANCE.md).
 
 This repository was extracted as an independent product from the Semantic
 Systems design frontier recorded at source commit
 `4d1f6947c0c5b8ba802f4e2ddf6ff8325e053ddd`. Semantic Systems is a consumer,
 not package authority.
+
+## License
+
+[MIT](./LICENSE)

@@ -37,7 +37,14 @@ import { RUN_PROMISE_MEMBERS } from "./no-premature-execution.js";
 export const RULE_NAME = "no-native-promise-control-flow";
 
 const PROMISE_STATIC_CONTROL_FLOW = new Set([
-  "all", "allSettled", "any", "race", "resolve", "reject", "try", "withResolvers",
+  "all",
+  "allSettled",
+  "any",
+  "race",
+  "resolve",
+  "reject",
+  "try",
+  "withResolvers",
 ]);
 
 const EFFECT_PROMISE_WRAPPERS = new Set(["tryPromise", "promise", "async"]);
@@ -92,7 +99,8 @@ export const noNativePromiseControlFlow: Rule = {
         const callee = (candidate as CallExpression).callee;
         if (callee.type !== "MemberExpression") return false;
         const member = callee as MemberExpression;
-        if (!isIdentifier(member.object) || !isEffectNamespaceName(member.object.name)) return false;
+        if (!isIdentifier(member.object) || !isEffectNamespaceName(member.object.name))
+          return false;
         const property = staticPropertyName(member);
         return property !== null && EFFECT_PROMISE_WRAPPERS.has(property);
       });
@@ -132,7 +140,9 @@ export const noNativePromiseControlFlow: Rule = {
         // The enclosing async function is already reported; still report the
         // await site when it is not inside a reported async function in the
         // same file (top-level await).
-        const enclosing = findEnclosing(node, (candidate) => ASYNC_FUNCTION_TYPES.has(candidate.type));
+        const enclosing = findEnclosing(node, (candidate) =>
+          ASYNC_FUNCTION_TYPES.has(candidate.type),
+        );
         if (enclosing === null) {
           report(node, "Top-level await executes native Promise control flow outside Effect.");
         }
@@ -143,9 +153,19 @@ export const noNativePromiseControlFlow: Rule = {
         for (const identifier of ambient.get("Promise") ?? []) {
           const use = classifyAmbientUse(identifier);
           if (use.kind === "new") {
-            report(use.reportNode, "`new Promise` constructs native promise control flow outside Effect.");
-          } else if (use.kind === "member" && use.property !== null && PROMISE_STATIC_CONTROL_FLOW.has(use.property)) {
-            report(use.reportNode, `\`Promise.${use.property}\` orchestrates native promise control flow outside Effect.`);
+            report(
+              use.reportNode,
+              "`new Promise` constructs native promise control flow outside Effect.",
+            );
+          } else if (
+            use.kind === "member" &&
+            use.property !== null &&
+            PROMISE_STATIC_CONTROL_FLOW.has(use.property)
+          ) {
+            report(
+              use.reportNode,
+              `\`Promise.${use.property}\` orchestrates native promise control flow outside Effect.`,
+            );
           }
         }
       },

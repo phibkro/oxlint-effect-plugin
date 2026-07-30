@@ -59,7 +59,9 @@ function assertValidGroup(group: DomainGroup, index: number): void {
     throw new Error(`oxlint-effect-v4: group ${index} declares unknown role "${group.role}"`);
   }
   if (!(PLATFORMS as readonly string[]).includes(group.platform)) {
-    throw new Error(`oxlint-effect-v4: group ${index} declares unknown platform "${group.platform}"`);
+    throw new Error(
+      `oxlint-effect-v4: group ${index} declares unknown platform "${group.platform}"`,
+    );
   }
   for (const boundary of group.boundaries ?? []) {
     if (!(BOUNDARIES as readonly string[]).includes(boundary)) {
@@ -74,15 +76,18 @@ export function expandGroupRules(
   pluginName: string = DEFAULT_PLUGIN_NAME,
 ): Record<string, unknown> {
   const strict = (group.strictness ?? "recommended") === "strict";
-  const boundaries = [...(group.boundaries ?? [])].sort();
+  const boundaries = [...(group.boundaries ?? [])].toSorted();
   const rules: Record<string, unknown> = {};
 
-  const promiseRuleInfo = RULE_REGISTRY.find((info) => info.name === "no-native-promise-control-flow");
+  const promiseRuleInfo = RULE_REGISTRY.find(
+    (info) => info.name === "no-native-promise-control-flow",
+  );
   const promiseRuleActive =
     strict &&
     promiseRuleInfo !== undefined &&
     promiseRuleInfo.appliesToRoles.includes(group.role) &&
-    (group.severityOverrides?.["no-native-promise-control-flow"] ?? promiseRuleInfo.defaultSeverity) !== "off";
+    (group.severityOverrides?.["no-native-promise-control-flow"] ??
+      promiseRuleInfo.defaultSeverity) !== "off";
 
   for (const info of RULE_REGISTRY) {
     const applies =
@@ -98,7 +103,7 @@ export function expandGroupRules(
       role: group.role,
       platform: group.platform,
       ...(boundaries.length > 0 ? { boundaries } : {}),
-      ...(group.ruleOptions?.[info.name] ?? {}),
+      ...group.ruleOptions?.[info.name],
     };
     if (info.name === "no-premature-execution" && promiseRuleActive) {
       options["promiseRuleActive"] = true;

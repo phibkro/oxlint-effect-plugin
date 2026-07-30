@@ -11,8 +11,7 @@ import type { DomainSelection } from "./domains.js";
 import { describeSelection, isBoundary, isPlatform, isRole } from "./domains.js";
 import type { RuleContext, Scope } from "./plugin-api.js";
 
-export const LIMITATION =
-  "limitation: syntax and scope analysis only, not type-aware verification";
+export const LIMITATION = "limitation: syntax and scope analysis only, not type-aware verification";
 
 export interface MessageParts {
   readonly rule: string;
@@ -93,7 +92,11 @@ export function classifyAmbientUse(identifier: Identifier): AmbientUse {
     const member = parent as MemberExpression;
     if (member.object === identifier) {
       const grand = member.parent ?? null;
-      if (grand !== null && grand.type === "CallExpression" && (grand as CallExpression).callee === member) {
+      if (
+        grand !== null &&
+        grand.type === "CallExpression" &&
+        (grand as CallExpression).callee === member
+      ) {
         return {
           identifier,
           kind: "member",
@@ -111,7 +114,11 @@ export function classifyAmbientUse(identifier: Identifier): AmbientUse {
       };
     }
   }
-  if (parent !== null && parent.type === "CallExpression" && (parent as CallExpression).callee === identifier) {
+  if (
+    parent !== null &&
+    parent.type === "CallExpression" &&
+    (parent as CallExpression).callee === identifier
+  ) {
     return {
       identifier,
       kind: "call",
@@ -120,7 +127,11 @@ export function classifyAmbientUse(identifier: Identifier): AmbientUse {
       argumentCount: (parent as CallExpression).arguments.length,
     };
   }
-  if (parent !== null && parent.type === "NewExpression" && (parent as { callee?: Node }).callee === identifier) {
+  if (
+    parent !== null &&
+    parent.type === "NewExpression" &&
+    (parent as { callee?: Node }).callee === identifier
+  ) {
     return {
       identifier,
       kind: "new",

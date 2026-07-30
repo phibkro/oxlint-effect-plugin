@@ -39,12 +39,17 @@ const REMEDIES: Readonly<Record<Capability, string>> = {
   clock: "Use the Effect Clock service (effect/Clock, e.g. Clock.currentTimeMillis).",
   random: "Use the Effect Random service (effect/Random, e.g. Random.next).",
   crypto: "Inject a declared cryptographic capability as an Effect service.",
-  network: "Use an injected HTTP/socket capability (e.g. effect/unstable/http) provided by the composition root.",
+  network:
+    "Use an injected HTTP/socket capability (e.g. effect/unstable/http) provided by the composition root.",
   timer: "Use Effect scheduling (Effect.sleep, Effect.schedule) instead of ambient timers.",
-  environment: "Read configuration through effect/Config and a ConfigProvider supplied at the composition root.",
-  filesystem: "Use a declared FileSystem service provided by a platform layer at the composition root.",
-  process: "Use a declared process/command capability provided by a platform layer at the composition root.",
-  runtime: "Access runtime facilities through declared Effect services bound at the composition root.",
+  environment:
+    "Read configuration through effect/Config and a ConfigProvider supplied at the composition root.",
+  filesystem:
+    "Use a declared FileSystem service provided by a platform layer at the composition root.",
+  process:
+    "Use a declared process/command capability provided by a platform layer at the composition root.",
+  runtime:
+    "Access runtime facilities through declared Effect services bound at the composition root.",
 };
 
 interface GlobalAuthority {
@@ -150,7 +155,11 @@ export const noAmbientAuthority: Rule = {
         )
       : new Set<Capability>(CAPABILITIES);
 
-    const report = (node: import("../ast.js").Node, capability: Capability, finding: string): void => {
+    const report = (
+      node: import("../ast.js").Node,
+      capability: Capability,
+      finding: string,
+    ): void => {
       if (!selected.has(capability)) return;
       context.report({
         node,
@@ -208,7 +217,11 @@ export const noAmbientAuthority: Rule = {
               ? "environment"
               : authority.capability;
             if (use.kind === "member") {
-              if (authority.members === null || use.property === null || authority.members.includes(use.property)) {
+              if (
+                authority.members === null ||
+                use.property === null ||
+                authority.members.includes(use.property)
+              ) {
                 report(
                   use.reportNode,
                   capability,
@@ -225,7 +238,12 @@ export const noAmbientAuthority: Rule = {
               );
               continue;
             }
-            if (use.kind === "new" && (globalName === "XMLHttpRequest" || globalName === "WebSocket" || globalName === "EventSource")) {
+            if (
+              use.kind === "new" &&
+              (globalName === "XMLHttpRequest" ||
+                globalName === "WebSocket" ||
+                globalName === "EventSource")
+            ) {
               report(
                 use.reportNode,
                 capability,

@@ -83,20 +83,23 @@ for (const { form, comparison } of results) {
   if (comparison.missing.length > 0 || comparison.unexpected.length > 0) failed = true;
 }
 
+const normalize = (r: FormResult): string =>
+  JSON.stringify(
+    r.comparison.actual
+      .map(({ file, rule, line }) => ({ file, rule, line }))
+      .toSorted((x, y) => (x.file + x.line + x.rule < y.file + y.line + y.rule ? -1 : 1)),
+  );
+
 if (results.length === 2) {
   const [a, b] = results;
   if (a !== undefined && b !== undefined) {
-    const normalize = (r: FormResult): string =>
-      JSON.stringify(
-        [...r.comparison.actual]
-          .map(({ file, rule, line }) => ({ file, rule, line }))
-          .sort((x, y) => (x.file + x.line + x.rule < y.file + y.line + y.rule ? -1 : 1)),
-      );
     if (normalize(a) !== normalize(b)) {
       console.error("\nFAIL: .oxlintrc.json and oxlint.config.ts produced different diagnostics");
       failed = true;
     } else {
-      console.log("\nconfig-form equivalence: .oxlintrc.json and oxlint.config.ts diagnostics identical");
+      console.log(
+        "\nconfig-form equivalence: .oxlintrc.json and oxlint.config.ts diagnostics identical",
+      );
     }
   }
 }

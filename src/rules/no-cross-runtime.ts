@@ -23,12 +23,53 @@ import {
 export const RULE_NAME = "no-cross-runtime";
 
 const NODE_BUILTIN_MODULES = new Set([
-  "assert", "async_hooks", "buffer", "child_process", "cluster", "console", "constants",
-  "crypto", "dgram", "diagnostics_channel", "dns", "domain", "events", "fs", "fs/promises",
-  "http", "http2", "https", "inspector", "module", "net", "os", "path", "path/posix",
-  "path/win32", "perf_hooks", "process", "punycode", "querystring", "readline", "repl",
-  "stream", "stream/promises", "stream/web", "string_decoder", "timers", "timers/promises",
-  "tls", "trace_events", "tty", "url", "util", "v8", "vm", "wasi", "worker_threads", "zlib",
+  "assert",
+  "async_hooks",
+  "buffer",
+  "child_process",
+  "cluster",
+  "console",
+  "constants",
+  "crypto",
+  "dgram",
+  "diagnostics_channel",
+  "dns",
+  "domain",
+  "events",
+  "fs",
+  "fs/promises",
+  "http",
+  "http2",
+  "https",
+  "inspector",
+  "module",
+  "net",
+  "os",
+  "path",
+  "path/posix",
+  "path/win32",
+  "perf_hooks",
+  "process",
+  "punycode",
+  "querystring",
+  "readline",
+  "repl",
+  "stream",
+  "stream/promises",
+  "stream/web",
+  "string_decoder",
+  "timers",
+  "timers/promises",
+  "tls",
+  "trace_events",
+  "tty",
+  "url",
+  "util",
+  "v8",
+  "vm",
+  "wasi",
+  "worker_threads",
+  "zlib",
 ]);
 
 /** Runtime that a module specifier belongs to, when identifying one. */
@@ -41,7 +82,10 @@ function specifierRuntime(specifier: string): Platform | null {
 }
 
 /** Runtime-identifying globals. A name may belong to several platforms. */
-const GLOBAL_RUNTIMES: ReadonlyMap<string, readonly Platform[]> = new Map<string, readonly Platform[]>([
+const GLOBAL_RUNTIMES: ReadonlyMap<string, readonly Platform[]> = new Map<
+  string,
+  readonly Platform[]
+>([
   ["process", ["node"]],
   ["Buffer", ["node"]],
   ["require", ["node"]],
@@ -115,7 +159,8 @@ export const noCrossRuntime: Rule = {
             message: formatMessage({
               rule: RULE_NAME,
               finding: `Platform live-layer package "${specifier}" is admitted only in a composition-root or runtime-adapter declared for platform "${layerTarget}" (this file declares ${role ?? "no role"} on ${platform}).`,
-              remedy: "Move live-layer selection to the matching composition root or runtime adapter.",
+              remedy:
+                "Move live-layer selection to the matching composition root or runtime adapter.",
               domains,
             }),
           });
