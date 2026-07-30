@@ -3,3 +3,5 @@ dist/
 coverage/
 *.tgz
 .DS_Store
+.matrix.oxlintrc.json
+matrix.oxlint.config.ts
