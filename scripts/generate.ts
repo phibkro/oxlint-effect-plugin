@@ -132,7 +132,10 @@ for (const info of RULE_REGISTRY) {
     );
     lines.push("");
   }
-  derivations.push({ path: `docs/rules/${info.name}.md`, content: `${lines.join("\n")}\n` });
+  derivations.push({
+    path: `docs/rules/${info.name}.md`,
+    content: `${lines.join("\n").trimEnd()}\n`,
+  });
 }
 
 // --- docs/tsgo-boundary.md --------------------------------------------------

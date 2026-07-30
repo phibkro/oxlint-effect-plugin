@@ -14,4 +14,3 @@ Clock, random, cryptographic, network, timer, environment, filesystem, process, 
 ## Limitation
 
 Syntax/scope detection over known ambient globals and authority-bearing module imports; authority reached through aliases, dependency wrappers, or dynamic access escapes analysis. Composition roots and runtime adapters are exempt by role.
-

@@ -18,4 +18,3 @@ Purely syntactic: every `throw` in an enabled role is reported, including rethro
 ## Type-aware companion (@effect/tsgo)
 
 @effect/tsgo tracks unknown error values in Effect types and is authoritative for error-channel typing; this rule is authoritative for the `throw` syntax site.
-

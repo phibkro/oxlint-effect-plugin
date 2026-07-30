@@ -23,4 +23,3 @@ console.dir(payload);
 ```
 
 The directive must target exactly this rule and carry a nonempty `dev only:` reason; it applies to the next line (or its own line when trailing). Broad, missing-reason, and unused directives are themselves reported.
-

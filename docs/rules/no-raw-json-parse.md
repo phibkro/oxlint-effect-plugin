@@ -14,4 +14,3 @@ External JSON must cross an explicit Effect Schema decoding seam instead of raw 
 ## Limitation
 
 Flags ambient `JSON.parse` only; parsing behind wrappers or other syntaxes escapes analysis. Lint enforces the seam, it does not validate data.
-

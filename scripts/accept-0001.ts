@@ -69,7 +69,6 @@ rmSync(join(repoRoot, "dist"), { recursive: true, force: true });
 await exec(["bun", join(repoRoot, "node_modules", ".bin", "tsc"), "-p", "tsconfig.build.json"]);
 
 const scratch = mkdtempSync(join(tmpdir(), "oxlint-effect-v4-accept-"));
-note(`scratch: ${scratch}`);
 
 await exec(["bun", "pm", "pack", "--destination", scratch], { label: "bun pm pack" });
 const tarball = readdirSync(scratch).find((name) => name.endsWith(".tgz"));
@@ -205,10 +204,17 @@ const makeConsumer = (name: string): string => {
 }
 
 // --- record evidence ---------------------------------------------------------
-const stamp = (await exec(["git", "log", "-1", "--format=%H"])).trim();
 writeFileSync(
   join(repoRoot, "docs", "acceptance", "0001-accept-run.txt"),
-  `accept:0001 evidence (repo commit at run start: ${stamp})\n\n${evidence.join("\n")}\n\nresult: PASS\n`,
+  [
+    "accept:0001 bounded execution transcript",
+    "subject binding: supplied by the invoking commit or CI observation; this transcript does not self-assert a commit identity",
+    "",
+    evidence.join("\n"),
+    "",
+    "result: PASS",
+    "",
+  ].join("\n"),
 );
 rmSync(scratch, { recursive: true, force: true });
 console.log("\naccept:0001: PASS (evidence in docs/acceptance/0001-accept-run.txt)");

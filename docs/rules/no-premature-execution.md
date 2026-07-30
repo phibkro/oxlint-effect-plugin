@@ -18,4 +18,3 @@ Recognizes Effect/ManagedRuntime bindings imported from `effect` modules and pla
 ## Type-aware companion (@effect/tsgo)
 
 @effect/tsgo detects floating Effects, leaking requirements, and strict provision type-aware; it is authoritative for whether requirements are actually closed. This rule is authoritative for the syntactic execution site.
-

@@ -18,4 +18,3 @@ Owns obvious syntax/scope cases only: async/await syntax, ambient `new Promise`,
 ## Type-aware companion (@effect/tsgo)
 
 @effect/tsgo is authoritative for promise-returning expressions and typed `.then`/`.catch`/`.finally` misuse; this rule is authoritative for promise syntax and ambient Promise globals.
-
