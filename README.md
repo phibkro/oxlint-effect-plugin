@@ -112,6 +112,12 @@ bun run check        # format, lint, types, unit tests, generation drift, oracle
 bun run accept:0001  # pack + isolated Bun/Node/Deno consumer journeys
 ```
 
+`dist/` is ignored output, never commit evidence. Produce an artifact with
+standard `bun pm pack`, whose checked `prepack` lifecycle deletes, rebuilds,
+and verifies `dist/`. Do not use `bun pm pack --ignore-scripts`: that flag is
+reserved here for installing the already-built artifact into consumers and
+would deliberately bypass the producer invariant.
+
 The first tracer is specified in
 [`design-specs/0001-reusable-effect-domains.md`](./design-specs/0001-reusable-effect-domains.md);
 prior art and provenance are recorded in [`PROVENANCE.md`](./PROVENANCE.md).

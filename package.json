@@ -44,7 +44,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "bun run scripts/prepare-package.ts",
+    "prepack": "bun run scripts/prepare-package.ts",
     "check": "bun run scripts/check.ts",
     "accept:0001": "bun run scripts/accept-0001.ts",
     "gen": "bun run scripts/generate.ts write"

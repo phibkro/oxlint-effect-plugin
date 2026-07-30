@@ -208,6 +208,14 @@ lifecycle scripts into isolated Bun-, Node-, and Deno-oriented consumers, runs
 the complete positive/negative domain matrix, and verifies that consumers load
 compiled JavaScript rather than repository TypeScript.
 
+`dist/` is ignored output rather than commit evidence. Standard producer
+packing must delete, rebuild, and verify it through the package `prepack`
+lifecycle. Producer-side `bun pm pack --ignore-scripts` is unsupported because
+it deliberately bypasses that invariant; consumer installs retain
+`--ignore-scripts`. Acceptance injects a stale versioned identity into ignored
+output before standard packing and requires the packed distribution to contain
+only the current source identity.
+
 A missing required tool fails rather than degrading to a warning.
 
 ## Acceptance

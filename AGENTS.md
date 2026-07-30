@@ -10,6 +10,9 @@ high-confidence syntax and scope violations without claiming type-aware proof.
 
 - Ship compiled ESM JavaScript, declarations, source maps, documentation, and
   provenance; consumers never need a TypeScript runtime loader.
+- Treat ignored `dist/` as derived output, never commit evidence. Standard
+  producer packing must delete, rebuild, and verify it through `prepack`;
+  `--ignore-scripts` is for isolated consumer installation, not production.
 - Keep the package independent of Semantic Systems, Workgraph, and Reef.
 - Keep technology, architectural role, runtime platform, and semantic boundary
   as orthogonal domains.

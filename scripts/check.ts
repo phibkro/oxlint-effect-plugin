@@ -159,11 +159,8 @@ const steps: Step[] = [
     },
   },
   {
-    name: "build (tsc -p tsconfig.build.json)",
-    run: async () => {
-      await exec(["rm", "-rf", join(repoRoot, "dist")]);
-      await exec(["bun", local("tsc"), "-p", "tsconfig.build.json"]);
-    },
+    name: "build and verify ignored distribution output",
+    run: () => exec(["bun", "run", "build"]),
   },
   {
     name: "authoritative technology runtime rejection",
