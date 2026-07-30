@@ -1,4 +1,4 @@
-# effect-v4/no-raw-json-parse
+# effect/no-raw-json-parse
 
 Family: external-decoding · Default severity: error
 

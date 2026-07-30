@@ -88,7 +88,7 @@ if (!satisfiesNodeEngine(nodeVersion)) {
 rmSync(join(repoRoot, "dist"), { recursive: true, force: true });
 await exec(["bun", join(repoRoot, "node_modules", ".bin", "tsc"), "-p", "tsconfig.build.json"]);
 
-const scratch = mkdtempSync(join(tmpdir(), "oxlint-effect-v4-accept-"));
+const scratch = mkdtempSync(join(tmpdir(), "oxlint-effect-plugin-accept-"));
 
 await exec(["bun", "pm", "pack", "--destination", scratch], { label: "bun pm pack" });
 const tarball = readdirSync(scratch).find((name) => name.endsWith(".tgz"));
@@ -139,7 +139,7 @@ mkdirSync(extracted, { recursive: true });
 await exec(["tar", "-xzf", tarballPath, "-C", extracted]);
 const forbiddenPatterns = [
   /\/srv\//,
-  /\/tmp\/oxlint-effect-v4/,
+  /\/tmp\/oxlint-effect/,
   /semantic-systems\//i,
   /workgraph\//i,
   /reef\//i,
@@ -184,7 +184,7 @@ const makeConsumer = (name: string): string => {
         private: true,
         type: "module",
         dependencies: {
-          "@phibkro/oxlint-effect-v4": `file:${tarballPath}`,
+          "@phibkro/oxlint-effect-plugin": `file:${tarballPath}`,
           oxlint: "1.76.0",
         },
       },
@@ -223,7 +223,7 @@ const makeConsumer = (name: string): string => {
 // Deno-oriented consumer: declared journey over the compiled artifact only.
 {
   const dir = makeConsumer("deno-consumer");
-  const packageDir = join(dir, "node_modules", "@phibkro", "oxlint-effect-v4");
+  const packageDir = join(dir, "node_modules", "@phibkro", "oxlint-effect-plugin");
   mkdirSync(join(dir, "node_modules", "@phibkro"), { recursive: true });
   const stage = join(scratch, "deno-stage");
   mkdirSync(stage, { recursive: true });

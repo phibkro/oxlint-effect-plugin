@@ -23,7 +23,7 @@ describe("auditNativeDisableDirectives", () => {
     ).toBe("plugin-native-disable");
     expect(
       auditNativeDisableDirectives(
-        "console.log('hidden') // eslint-disable-line effect-v4/no-ambient-console",
+        "console.log('hidden') // eslint-disable-line effect/no-ambient-console",
       )[0]?.reason,
     ).toBe("plugin-native-disable");
   });
@@ -37,7 +37,7 @@ describe("auditNativeDisableDirectives", () => {
   test("custom reasoned directives are outside the native audit namespace", () => {
     expect(
       auditNativeDisableDirectives(
-        "// oxlint-effect-v4 allow(no-ambient-console): dev only: local bring-up\nconsole.log('x')",
+        "// oxlint-effect-plugin allow(no-ambient-console): dev only: local bring-up\nconsole.log('x')",
       ),
     ).toEqual([]);
   });

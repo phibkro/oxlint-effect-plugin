@@ -1,4 +1,4 @@
-# effect-v4/no-cross-runtime
+# effect/no-cross-runtime
 
 Family: platform-portability · Default severity: error
 

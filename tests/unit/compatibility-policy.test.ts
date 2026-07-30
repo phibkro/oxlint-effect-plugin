@@ -5,6 +5,8 @@ import { join } from "node:path";
 import {
   assertCompatibilityState,
   assertReviewedRuntimeVersions,
+  EFFECT_COMPATIBILITY,
+  PACKAGE_NAME,
   REVIEWED_DEPENDENCIES,
   REVIEWED_RUNTIMES,
 } from "../../scripts/compatibility-policy.js";
@@ -29,6 +31,30 @@ describe("compatibility policy mutation resistance", () => {
       mutated.compatibility.reviewed[name] = "0.0.0-mutated";
       expect(() => assertCompatibilityState(mutated)).toThrow(name);
     }
+  });
+
+  test("binds the version-neutral package identity to explicit Effect compatibility metadata", () => {
+    expect(source.packageJson.name).toBe(PACKAGE_NAME);
+    expect(source.packageJson.effectCompatibility).toEqual(EFFECT_COMPATIBILITY);
+    expect(source.compatibility.technology).toEqual(EFFECT_COMPATIBILITY);
+
+    for (const field of Object.keys(EFFECT_COMPATIBILITY)) {
+      const packageMutation = clone(source);
+      asRecord(packageMutation.packageJson.effectCompatibility)[field] = "mutated";
+      expect(() => assertCompatibilityState(packageMutation)).toThrow(field);
+
+      const compatibilityMutation = clone(source);
+      asRecord(compatibilityMutation.compatibility.technology)[field] = "mutated";
+      expect(() => assertCompatibilityState(compatibilityMutation)).toThrow(field);
+    }
+
+    const packageNameMutation = clone(source);
+    packageNameMutation.packageJson.name = "@phibkro/oxlint-effect-v4";
+    expect(() => assertCompatibilityState(packageNameMutation)).toThrow(PACKAGE_NAME);
+
+    const compatibilityNameMutation = clone(source);
+    compatibilityNameMutation.compatibility.package.name = "@phibkro/oxlint-effect-v4";
+    expect(() => assertCompatibilityState(compatibilityNameMutation)).toThrow(PACKAGE_NAME);
   });
 
   test("rejects every package and resolved-lock mutation", () => {

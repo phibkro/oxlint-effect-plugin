@@ -64,7 +64,7 @@ export function auditNativeDisableDirectives(
   sourceText: string,
   options: SuppressionAuditOptions = {},
 ): readonly NativeDisableFinding[] {
-  const pluginNames = new Set(options.pluginNames ?? ["effect-v4"]);
+  const pluginNames = new Set(options.pluginNames ?? ["effect"]);
   const findings: NativeDisableFinding[] = [];
   for (const comment of commentPayloads(sourceText)) {
     const match = DIRECTIVE.exec(comment.text.trim());

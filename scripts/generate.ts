@@ -17,6 +17,8 @@ import { MATRIX } from "../fixtures/matrix.js";
 import { BOUNDARIES, PLATFORMS, ROLES } from "../src/domains.js";
 import { RULE_REGISTRY } from "../src/registry.js";
 import {
+  EFFECT_COMPATIBILITY,
+  PACKAGE_NAME,
   REVIEWED_DEPENDENCIES,
   REVIEWED_NODE_ENGINE,
   REVIEWED_RUNTIMES,
@@ -32,6 +34,7 @@ if (mode !== "write" && mode !== "check") {
 const pkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")) as {
   name: string;
   version: string;
+  effectCompatibility: typeof EFFECT_COMPATIBILITY;
   devDependencies: Record<string, string>;
   peerDependencies: Record<string, string>;
   engines: { node: string };
@@ -43,6 +46,13 @@ interface Derivation {
 }
 
 const derivations: Derivation[] = [];
+
+if (pkg.name !== PACKAGE_NAME) {
+  throw new Error(`package.json name must equal ${PACKAGE_NAME}; received ${pkg.name}`);
+}
+if (JSON.stringify(pkg.effectCompatibility) !== JSON.stringify(EFFECT_COMPATIBILITY)) {
+  throw new Error("package.json effectCompatibility metadata drifted");
+}
 
 // --- src/version.ts ---------------------------------------------------------
 derivations.push({
@@ -71,6 +81,7 @@ if (pkg.engines.node !== REVIEWED_NODE_ENGINE) {
 
 const compatibility = {
   package: { name: pkg.name, version: pkg.version },
+  technology: EFFECT_COMPATIBILITY,
   reviewed: {
     oxlint: devPin("oxlint"),
     oxfmt: devPin("oxfmt"),
@@ -133,7 +144,7 @@ derivations.push({
 // --- docs/rules/*.md --------------------------------------------------------
 for (const info of RULE_REGISTRY) {
   const lines: string[] = [];
-  lines.push(`# effect-v4/${info.name}`);
+  lines.push(`# effect/${info.name}`);
   lines.push("");
   lines.push(
     `Family: ${info.family} · Default severity: ${info.defaultSeverity}${info.strictOnly ? " · strict preset only" : ""}`,
@@ -162,7 +173,7 @@ for (const info of RULE_REGISTRY) {
     lines.push("## Suppression contract");
     lines.push("");
     lines.push("```ts");
-    lines.push("// oxlint-effect-v4 allow(no-ambient-console): dev only: <nonempty reason>");
+    lines.push("// oxlint-effect-plugin allow(no-ambient-console): dev only: <nonempty reason>");
     lines.push("console.dir(payload);");
     lines.push("```");
     lines.push("");
@@ -230,7 +241,7 @@ for (const info of RULE_REGISTRY) {
   lines.push("| --- | --- | --- |");
   for (const info of RULE_REGISTRY) {
     if (info.tsgoOverlap === null) continue;
-    lines.push(`| \`effect-v4/${info.name}\` | ${info.tsgoOverlap} | split as described |`);
+    lines.push(`| \`effect/${info.name}\` | ${info.tsgoOverlap} | split as described |`);
   }
   lines.push("");
   lines.push(
@@ -256,7 +267,7 @@ derivations.push({
   table.push("| --- | --- | --- | --- | --- |");
   for (const info of RULE_REGISTRY) {
     table.push(
-      `| [\`effect-v4/${info.name}\`](./docs/rules/${info.name}.md) | ${info.family} | ${info.appliesToRoles.join(", ")} | ${info.requiresBoundary ?? "—"} | ${info.strictOnly ? "strict" : "recommended"} |`,
+      `| [\`effect/${info.name}\`](./docs/rules/${info.name}.md) | ${info.family} | ${info.appliesToRoles.join(", ")} | ${info.requiresBoundary ?? "—"} | ${info.strictOnly ? "strict" : "recommended"} |`,
     );
   }
   table.push("");

@@ -3,6 +3,6 @@
 
 export const debugDump = (payload: unknown): void => {
   // expect-next-line: no-ambient-console
-  // oxlint-effect-v4 allow(no-ambient-console): dev only:
+  // oxlint-effect-plugin allow(no-ambient-console): dev only:
   console.dir(payload); // expect: no-ambient-console
 };

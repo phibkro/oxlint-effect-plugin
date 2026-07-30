@@ -1,4 +1,4 @@
-# effect-v4/no-ambient-authority
+# effect/no-ambient-authority
 
 Family: ambient-capability · Default severity: error
 

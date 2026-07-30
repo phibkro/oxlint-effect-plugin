@@ -1,15 +1,17 @@
 # Provenance and prior art
 
-`@phibkro/oxlint-effect-v4` was extracted as an independent product from the
+`@phibkro/oxlint-effect-plugin` was extracted as an independent product from the
 Semantic Systems design frontier at source commit
 `4d1f6947c0c5b8ba802f4e2ddf6ff8325e053ddd` (design spec 0011 there; design
 spec 0001 here). Semantic Systems is a consumer, not package authority, and
 no distributed file carries Semantic Systems, Workgraph, or Reef path
 knowledge.
 
-Package names `@phibkro/oxlint-effect-v4` and `oxlint-effect-v4` were
-verified unclaimed on the npm registry on 2026-07-30 (both returned
-`{"error":"Not found"}`). Nothing has been published.
+The prior candidate package names `@phibkro/oxlint-effect-v4` and
+`oxlint-effect-v4` were verified unclaimed on the npm registry on 2026-07-30.
+The product was subsequently renamed to the version-neutral
+`@phibkro/oxlint-effect-plugin`; no availability or publication claim is made
+for the new coordinate.
 
 ## Evaluated prior art
 

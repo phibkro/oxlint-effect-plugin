@@ -1,9 +1,9 @@
-# Oxlint Effect v4 agent contract
+# Oxlint Effect Plugin agent contract
 
 ## Thesis
 
-Oxlint Effect v4 is a reusable, compiled Oxlint JavaScript plugin for explicit
-Effect v4 architecture, capability, runtime, and boundary policies. It detects
+Oxlint Effect Plugin is a reusable, compiled Oxlint JavaScript plugin for explicit
+Effect architecture, capability, runtime, and boundary policies. It detects
 high-confidence syntax and scope violations without claiming type-aware proof.
 
 ## Non-negotiable invariants
@@ -28,9 +28,12 @@ high-confidence syntax and scope violations without claiming type-aware proof.
 
 ## Product boundary
 
-The repository and package are `oxlint-effect-v4` and
-`@phibkro/oxlint-effect-v4`. The package is third-party and does not imply
-Effect project endorsement.
+The repository and package are `oxlint-effect-plugin` and
+`@phibkro/oxlint-effect-plugin`. The product name, package coordinate, default
+`effect/*` rule namespace, and suppression protocol are version-neutral.
+Supported Effect majors and exact reviewed releases are machine-readable
+compatibility metadata; `effect-v4` is the current technology domain. The
+package is third-party and does not imply Effect project endorsement.
 
 Reef may distribute configuration that consumes this package, and Semantic
 Systems may consume it, but neither product controls its rule semantics or
@@ -60,7 +63,8 @@ Until these commands exist and pass, report only the checks actually run.
 ## Current status
 
 Tracer 0001 is implemented and integrated locally. The compiled package exposes
-seven AST/scope-aware Effect v4 policy rules, orthogonal domain presets,
+seven AST/scope-aware Effect policy rules for the metadata-declared Effect v4
+target, orthogonal domain presets,
 targeted suppression auditing, generated compatibility metadata, and packed
 Bun/Node consumers with a bounded Deno journey. Generic typed diagnostics are
 verified through `oxlint-tsgolint`; Effect-specific typed diagnostics remain

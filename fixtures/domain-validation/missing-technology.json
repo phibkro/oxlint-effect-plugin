@@ -1,7 +1,7 @@
 {
   "jsPlugins": [
     {
-      "name": "effect-v4",
+      "name": "effect",
       "specifier": "../../dist/index.js"
     }
   ],
@@ -9,7 +9,7 @@
     "correctness": "off"
   },
   "rules": {
-    "effect-v4/no-ambient-console": [
+    "effect/no-ambient-console": [
       "error",
       {
         "role": "application",

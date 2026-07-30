@@ -30,8 +30,8 @@ The pinned companions expose no domain-aware general diagnostic for arbitrary ty
 
 | rule | overlap | authority |
 | --- | --- | --- |
-| `effect-v4/no-premature-execution` | @effect/tsgo detects floating Effects, leaking requirements, and strict provision type-aware; it is authoritative for whether requirements are actually closed. This rule is authoritative for the syntactic execution site. | split as described |
-| `effect-v4/no-native-promise-control-flow` | @effect/tsgo is authoritative for Effect-specific typed promise diagnostics such as lazyPromiseInEffectSync; this rule is authoritative for the listed Promise syntax and ambient globals. A general typed chain policy requires a future type-and-domain-aware companion hook. | split as described |
-| `effect-v4/no-untyped-throw` | @effect/tsgo tracks unknown error values in Effect types and is authoritative for error-channel typing; this rule is authoritative for the `throw` syntax site. | split as described |
+| `effect/no-premature-execution` | @effect/tsgo detects floating Effects, leaking requirements, and strict provision type-aware; it is authoritative for whether requirements are actually closed. This rule is authoritative for the syntactic execution site. | split as described |
+| `effect/no-native-promise-control-flow` | @effect/tsgo is authoritative for Effect-specific typed promise diagnostics such as lazyPromiseInEffectSync; this rule is authoritative for the listed Promise syntax and ambient globals. A general typed chain policy requires a future type-and-domain-aware companion hook. | split as described |
+| `effect/no-untyped-throw` | @effect/tsgo tracks unknown error values in Effect types and is authoritative for error-channel typing; this rule is authoritative for the `throw` syntax site. | split as described |
 
 Presets keep one authoritative diagnostic per concern: this plugin owns syntactic execution sites, promise syntax, and ambient globals; TSGO owns everything requiring types. Running both produces complementary, not duplicate, diagnostics.

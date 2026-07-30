@@ -27,7 +27,7 @@ export interface MessageParts {
  */
 export function formatMessage(parts: MessageParts): string {
   return (
-    `effect-v4/${parts.rule}: ${parts.finding} ${parts.remedy} ` +
+    `effect/${parts.rule}: ${parts.finding} ${parts.remedy} ` +
     `[domains: ${describeSelection(parts.domains)}] [${LIMITATION}]`
   );
 }
@@ -37,14 +37,14 @@ export function domainOptionsOf(context: RuleContext): Partial<DomainSelection> 
   const raw = context.options[0];
   if (typeof raw !== "object" || raw === null) {
     throw new Error(
-      'oxlint-effect-v4: rule configuration requires an options object with technology: "effect-v4"',
+      'oxlint-effect-plugin: rule configuration requires an options object with technology: "effect-v4"',
     );
   }
   const record = raw as Record<string, unknown>;
   const technology = record["technology"];
   if (!isTechnology(technology)) {
     throw new Error(
-      `oxlint-effect-v4: rule configuration requires technology "effect-v4"; received ${JSON.stringify(technology)}`,
+      `oxlint-effect-plugin: rule configuration requires technology "effect-v4"; received ${JSON.stringify(technology)}`,
     );
   }
   const role = record["role"];

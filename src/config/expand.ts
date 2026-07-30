@@ -13,8 +13,8 @@ import { BOUNDARIES, PLATFORMS, ROLES, TECHNOLOGIES } from "../domains.js";
 import type { RuleName } from "../registry.js";
 import { RULE_REGISTRY } from "../registry.js";
 
-export const DEFAULT_PLUGIN_NAME = "effect-v4";
-export const DEFAULT_PLUGIN_SPECIFIER = "@phibkro/oxlint-effect-v4";
+export const DEFAULT_PLUGIN_NAME = "effect";
+export const DEFAULT_PLUGIN_SPECIFIER = "@phibkro/oxlint-effect-plugin";
 
 export type Severity = "error" | "warn" | "off";
 export type Strictness = "recommended" | "strict";
@@ -53,19 +53,21 @@ export interface OxlintConfigFragment {
 
 function assertValidGroup(group: DomainGroup, index: number): void {
   if (group.files.length === 0) {
-    throw new Error(`oxlint-effect-v4: group ${index} declares no files`);
+    throw new Error(`oxlint-effect-plugin: group ${index} declares no files`);
   }
   if (!(ROLES as readonly string[]).includes(group.role)) {
-    throw new Error(`oxlint-effect-v4: group ${index} declares unknown role "${group.role}"`);
+    throw new Error(`oxlint-effect-plugin: group ${index} declares unknown role "${group.role}"`);
   }
   if (!(PLATFORMS as readonly string[]).includes(group.platform)) {
     throw new Error(
-      `oxlint-effect-v4: group ${index} declares unknown platform "${group.platform}"`,
+      `oxlint-effect-plugin: group ${index} declares unknown platform "${group.platform}"`,
     );
   }
   for (const boundary of group.boundaries ?? []) {
     if (!(BOUNDARIES as readonly string[]).includes(boundary)) {
-      throw new Error(`oxlint-effect-v4: group ${index} declares unknown boundary "${boundary}"`);
+      throw new Error(
+        `oxlint-effect-plugin: group ${index} declares unknown boundary "${boundary}"`,
+      );
     }
   }
 }
@@ -78,7 +80,7 @@ export function expandGroupRules(
 ): Record<string, unknown> {
   if (!(TECHNOLOGIES as readonly string[]).includes(technology)) {
     throw new Error(
-      `oxlint-effect-v4: unknown technology ${JSON.stringify(technology)}; v0 requires "effect-v4"`,
+      `oxlint-effect-plugin: unknown technology ${JSON.stringify(technology)}; v0 requires "effect-v4"`,
     );
   }
   const strict = (group.strictness ?? "recommended") === "strict";
@@ -128,11 +130,11 @@ export function expandGroupRules(
 export function expandDomains(input: ExpandInput): OxlintConfigFragment {
   if (!(TECHNOLOGIES as readonly string[]).includes(input.technology)) {
     throw new Error(
-      `oxlint-effect-v4: unknown or omitted technology ${JSON.stringify(input.technology)}; v0 requires "effect-v4"`,
+      `oxlint-effect-plugin: unknown or omitted technology ${JSON.stringify(input.technology)}; v0 requires "effect-v4"`,
     );
   }
   if (input.groups.length === 0) {
-    throw new Error("oxlint-effect-v4: at least one domain group is required");
+    throw new Error("oxlint-effect-plugin: at least one domain group is required");
   }
   input.groups.forEach(assertValidGroup);
 

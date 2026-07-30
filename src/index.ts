@@ -1,5 +1,5 @@
 /**
- * @phibkro/oxlint-effect-v4 — reusable Oxlint JavaScript plugin for explicit
+ * @phibkro/oxlint-effect-plugin — reusable Oxlint JavaScript plugin for explicit
  * Effect v4 architecture, capability, runtime-platform, and semantic-boundary
  * policies.
  *

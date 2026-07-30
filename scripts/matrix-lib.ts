@@ -104,7 +104,7 @@ interface OxlintJsonDiagnostic {
   readonly labels: readonly { readonly span: { readonly line: number } }[];
 }
 
-const CODE_PATTERN = /^effect-v4\((.+)\)$/;
+const CODE_PATTERN = /^effect\((.+)\)$/;
 
 export function parseOxlintOutput(
   stdout: string,

@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@phibkro/oxlint-effect-v4",
+      "name": "@phibkro/oxlint-effect-plugin",
       "devDependencies": {
         "@effect/platform-bun": "4.0.0-beta.102",
         "@effect/platform-node": "4.0.0-beta.102",

@@ -24,6 +24,14 @@ export const REVIEWED_RUNTIMES = {
 } as const;
 
 export const REVIEWED_NODE_ENGINE = "^20.19.0 || >=22.12.0";
+export const PACKAGE_NAME = "@phibkro/oxlint-effect-plugin";
+export const EFFECT_COMPATIBILITY = {
+  name: "effect",
+  domain: "effect-v4",
+  major: 4,
+  reviewed: REVIEWED_DEPENDENCIES.effect,
+  reviewPolicy: "exact",
+} as const;
 
 type JsonRecord = Readonly<Record<string, unknown>>;
 
@@ -36,7 +44,7 @@ function record(value: unknown, label: string): JsonRecord {
 
 function assertExactRecord(
   actual: JsonRecord,
-  expected: Readonly<Record<string, string>>,
+  expected: Readonly<Record<string, unknown>>,
   label: string,
 ): void {
   const actualKeys = Object.keys(actual).toSorted();
@@ -46,15 +54,24 @@ function assertExactRecord(
       `${label} keys drifted: expected ${expectedKeys.join(", ")}, received ${actualKeys.join(", ")}`,
     );
   }
-  for (const [name, version] of Object.entries(expected)) {
-    if (actual[name] !== version) {
-      throw new Error(`${label}.${name} must equal ${version}; received ${String(actual[name])}`);
+  for (const [name, value] of Object.entries(expected)) {
+    if (actual[name] !== value) {
+      throw new Error(`${label}.${name} must equal ${value}; received ${String(actual[name])}`);
     }
   }
 }
 
 export function assertCompatibilityDocument(compatibility: unknown): void {
   const document = record(compatibility, "compatibility");
+  const packageMetadata = record(document["package"], "compatibility.package");
+  if (packageMetadata["name"] !== PACKAGE_NAME) {
+    throw new Error(`compatibility.package.name must equal ${PACKAGE_NAME}`);
+  }
+  assertExactRecord(
+    record(document["technology"], "compatibility.technology"),
+    EFFECT_COMPATIBILITY,
+    "compatibility.technology",
+  );
   assertExactRecord(
     record(document["reviewed"], "compatibility.reviewed"),
     REVIEWED_DEPENDENCIES,
@@ -87,6 +104,14 @@ export function assertCompatibilityState(args: {
 }): void {
   assertCompatibilityDocument(args.compatibility);
   const pkg = record(args.packageJson, "package.json");
+  if (pkg["name"] !== PACKAGE_NAME) {
+    throw new Error(`package.json name must equal ${PACKAGE_NAME}`);
+  }
+  assertExactRecord(
+    record(pkg["effectCompatibility"], "package.json.effectCompatibility"),
+    EFFECT_COMPATIBILITY,
+    "package.json.effectCompatibility",
+  );
   const devDependencies = record(pkg["devDependencies"], "package.json.devDependencies");
   const peerDependencies = record(pkg["peerDependencies"], "package.json.peerDependencies");
   assertExactRecord(
@@ -107,6 +132,9 @@ export function assertCompatibilityState(args: {
   const lock = record(args.lock, "bun.lock");
   const workspaces = record(lock["workspaces"], "bun.lock.workspaces");
   const root = record(workspaces[""], 'bun.lock.workspaces[""]');
+  if (root["name"] !== PACKAGE_NAME) {
+    throw new Error(`bun.lock root name must equal ${PACKAGE_NAME}`);
+  }
   const lockedDev = record(root["devDependencies"], "bun.lock root devDependencies");
   const lockedPeer = record(root["peerDependencies"], "bun.lock root peerDependencies");
   assertExactRecord(

@@ -3,7 +3,7 @@
  *
  * Grammar (inside a line or block comment):
  *
- *     oxlint-effect-v4 allow(<rule>): dev only: <nonempty reason>
+ *     oxlint-effect-plugin allow(<rule>): dev only: <nonempty reason>
  *
  * Validity for the console rule:
  * - targeted: the parenthesized list names exactly `no-ambient-console`;
@@ -17,9 +17,9 @@
 
 import type { Comment } from "./ast.js";
 
-export const DIRECTIVE_MARKER = "oxlint-effect-v4 allow";
+export const DIRECTIVE_MARKER = "oxlint-effect-plugin allow";
 
-const DIRECTIVE_PATTERN = /oxlint-effect-v4\s+allow\(([^)]*)\)\s*:?\s*(.*)/s;
+const DIRECTIVE_PATTERN = /oxlint-effect-plugin\s+allow\(([^)]*)\)\s*:?\s*(.*)/s;
 
 export type DirectiveProblem = "broad-target" | "missing-reason";
 

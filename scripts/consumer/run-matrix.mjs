@@ -2,7 +2,7 @@
  * Isolated-consumer oracle runner (plain JavaScript, no TypeScript loader).
  *
  * Runs inside a temporary consumer directory that installed
- * @phibkro/oxlint-effect-v4 from its packed tarball. Loads the compiled
+ * @phibkro/oxlint-effect-plugin from its packed tarball. Loads the compiled
  * plugin API through the package export map, expands the fixture matrix into
  * both oxlint config forms, runs the consumer's own oxlint over the copied
  * fixtures, and compares diagnostics against the inline `// expect:` markers.
@@ -20,7 +20,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const consumerRoot = process.cwd();
-const PKG = "@phibkro/oxlint-effect-v4";
+const PKG = "@phibkro/oxlint-effect-plugin";
 
 const fail = (message) => {
   console.error(`CONSUMER FAIL: ${message}`);
@@ -30,7 +30,7 @@ const fail = (message) => {
 // --- 1. the packed artifact must resolve to compiled JavaScript -------------
 const resolvedUrl = import.meta.resolve(PKG);
 const resolvedPath = fileURLToPath(resolvedUrl);
-if (!resolvedPath.includes(join("node_modules", "@phibkro", "oxlint-effect-v4"))) {
+if (!resolvedPath.includes(join("node_modules", "@phibkro", "oxlint-effect-plugin"))) {
   fail(`package resolved outside consumer node_modules: ${resolvedPath}`);
 }
 if (!resolvedPath.endsWith(join("dist", "index.js"))) {
@@ -40,11 +40,30 @@ const installedRoot = resolvedPath.slice(0, resolvedPath.indexOf(join("dist", "i
 if (existsSync(join(installedRoot, "src", "index.ts"))) {
   fail("installed package contains repository TypeScript sources");
 }
+const packageMetadata = JSON.parse(readFileSync(join(installedRoot, "package.json"), "utf8"));
+const compatibilityMetadata = JSON.parse(
+  readFileSync(join(installedRoot, "compatibility.json"), "utf8"),
+);
+const expectedTechnology = {
+  name: "effect",
+  domain: "effect-v4",
+  major: 4,
+  reviewed: "4.0.0-beta.102",
+  reviewPolicy: "exact",
+};
+if (
+  packageMetadata.name !== PKG ||
+  JSON.stringify(packageMetadata.effectCompatibility) !== JSON.stringify(expectedTechnology) ||
+  compatibilityMetadata.package?.name !== PKG ||
+  JSON.stringify(compatibilityMetadata.technology) !== JSON.stringify(expectedTechnology)
+) {
+  fail("version-neutral identity or Effect compatibility metadata drifted");
+}
 
 const api = await import(PKG);
 const auditApi = await import(`${PKG}/suppression-audit`);
 const plugin = api.default;
-if (plugin.meta.name !== "effect-v4") fail(`unexpected plugin name ${plugin.meta.name}`);
+if (plugin.meta.name !== "effect") fail(`unexpected plugin name ${plugin.meta.name}`);
 if (Object.keys(plugin.rules).length !== api.RULE_REGISTRY.length) {
   fail("plugin rules and registry disagree");
 }
@@ -133,7 +152,7 @@ const runForm = (form) => {
   const parsed = JSON.parse(result.stdout);
   return parsed.diagnostics
     .map((diagnostic) => {
-      const code = /^effect-v4\((.+)\)$/.exec(diagnostic.code);
+      const code = /^effect\((.+)\)$/.exec(diagnostic.code);
       if (code === null) return null;
       return `${diagnostic.filename}:${diagnostic.labels[0]?.span.line ?? 0}:${code[1]}`;
     })

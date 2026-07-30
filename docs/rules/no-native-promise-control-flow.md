@@ -1,4 +1,4 @@
-# effect-v4/no-native-promise-control-flow
+# effect/no-native-promise-control-flow
 
 Family: execution-topology · Default severity: error · strict preset only
 

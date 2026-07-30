@@ -10,7 +10,7 @@ const emptyRule = {
 };
 
 export default {
-  meta: { name: "effect-v4-stub", version: "0" },
+  meta: { name: "effect-stub", version: "0" },
   rules: {
     "no-ambient-console": emptyRule,
     "no-ambient-authority": emptyRule,

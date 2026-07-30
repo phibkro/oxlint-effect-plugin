@@ -15,10 +15,10 @@ describe("expandGroupRules", () => {
       "effect-v4",
     );
     expect(Object.keys(rules).toSorted()).toEqual([
-      "effect-v4/no-ambient-authority",
-      "effect-v4/no-ambient-console",
-      "effect-v4/no-cross-runtime",
-      "effect-v4/no-premature-execution",
+      "effect/no-ambient-authority",
+      "effect/no-ambient-console",
+      "effect/no-cross-runtime",
+      "effect/no-premature-execution",
     ]);
   });
 
@@ -32,12 +32,12 @@ describe("expandGroupRules", () => {
       },
       "effect-v4",
     );
-    expect(rules["effect-v4/no-native-promise-control-flow"]).toEqual([
+    expect(rules["effect/no-native-promise-control-flow"]).toEqual([
       "error",
       { technology: "effect-v4", role: "effect-library", platform: "portable" },
     ]);
-    expect(rules["effect-v4/no-untyped-throw"]).toBeDefined();
-    expect(rules["effect-v4/no-premature-execution"]).toEqual([
+    expect(rules["effect/no-untyped-throw"]).toBeDefined();
+    expect(rules["effect/no-premature-execution"]).toEqual([
       "error",
       {
         technology: "effect-v4",
@@ -53,7 +53,7 @@ describe("expandGroupRules", () => {
       { files: ["a"], role: "service", platform: "portable" },
       "effect-v4",
     );
-    expect(without["effect-v4/no-raw-json-parse"]).toBeUndefined();
+    expect(without["effect/no-raw-json-parse"]).toBeUndefined();
     const withBoundary = expandGroupRules(
       {
         files: ["a"],
@@ -63,7 +63,7 @@ describe("expandGroupRules", () => {
       },
       "effect-v4",
     );
-    expect(withBoundary["effect-v4/no-raw-json-parse"]).toEqual([
+    expect(withBoundary["effect/no-raw-json-parse"]).toEqual([
       "error",
       {
         technology: "effect-v4",
@@ -84,7 +84,7 @@ describe("expandGroupRules", () => {
       },
       "effect-v4",
     );
-    expect(Object.keys(rules)).toEqual(["effect-v4/no-cross-runtime"]);
+    expect(Object.keys(rules)).toEqual(["effect/no-cross-runtime"]);
   });
 
   test("severity override off disables a rule and releases runPromise ownership", () => {
@@ -98,8 +98,8 @@ describe("expandGroupRules", () => {
       },
       "effect-v4",
     );
-    expect(rules["effect-v4/no-native-promise-control-flow"]).toBeUndefined();
-    expect(rules["effect-v4/no-premature-execution"]).toEqual([
+    expect(rules["effect/no-native-promise-control-flow"]).toBeUndefined();
+    expect(rules["effect/no-premature-execution"]).toEqual([
       "error",
       { technology: "effect-v4", role: "application", platform: "portable" },
     ]);
@@ -115,9 +115,9 @@ describe("expandGroupRules", () => {
       },
       "effect-v4",
     );
-    expect(rules["effect-v4/no-premature-execution"]).toBeUndefined();
-    expect(rules["effect-v4/no-native-promise-control-flow"]).toBeUndefined();
-    expect(rules["effect-v4/no-ambient-console"]).toBeDefined();
+    expect(rules["effect/no-premature-execution"]).toBeUndefined();
+    expect(rules["effect/no-native-promise-control-flow"]).toBeUndefined();
+    expect(rules["effect/no-ambient-console"]).toBeDefined();
   });
 });
 
@@ -128,7 +128,7 @@ describe("expandDomains", () => {
       groups: [{ files: ["src/**"], role: "application", platform: "portable" }],
     });
     expect(fragment.jsPlugins).toEqual([
-      { name: "effect-v4", specifier: "@phibkro/oxlint-effect-v4" },
+      { name: "effect", specifier: "@phibkro/oxlint-effect-plugin" },
     ]);
     expect(fragment.overrides).toHaveLength(1);
     expect(fragment.overrides[0]?.files).toEqual(["src/**"]);
@@ -166,13 +166,13 @@ describe("presets", () => {
     const recommendedRules = Object.keys(recommended.overrides[0]?.rules ?? {});
     const strictRules = Object.keys(strict.overrides[0]?.rules ?? {});
     for (const info of RULE_REGISTRY) {
-      const id = `effect-v4/${info.name}`;
+      const id = `effect/${info.name}`;
       if (info.strictOnly) {
         expect(recommendedRules).not.toContain(id);
       }
     }
-    expect(strictRules).toContain("effect-v4/no-native-promise-control-flow");
-    expect(strictRules).toContain("effect-v4/no-untyped-throw");
-    expect(strictRules).toContain("effect-v4/no-raw-json-parse");
+    expect(strictRules).toContain("effect/no-native-promise-control-flow");
+    expect(strictRules).toContain("effect/no-untyped-throw");
+    expect(strictRules).toContain("effect/no-raw-json-parse");
   });
 });

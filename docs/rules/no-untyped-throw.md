@@ -1,4 +1,4 @@
-# effect-v4/no-untyped-throw
+# effect/no-untyped-throw
 
 Family: typed-failure · Default severity: error · strict preset only
 

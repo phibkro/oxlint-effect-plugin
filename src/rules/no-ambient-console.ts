@@ -99,7 +99,7 @@ export const noAmbientConsole: Rule = {
               rule: RULE_NAME,
               finding: "Ambient console output bypasses the Effect observability capability.",
               remedy:
-                'Use Effect.log*, effect/Console, or an injected logging service; a genuinely developer-only statement may carry one targeted "oxlint-effect-v4 allow(no-ambient-console): dev only: <reason>" suppression.',
+                'Use Effect.log*, effect/Console, or an injected logging service; a genuinely developer-only statement may carry one targeted "oxlint-effect-plugin allow(no-ambient-console): dev only: <reason>" suppression.',
               domains,
             }),
           });
@@ -113,7 +113,7 @@ export const noAmbientConsole: Rule = {
                 rule: RULE_NAME,
                 finding: "Suppression directive is not targeted at exactly no-ambient-console.",
                 remedy:
-                  'Name exactly one rule: "oxlint-effect-v4 allow(no-ambient-console): dev only: <reason>". Broad or multi-rule suppressions are rejected.',
+                  'Name exactly one rule: "oxlint-effect-plugin allow(no-ambient-console): dev only: <reason>". Broad or multi-rule suppressions are rejected.',
                 domains,
               }),
             });
@@ -124,7 +124,7 @@ export const noAmbientConsole: Rule = {
                 rule: RULE_NAME,
                 finding: 'Suppression directive lacks a nonempty "dev only:" reason.',
                 remedy:
-                  'Append a concrete reason: "oxlint-effect-v4 allow(no-ambient-console): dev only: <reason>".',
+                  'Append a concrete reason: "oxlint-effect-plugin allow(no-ambient-console): dev only: <reason>".',
                 domains,
               }),
             });

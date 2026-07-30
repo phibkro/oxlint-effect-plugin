@@ -1,8 +1,13 @@
-# Design spec 0001: reusable Effect v4 Oxlint domains
+# Design spec 0001: reusable Effect Oxlint domains
 
 Status: frozen for the first tracer bullet
 
 Date: 2026-07-30
+
+Naming revision: 2026-07-30. Operator direction made the product identity
+version-neutral while retaining Effect v4 as explicit, machine-readable
+compatibility metadata and the current technology domain. No rule semantics or
+acceptance evidence were broadened by this revision.
 
 Source provenance: extracted and adapted from Semantic Systems design spec
 0011 at commit `4d1f6947c0c5b8ba802f4e2ddf6ff8325e053ddd`.
@@ -31,8 +36,12 @@ Ship one independently reusable compiled Oxlint JavaScript plugin that:
 
 ## Package interface
 
-- repository: `oxlint-effect-v4`;
-- package: `@phibkro/oxlint-effect-v4`;
+- repository: `oxlint-effect-plugin`;
+- package: `@phibkro/oxlint-effect-plugin`;
+- default Oxlint namespace: `effect/*`;
+- technology compatibility: package and compatibility metadata declare Effect
+  major 4, exact reviewed release `4.0.0-beta.102`, and technology domain
+  `effect-v4`;
 - initial release line: `0.x`;
 - default export: ESLint-v9-compatible Oxlint JavaScript plugin;
 - named exports: individual rules, `recommended` and `strict` presets, domain

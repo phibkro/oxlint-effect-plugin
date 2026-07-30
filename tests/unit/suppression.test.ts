@@ -18,7 +18,7 @@ describe("parseDirective", () => {
 
   test("valid targeted directive with nonempty dev only reason", () => {
     const directive = parseDirective(
-      comment(" oxlint-effect-v4 allow(no-ambient-console): dev only: tracing bring-up"),
+      comment(" oxlint-effect-plugin allow(no-ambient-console): dev only: tracing bring-up"),
       false,
       RULE,
     );
@@ -29,7 +29,7 @@ describe("parseDirective", () => {
 
   test("trailing directive applies to its own line", () => {
     const directive = parseDirective(
-      comment(" oxlint-effect-v4 allow(no-ambient-console): dev only: same line"),
+      comment(" oxlint-effect-plugin allow(no-ambient-console): dev only: same line"),
       true,
       RULE,
     );
@@ -38,7 +38,7 @@ describe("parseDirective", () => {
 
   test("broad target (*) is a problem", () => {
     const directive = parseDirective(
-      comment(" oxlint-effect-v4 allow(*): dev only: reason"),
+      comment(" oxlint-effect-plugin allow(*): dev only: reason"),
       false,
       RULE,
     );
@@ -47,7 +47,9 @@ describe("parseDirective", () => {
 
   test("multi-rule target is a problem", () => {
     const directive = parseDirective(
-      comment(" oxlint-effect-v4 allow(no-ambient-console, no-untyped-throw): dev only: reason"),
+      comment(
+        " oxlint-effect-plugin allow(no-ambient-console, no-untyped-throw): dev only: reason",
+      ),
       false,
       RULE,
     );
@@ -56,9 +58,9 @@ describe("parseDirective", () => {
 
   test("missing or empty dev only reason is a problem", () => {
     for (const value of [
-      " oxlint-effect-v4 allow(no-ambient-console): dev only:",
-      " oxlint-effect-v4 allow(no-ambient-console): because I said so",
-      " oxlint-effect-v4 allow(no-ambient-console):",
+      " oxlint-effect-plugin allow(no-ambient-console): dev only:",
+      " oxlint-effect-plugin allow(no-ambient-console): because I said so",
+      " oxlint-effect-plugin allow(no-ambient-console):",
     ]) {
       const directive = parseDirective(comment(value), false, RULE);
       expect(directive?.problems).toContain("missing-reason");
@@ -69,14 +71,14 @@ describe("parseDirective", () => {
 describe("isTrailingComment", () => {
   test("detects code before the comment on the same line", () => {
     const source =
-      "const x = 1;\nconsole.log(x); // oxlint-effect-v4 allow(no-ambient-console): dev only: y\n";
-    const trailing = comment(" oxlint-effect-v4 allow(no-ambient-console): dev only: y", 2);
+      "const x = 1;\nconsole.log(x); // oxlint-effect-plugin allow(no-ambient-console): dev only: y\n";
+    const trailing = comment(" oxlint-effect-plugin allow(no-ambient-console): dev only: y", 2);
     const trailingAtColumn: Comment = {
       ...trailing,
       loc: { start: { line: 2, column: 16 }, end: { line: 2, column: 80 } },
     };
     expect(isTrailingComment(trailingAtColumn, source)).toBe(true);
-    const own = comment(" oxlint-effect-v4 allow(no-ambient-console): dev only: y", 1);
+    const own = comment(" oxlint-effect-plugin allow(no-ambient-console): dev only: y", 1);
     expect(
       isTrailingComment(
         { ...own, loc: { start: { line: 1, column: 0 }, end: own.loc.end } },

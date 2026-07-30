@@ -1,4 +1,4 @@
-# effect-v4/no-ambient-console
+# effect/no-ambient-console
 
 Family: observability-capability · Default severity: error
 
@@ -18,7 +18,7 @@ Detects ambient `console` member access and statically named `globalThis`/`windo
 ## Suppression contract
 
 ```ts
-// oxlint-effect-v4 allow(no-ambient-console): dev only: <nonempty reason>
+// oxlint-effect-plugin allow(no-ambient-console): dev only: <nonempty reason>
 console.dir(payload);
 ```
 

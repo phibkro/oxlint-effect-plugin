@@ -233,7 +233,7 @@ const steps: Step[] = [
         engines: { node: string };
         devDependencies: Record<string, string>;
       };
-      if (module.default.meta.name !== "effect-v4") throw new Error("plugin meta.name drifted");
+      if (module.default.meta.name !== "effect") throw new Error("plugin meta.name drifted");
       if (module.default.meta.version !== pkg.version) throw new Error("plugin version drifted");
       const ruleNames = Object.keys(module.default.rules);
       if (ruleNames.length !== module.RULE_REGISTRY.length) {

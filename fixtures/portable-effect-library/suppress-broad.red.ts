@@ -3,6 +3,6 @@
 
 export const debugDump = (payload: unknown): void => {
   // expect-next-line: no-ambient-console
-  // oxlint-effect-v4 allow(*): dev only: broad suppressions are rejected
+  // oxlint-effect-plugin allow(*): dev only: broad suppressions are rejected
   console.dir(payload); // expect: no-ambient-console
 };

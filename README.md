@@ -1,17 +1,21 @@
-# Oxlint Effect v4
+# Oxlint Effect Plugin
 
-`@phibkro/oxlint-effect-v4` is a reusable, compiled Oxlint JavaScript plugin
+`@phibkro/oxlint-effect-plugin` is a reusable, compiled Oxlint JavaScript plugin
 for explicit Effect v4 architecture, capability, runtime-platform, and
 semantic-boundary policies. It provides high-confidence **syntax and scope**
 diagnostics only — never type-aware proof; type-aware Effect diagnostics are
 delegated to the [`@effect/tsgo`](./docs/tsgo-boundary.md) companion.
 
 This package is third-party and does not imply Effect project endorsement.
+Its product identity and rule namespace are version-neutral. The currently
+supported Effect major and exact reviewed release are machine-readable in
+`package.json` and [`compatibility.json`](./compatibility.json); configuration
+selects that compatibility contract through the `effect-v4` technology domain.
 
 ## Install
 
 ```sh
-bun add -d @phibkro/oxlint-effect-v4 oxlint
+bun add -d @phibkro/oxlint-effect-plugin oxlint
 ```
 
 The package ships compiled ESM JavaScript with declarations and source maps;
@@ -26,9 +30,9 @@ authoritative):
 ```jsonc
 // .oxlintrc.json
 {
-  "jsPlugins": [{ "name": "effect-v4", "specifier": "@phibkro/oxlint-effect-v4" }],
+  "jsPlugins": [{ "name": "effect", "specifier": "@phibkro/oxlint-effect-plugin" }],
   "rules": {
-    "effect-v4/no-ambient-console": ["error", { "technology": "effect-v4", "role": "application", "platform": "portable" }]
+    "effect/no-ambient-console": ["error", { "technology": "effect-v4", "role": "application", "platform": "portable" }]
   }
 }
 ```
@@ -38,7 +42,7 @@ Real projects declare their domain structure once and expand it:
 ```ts
 // oxlint.config.ts
 import { defineConfig } from "oxlint";
-import { expandDomains } from "@phibkro/oxlint-effect-v4";
+import { expandDomains } from "@phibkro/oxlint-effect-plugin";
 
 export default defineConfig({
   ...expandDomains({
@@ -65,13 +69,13 @@ group via `severityOverrides`.
 
 | rule | family | roles | boundary | preset |
 | --- | --- | --- | --- | --- |
-| [`effect-v4/no-ambient-console`](./docs/rules/no-ambient-console.md) | observability-capability | pure-library, effect-library, service, application, composition-root, runtime-adapter | — | recommended |
-| [`effect-v4/no-ambient-authority`](./docs/rules/no-ambient-authority.md) | ambient-capability | pure-library, effect-library, service, application | — | recommended |
-| [`effect-v4/no-cross-runtime`](./docs/rules/no-cross-runtime.md) | platform-portability | pure-library, effect-library, service, application, composition-root, runtime-adapter, test | — | recommended |
-| [`effect-v4/no-premature-execution`](./docs/rules/no-premature-execution.md) | execution-topology | pure-library, effect-library, service, application, runtime-adapter | — | recommended |
-| [`effect-v4/no-native-promise-control-flow`](./docs/rules/no-native-promise-control-flow.md) | execution-topology | effect-library, service, application, runtime-adapter | — | strict |
-| [`effect-v4/no-raw-json-parse`](./docs/rules/no-raw-json-parse.md) | external-decoding | pure-library, effect-library, service, application, composition-root, runtime-adapter | external-data | recommended |
-| [`effect-v4/no-untyped-throw`](./docs/rules/no-untyped-throw.md) | typed-failure | pure-library, effect-library, service, application | — | strict |
+| [`effect/no-ambient-console`](./docs/rules/no-ambient-console.md) | observability-capability | pure-library, effect-library, service, application, composition-root, runtime-adapter | — | recommended |
+| [`effect/no-ambient-authority`](./docs/rules/no-ambient-authority.md) | ambient-capability | pure-library, effect-library, service, application | — | recommended |
+| [`effect/no-cross-runtime`](./docs/rules/no-cross-runtime.md) | platform-portability | pure-library, effect-library, service, application, composition-root, runtime-adapter, test | — | recommended |
+| [`effect/no-premature-execution`](./docs/rules/no-premature-execution.md) | execution-topology | pure-library, effect-library, service, application, runtime-adapter | — | recommended |
+| [`effect/no-native-promise-control-flow`](./docs/rules/no-native-promise-control-flow.md) | execution-topology | effect-library, service, application, runtime-adapter | — | strict |
+| [`effect/no-raw-json-parse`](./docs/rules/no-raw-json-parse.md) | external-decoding | pure-library, effect-library, service, application, composition-root, runtime-adapter | external-data | recommended |
+| [`effect/no-untyped-throw`](./docs/rules/no-untyped-throw.md) | typed-failure | pure-library, effect-library, service, application | — | strict |
 
 Domains — roles: pure-library, effect-library, service, application, composition-root, runtime-adapter, test; platforms: portable, node, bun, deno, browser, web-worker; boundaries: external-data, observability, security-sensitive, persistence.
 <!-- END GENERATED RULES -->
@@ -82,7 +86,7 @@ A genuinely developer-only statement may carry one targeted suppression with
 a nonempty `dev only:` reason:
 
 ```ts
-// oxlint-effect-v4 allow(no-ambient-console): dev only: inspecting raw webhook payloads
+// oxlint-effect-plugin allow(no-ambient-console): dev only: inspecting raw webhook payloads
 console.dir(payload);
 ```
 
@@ -109,7 +113,7 @@ bun run accept:0001  # pack + isolated Bun/Node/Deno consumer journeys
 ```
 
 The first tracer is specified in
-[`design-specs/0001-reusable-effect-v4-domains.md`](./design-specs/0001-reusable-effect-v4-domains.md);
+[`design-specs/0001-reusable-effect-domains.md`](./design-specs/0001-reusable-effect-domains.md);
 prior art and provenance are recorded in [`PROVENANCE.md`](./PROVENANCE.md).
 
 This repository was extracted as an independent product from the Semantic

@@ -1,7 +1,14 @@
 {
   "package": {
-    "name": "@phibkro/oxlint-effect-v4",
+    "name": "@phibkro/oxlint-effect-plugin",
     "version": "0.1.0"
+  },
+  "technology": {
+    "name": "effect",
+    "domain": "effect-v4",
+    "major": 4,
+    "reviewed": "4.0.0-beta.102",
+    "reviewPolicy": "exact"
   },
   "reviewed": {
     "oxlint": "1.76.0",

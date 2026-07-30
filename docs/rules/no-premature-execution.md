@@ -1,4 +1,4 @@
-# effect-v4/no-premature-execution
+# effect/no-premature-execution
 
 Family: execution-topology · Default severity: error
 

@@ -37,7 +37,7 @@ const configForm = argValue("--config-form") ?? "both";
 const expected = collectExpected(repoRoot, join(repoRoot, "fixtures"));
 const config = buildMatrixConfig(pluginSpecifier);
 
-const scratch = mkdtempSync(join(tmpdir(), "oxlint-effect-v4-matrix-"));
+const scratch = mkdtempSync(join(tmpdir(), "oxlint-effect-plugin-matrix-"));
 
 interface FormResult {
   readonly form: string;

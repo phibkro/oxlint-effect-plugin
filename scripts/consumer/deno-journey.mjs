@@ -8,7 +8,7 @@
  * unsupported parity with the Bun and Node consumers.
  */
 
-const PKG = "@phibkro/oxlint-effect-v4";
+const PKG = "@phibkro/oxlint-effect-plugin";
 
 const fail = (message) => {
   console.error(`DENO JOURNEY FAIL: ${message}`);
@@ -18,15 +18,34 @@ const fail = (message) => {
 if (typeof Deno === "undefined") fail("this journey must run under Deno");
 
 const resolved = import.meta.resolve(PKG);
-if (!resolved.includes("node_modules/@phibkro/oxlint-effect-v4/dist/index.js")) {
+if (!resolved.includes("node_modules/@phibkro/oxlint-effect-plugin/dist/index.js")) {
   fail(`package did not resolve to compiled dist/index.js: ${resolved}`);
+}
+const packageMetadata = JSON.parse(await Deno.readTextFile(new URL("../package.json", resolved)));
+const compatibilityMetadata = JSON.parse(
+  await Deno.readTextFile(new URL("../compatibility.json", resolved)),
+);
+const expectedTechnology = {
+  name: "effect",
+  domain: "effect-v4",
+  major: 4,
+  reviewed: "4.0.0-beta.102",
+  reviewPolicy: "exact",
+};
+if (
+  packageMetadata.name !== PKG ||
+  JSON.stringify(packageMetadata.effectCompatibility) !== JSON.stringify(expectedTechnology) ||
+  compatibilityMetadata.package?.name !== PKG ||
+  JSON.stringify(compatibilityMetadata.technology) !== JSON.stringify(expectedTechnology)
+) {
+  fail("version-neutral identity or Effect compatibility metadata drifted");
 }
 
 const api = await import(PKG);
 const auditApi = await import(`${PKG}/suppression-audit`);
 const plugin = api.default;
 
-if (plugin.meta.name !== "effect-v4") fail(`unexpected plugin name: ${plugin.meta.name}`);
+if (plugin.meta.name !== "effect") fail(`unexpected plugin name: ${plugin.meta.name}`);
 if (typeof plugin.meta.version !== "string") fail("plugin version missing");
 if (Object.keys(plugin.rules).length !== api.RULE_REGISTRY.length) {
   fail("plugin rules and registry disagree");
@@ -62,7 +81,7 @@ const fragment = api.expandDomains({
 if (fragment.jsPlugins[0]?.specifier !== PKG) fail("expansion lost plugin specifier");
 if (fragment.overrides.length !== 2) fail("expansion lost overrides");
 const libraryRules = fragment.overrides[0]?.rules ?? {};
-if (libraryRules["effect-v4/no-native-promise-control-flow"] === undefined) {
+if (libraryRules["effect/no-native-promise-control-flow"] === undefined) {
   fail("strict expansion missing promise rule");
 }
 
