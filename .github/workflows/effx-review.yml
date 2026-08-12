@@ -51,7 +51,7 @@ jobs:
           bun install --frozen-lockfile --ignore-scripts
           bun run build
       - name: Produce fail-closed publication plan
-        run: .effx-tool/dist/cli.js github plan < .effx-input/effx-input.json > .effx-input/effx-plan.json
+        run: bun .effx-tool/dist/cli.js github plan < .effx-input/effx-input.json > .effx-input/effx-plan.json
       - name: Publish canonical Check and review comments
         env:
           GH_TOKEN: ${{ github.token }}
