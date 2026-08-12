@@ -27,7 +27,7 @@ jobs:
         with:
           repository: phibkro/oxlint-effect-plugin
           path: .effx-tool
-          ref: 0e41f6bb73c3e9aba2df75e32ff77da214452497
+          ref: 0e41f6b05b08f7ecfd91c7e55e77e98d8b650b02
           persist-credentials: false
       - name: Download unprivileged analysis result
         uses: actions/download-artifact@v4
