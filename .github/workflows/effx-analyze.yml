@@ -1,0 +1,55 @@
+name: effx analyze
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pull request without credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check out immutable effx tool revision
+        uses: actions/checkout@v4
+        with:
+          repository: phibkro/oxlint-effect-plugin
+          ref: 3190f2267cf4570172ec7abeb17f910ba6cef9b2
+          path: .effx-tool
+          persist-credentials: false
+      - name: Install the reviewed effx tool
+        working-directory: .effx-tool
+        run: |
+          bun install --frozen-lockfile --ignore-scripts
+          bun run build
+      - name: Install target dependencies without lifecycle scripts
+        run: bun install --frozen-lockfile --ignore-scripts
+      - name: Run Oxlint with structured output
+        run: |
+          set +e
+          bun run lint -- --format json > effx-oxlint.json
+          status=$?
+          set -e
+          test -s effx-oxlint.json
+          test "$status" -le 1
+      - name: Translate diagnostics
+        run: .effx-tool/dist/cli.js translate < effx-oxlint.json > effx-diagnostics.json
+      - name: Build immutable publication input
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bun run .effx-tool/scripts/build-github-input.ts effx-diagnostics.json > effx-input.json
+      - name: Upload decoded analysis result
+        uses: actions/upload-artifact@v4
+        with:
+          name: effx-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+          path: effx-input.json
+          if-no-files-found: error
+          retention-days: 7
