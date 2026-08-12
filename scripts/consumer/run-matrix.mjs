@@ -48,7 +48,7 @@ const expectedTechnology = {
   name: "effect",
   domain: "effect-v4",
   major: 4,
-  reviewed: "4.0.0-beta.102",
+  reviewed: "4.0.0-beta.107",
   reviewPolicy: "exact",
 };
 if (
@@ -73,25 +73,113 @@ if (
 ) {
   fail("portable suppression-audit subpath did not detect native bypass");
 }
-for (const invalid of [{ groups: [] }, { technology: "effect-v3", groups: [] }]) {
+for (const apiName of [
+  "effect",
+  "importClosurePolicy",
+  "auditEffectTSEscapes",
+  "evaluateImportClosure",
+  "explainEffectTS",
+  "translateOxlintJson",
+]) {
+  if (typeof api[apiName] !== "function") fail(`missing EffectTS API ${apiName}`);
+}
+const projectedPolicy = api.importClosurePolicy({
+  trustedPureDependencies: [{ specifier: "date-fns/format", reason: "reviewed total transform" }],
+  groups: [
+    { files: ["fixtures/src/**"], role: "application", platform: "portable" },
+    {
+      files: ["fixtures/adapters/**"],
+      role: "runtime-adapter",
+      platform: "node",
+      adapterDependencies: ["stripe"],
+    },
+  ],
+});
+if (
+  projectedPolicy.trustedPureDependencies[0]?.specifier !== "date-fns/format" ||
+  projectedPolicy.groups[1]?.adapterDependencies[0] !== "stripe"
+) {
+  fail("packed import closure policy projection drifted");
+}
+if (api.explainEffectTS("EFT3101")?.invariant !== "effect-owned-asynchronous-computation") {
+  fail("explain API did not resolve EFT3101");
+}
+const importViolation = api.evaluateImportClosure({
+  edges: [
+    {
+      importer: { file: "src/app.ts", role: "application", platform: "portable" },
+      specifier: "stripe",
+      kind: "value",
+      target: { kind: "package" },
+      span: { offset: 0, length: 6, line: 1, column: 1 },
+    },
+  ],
+});
+if (importViolation[0]?.code !== "EFT5101") fail("import closure did not reject a raw SDK");
+const escapeFinding = api.auditEffectTSEscapes({
+  file: "src/generated.ts",
+  sourceText: "// oxlint-effect-plugin ignore-file:\n// reason:",
+}).findings[0];
+if (escapeFinding?.code !== "EFT9011" || escapeFinding.schemaVersion !== 1) {
+  fail("escape audit did not emit a versioned file diagnostic");
+}
+const translated = api.translateOxlintJson(
+  {
+    diagnostics: [
+      {
+        message: "native",
+        severity: "error",
+        code: "effect(no-untyped-throw)",
+        filename: "src/app.ts",
+        labels: [{ span: { offset: 0, length: 5, line: 1, column: 1 } }],
+      },
+    ],
+  },
+  { pluginName: "effect" },
+);
+if (translated.diagnostics[0]?.code !== "EFT3201") {
+  fail("diagnostic translation did not resolve EFT3201");
+}
+const explainCli = spawnSync(
+  join(consumerRoot, "node_modules", ".bin", "effx"),
+  ["explain", "EFT3101"],
+  {
+    encoding: "utf8",
+  },
+);
+if (
+  explainCli.status !== 0 ||
+  !explainCli.stdout.includes("effect-owned-asynchronous-computation")
+) {
+  fail(`packed explain CLI failed: ${explainCli.stderr}`);
+}
+for (const { input, errorText } of [
+  { input: { groups: [] }, errorText: "at least one rule group is required" },
+  {
+    input: { strictness: "recomended", groups: [] },
+    errorText: 'unknown strictness "recomended"',
+  },
+]) {
   try {
-    api.expandDomains(invalid);
-    fail(`invalid technology declaration was accepted: ${JSON.stringify(invalid)}`);
+    api.effect(input);
+    fail(`invalid configuration was accepted: ${JSON.stringify(input)}`);
   } catch (error) {
-    if (!String(error).includes('requires "effect-v4"')) throw error;
+    if (!String(error).includes(errorText)) throw error;
   }
 }
 
 // --- 2. expand the matrix through the installed package ---------------------
 const matrix = JSON.parse(readFileSync(join(consumerRoot, "matrix.json"), "utf8")).groups;
-const fragment = api.expandDomains({
-  technology: "effect-v4",
+const fragment = api.effect({
   groups: matrix.map((group) => ({
     files: [`fixtures/${group.dir}/**/*.ts`],
     role: group.role,
     platform: group.platform,
     ...(group.boundaries === undefined ? {} : { boundaries: group.boundaries }),
-    ...(group.strictness === undefined ? {} : { strictness: group.strictness }),
+    ...(group.severityOverrides === undefined
+      ? {}
+      : { severityOverrides: group.severityOverrides }),
+    ...(group.ruleOptions === undefined ? {} : { ruleOptions: group.ruleOptions }),
   })),
 });
 const config = {

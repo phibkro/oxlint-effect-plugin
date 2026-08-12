@@ -9,7 +9,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-import { EFFECT_COMPATIBILITY, PACKAGE_NAME } from "./compatibility-policy.js";
+import { PACKAGE_NAME } from "./compatibility-policy.js";
 
 const repoRoot = join(import.meta.dir, "..");
 const distRoot = join(repoRoot, "dist");
@@ -34,8 +34,7 @@ export async function verifyDistribution(): Promise<void> {
     readonly default: {
       readonly meta: { readonly name: string; readonly version: string };
     };
-    readonly expandDomains: (input: {
-      readonly technology: "effect-v4";
+    readonly effect: (input: {
       readonly groups: readonly [
         {
           readonly files: readonly ["src/**"];
@@ -47,12 +46,28 @@ export async function verifyDistribution(): Promise<void> {
       readonly jsPlugins: readonly { readonly name: string; readonly specifier: string }[];
       readonly overrides: readonly { readonly rules: Readonly<Record<string, unknown>> }[];
     };
+    readonly importClosurePolicy: (input: {
+      readonly groups: readonly [
+        {
+          readonly files: readonly ["src/**"];
+          readonly role: "application";
+          readonly platform: "portable";
+        },
+      ];
+    }) => {
+      readonly groups: readonly unknown[];
+    };
   };
 
-  const fragment = api.expandDomains({
-    technology: EFFECT_COMPATIBILITY.domain,
+  const fragment = api.effect({
     groups: [{ files: ["src/**"], role: "application", platform: "portable" }],
   });
+  const policy = api.importClosurePolicy({
+    groups: [{ files: ["src/**"], role: "application", platform: "portable" }],
+  });
+  if (policy.groups.length !== 1) {
+    throw new Error("dist import-closure policy projection drifted");
+  }
   if (api.default.meta.name !== "effect") {
     throw new Error(`dist plugin namespace drifted: ${api.default.meta.name}`);
   }

@@ -7,17 +7,17 @@
     "name": "effect",
     "domain": "effect-v4",
     "major": 4,
-    "reviewed": "4.0.0-beta.102",
+    "reviewed": "4.0.0-beta.107",
     "reviewPolicy": "exact"
   },
   "reviewed": {
-    "oxlint": "1.76.0",
+    "oxlint": "1.77.0",
     "oxfmt": "0.61.0",
     "typescript": "7.0.2",
-    "effect": "4.0.0-beta.102",
-    "@effect/platform-node": "4.0.0-beta.102",
-    "@effect/platform-bun": "4.0.0-beta.102",
-    "@effect/tsgo": "0.24.3",
+    "effect": "4.0.0-beta.107",
+    "@effect/platform-node": "4.0.0-beta.107",
+    "@effect/platform-bun": "4.0.0-beta.107",
+    "@effect/tsgo": "0.36.4",
     "oxlint-tsgolint": "7.0.2001"
   },
   "runtimes": {
@@ -52,8 +52,8 @@
     },
     "effect": {
       "package": "@effect/tsgo",
-      "reviewed": "0.24.3",
-      "scope": "Effect-specific type diagnostics and language-service features. Overlapping syntax-only diagnostics stay disabled when this plugin owns them."
+      "reviewed": "0.36.4",
+      "scope": "Effect-specific typed diagnostics, language-service features, and upstream Oxlint presets. This package owns project-context policy and keeps overlapping syntax diagnostics disabled when its profile rules own them."
     },
     "residual": "The pinned companions expose no domain-aware general rule for arbitrary typed .then/.catch/.finally chains; that policy remains an explicit typed-analysis gap."
   }

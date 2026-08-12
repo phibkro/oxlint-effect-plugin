@@ -3,7 +3,7 @@
  *
  *   root: package.json          → src/version.ts, compatibility.json
  *   root: src/registry.ts       → docs/rules/*.md, docs/tsgo-boundary.md,
- *                                 README.md rules section (marker-delimited)
+ *                                 guidance/**, README.md rules section
  *   root: fixtures/matrix.ts    → generated/matrix.json (consumer runners)
  *
  * Usage: bun run scripts/generate.ts write   — materialize derivations
@@ -15,7 +15,7 @@ import { join } from "node:path";
 
 import { MATRIX } from "../fixtures/matrix.js";
 import { BOUNDARIES, PLATFORMS, ROLES } from "../src/domains.js";
-import { RULE_REGISTRY } from "../src/registry.js";
+import { EFFECTTS_KNOWLEDGE, IMPORT_CLOSURE_DEFINITION, RULE_REGISTRY } from "../src/registry.js";
 import {
   EFFECT_COMPATIBILITY,
   PACKAGE_NAME,
@@ -129,7 +129,7 @@ const compatibility = {
       package: "@effect/tsgo",
       reviewed: devPin("@effect/tsgo"),
       scope:
-        "Effect-specific type diagnostics and language-service features. Overlapping syntax-only diagnostics stay disabled when this plugin owns them.",
+        "Effect-specific typed diagnostics, language-service features, and upstream Oxlint presets. This package owns project-context policy and keeps overlapping syntax diagnostics disabled when its profile rules own them.",
     },
     residual:
       "The pinned companions expose no domain-aware general rule for arbitrary typed .then/.catch/.finally chains; that policy remains an explicit typed-analysis gap.",
@@ -144,47 +144,120 @@ derivations.push({
 // --- docs/rules/*.md --------------------------------------------------------
 for (const info of RULE_REGISTRY) {
   const lines: string[] = [];
-  lines.push(`# effect/${info.name}`);
+  lines.push(`# effect/${info.rule}`);
   lines.push("");
   lines.push(
-    `Family: ${info.family} · Default severity: ${info.defaultSeverity}${info.strictOnly ? " · strict preset only" : ""}`,
+    `Code: ${info.code} · Family: ${info.family} · Default severity: ${info.defaultSeverity}`,
   );
   lines.push("");
-  lines.push("## Rationale");
+  lines.push("## Invariant");
+  lines.push("");
+  lines.push(`${info.invariant}: ${info.summary}`);
+  lines.push("");
+  lines.push(
+    info.defaultSeverity === "off" ? "## Why this policy rejects it" : "## Why EffectTS rejects it",
+  );
   lines.push("");
   lines.push(info.rationale);
   lines.push("");
-  lines.push("## Applicability (domains select rules, never severity)");
+  lines.push("## Help");
   lines.push("");
-  lines.push(`- Roles: ${info.appliesToRoles.join(", ")}`);
-  lines.push(`- Required boundary: ${info.requiresBoundary ?? "none"}`);
+  lines.push(info.diagnostic.help);
   lines.push("");
-  lines.push("## Limitation");
+  lines.push(`Proof: ${info.proofSources.join(", ")}.`);
   lines.push("");
-  lines.push(info.limitation);
+  lines.push("## Applicability");
   lines.push("");
-  if (info.tsgoOverlap !== null) {
-    lines.push("## Type-aware companion (@effect/tsgo)");
-    lines.push("");
-    lines.push(info.tsgoOverlap);
+  lines.push(`- Strictness: ${info.strictness.join(", ")}`);
+  lines.push(`- Roles: ${info.applicability.roles.join(", ")}`);
+  lines.push(`- Boundaries: ${info.applicability.boundaries.join(", ") || "none"}`);
+  lines.push("");
+  if (info.defaultSeverity === "off") {
+    lines.push(
+      "This opt-in rule is omitted until `rules` or `severityOverrides` selects a non-`off` severity.",
+    );
     lines.push("");
   }
-  if (info.name === "no-ambient-console") {
-    lines.push("## Suppression contract");
+  if (Object.keys(info.defaultOptions).length > 0) {
+    lines.push("## Default options");
+    lines.push("");
+    lines.push("```json");
+    lines.push(JSON.stringify(info.defaultOptions, null, 2));
+    lines.push("```");
+    lines.push("");
+    lines.push(`Override these values through \`groups[].ruleOptions["${info.rule}"]\`.`);
+    lines.push("");
+  }
+  lines.push("## Limitations");
+  lines.push("");
+  for (const limitation of info.limitations) lines.push(`- ${limitation}`);
+  lines.push("");
+  if (info.tsgo.overlap.length > 0) {
+    lines.push("## Type-aware companion (@effect/tsgo)");
+    lines.push("");
+    lines.push(`Overlaps: ${info.tsgo.overlap.join(", ")}.`);
+    lines.push("");
+    lines.push(info.tsgo.authority);
+    lines.push("");
+  }
+  if (info.replacements.length > 0) {
+    lines.push("## Replacements");
+    lines.push("");
+    for (const replacement of info.replacements) {
+      lines.push(
+        `- \`${replacement.from}\` → \`${replacement.to}\` (${replacement.applicability})`,
+      );
+    }
+    lines.push("");
+  }
+  if (info.suppression === "local-reasoned") {
+    lines.push("## Local exception");
     lines.push("");
     lines.push("```ts");
-    lines.push("// oxlint-effect-plugin allow(no-ambient-console): dev only: <nonempty reason>");
-    lines.push("console.dir(payload);");
+    lines.push(`// oxlint-effect-plugin allow(${info.rule}):`);
+    lines.push("// reason: <nonempty reason>");
+    lines.push("<next syntax node>");
     lines.push("```");
     lines.push("");
     lines.push(
-      "The directive must target exactly this rule and carry a nonempty `dev only:` reason; it applies to the next line (or its own line when trailing). Broad, missing-reason, and unused directives are themselves reported.",
+      "The directive targets exactly one rule and the next syntax node in the same lexical block. Broad, duplicate, missing-reason, misplaced, unused, and stale directives fail the escape audit.",
     );
     lines.push("");
   }
   derivations.push({
-    path: `docs/rules/${info.name}.md`,
+    path: `docs/rules/${info.rule}.md`,
     content: `${lines.join("\n").trimEnd()}\n`,
+  });
+}
+
+{
+  const info = IMPORT_CLOSURE_DEFINITION;
+  derivations.push({
+    path: "docs/import-closure.md",
+    content: [
+      "# EffectTS import closure",
+      "",
+      `Code: ${info.code} · Family: ${info.family}`,
+      "",
+      "## Invariant",
+      "",
+      `${info.invariant}: ${info.summary}`,
+      "",
+      "## Why EffectTS rejects it",
+      "",
+      info.rationale,
+      "",
+      "## Help",
+      "",
+      info.diagnostic.help,
+      "",
+      `Proof: ${info.proofSources.join(", ")}.`,
+      "",
+      "Type-only edges are admitted. Core Effect imports are admitted. Governed project edges follow the role graph. Trusted-pure packages require an exact specifier and nonempty reason. Raw package imports belong only to a runtime adapter that declares the package root.",
+      "",
+      "Trust is a reviewed project assertion, not static proof of package purity.",
+      "",
+    ].join("\n"),
   });
 }
 
@@ -197,7 +270,7 @@ for (const info of RULE_REGISTRY) {
     "Oxlint JavaScript plugins receive syntax, lexical scope, code-path, and project APIs — not TypeScript type information. This package's custom rules therefore remain AST/scope rules even when Oxlint runs with `options.typeAware: true`.",
   );
   lines.push("");
-  lines.push("## Three non-overlapping analysis layers");
+  lines.push("## Three coordinated analysis layers");
   lines.push("");
   lines.push(
     "1. **This package:** domain-aware custom policy over Oxc AST and resolved lexical bindings.",
@@ -210,7 +283,7 @@ for (const info of RULE_REGISTRY) {
   );
   lines.push("");
   lines.push(
-    "The repository gate observes one real generic Oxlint typed diagnostic and one real `floatingEffect` diagnostic from @effect/tsgo. Both companions are development-only and absent from this package's runtime graph.",
+    "The repository gate observes one real generic Oxlint typed diagnostic and one real `floatingEffect` diagnostic from @effect/tsgo. Both companions are development-only and absent from this package's runtime graph. The reviewed TSGO release also exports `@effect/tsgo/oxlint-presets`; this package does not import those presets into its runtime or enable overlapping rules twice.",
   );
   lines.push("");
   lines.push("```jsonc");
@@ -221,14 +294,14 @@ for (const info of RULE_REGISTRY) {
   lines.push("```jsonc");
   lines.push("// tsconfig.json — Effect-specific typed diagnostics");
   lines.push(
-    '{ "compilerOptions": { "plugins": [{ "name": "@effect/language-service", "diagnosticSeverity": { "floatingEffect": "error", "asyncFunction": "off", "newPromise": "off", "globalConsole": "off", "globalConsoleInEffect": "off" } }] } }',
+    '{ "compilerOptions": { "plugins": [{ "name": "@effect/language-service", "diagnosticSeverity": { "floatingEffect": "error", "missingEffectContext": "error", "missingEffectError": "error", "missingLayerContext": "error", "strictEffectProvide": "error", "unsafeEffectTypeAssertion": "error", "lazyPromiseInEffectSync": "error", "asyncFunction": "off", "newPromise": "off", "globalConsole": "off", "globalConsoleInEffect": "off" } }] } }',
   );
   lines.push("```");
   lines.push("");
   lines.push("## Non-duplicating Effect TSGO configuration");
   lines.push("");
   lines.push(
-    "When this plugin owns syntax policy, keep the corresponding @effect/tsgo syntax diagnostics off: `asyncFunction`, `globalConsole`, `globalConsoleInEffect`, `globalDate`, `globalDateInEffect`, `globalFetch`, `globalFetchInEffect`, `globalRandom`, `globalRandomInEffect`, `globalTimers`, `globalTimersInEffect`, `newPromise`, `nodeBuiltinImport`, `preferSchemaOverJson`, `processEnv`, and `processEnvInEffect`. They are off by default in the reviewed release. Keep typed diagnostics such as `floatingEffect`, `missingEffectContext`, `missingEffectError`, `strictEffectProvide`, `unsafeEffectTypeAssertion`, and `lazyPromiseInEffectSync` under @effect/tsgo authority.",
+    "EffectTS requires these typed diagnostics at `error`: `floatingEffect`, `missingEffectContext`, `missingEffectError`, `missingLayerContext`, `strictEffectProvide`, `unsafeEffectTypeAssertion`, and `lazyPromiseInEffectSync`. When this package owns the corresponding project-context syntax policy, keep these @effect/tsgo diagnostics off to avoid duplicate reports: `asyncFunction`, `cryptoRandomUUID`, `cryptoRandomUUIDInEffect`, `globalConsole`, `globalConsoleInEffect`, `globalDate`, `globalDateInEffect`, `globalFetch`, `globalFetchInEffect`, `globalRandom`, `globalRandomInEffect`, `globalTimers`, `globalTimersInEffect`, `newPromise`, `nodeBuiltinImport`, `preferSchemaOverJson`, `processEnv`, and `processEnvInEffect`. The reviewed TSGO release remains authoritative for typed Effect facts.",
   );
   lines.push("");
   lines.push(
@@ -240,14 +313,108 @@ for (const info of RULE_REGISTRY) {
   lines.push("| rule | overlap | authority |");
   lines.push("| --- | --- | --- |");
   for (const info of RULE_REGISTRY) {
-    if (info.tsgoOverlap === null) continue;
-    lines.push(`| \`effect/${info.name}\` | ${info.tsgoOverlap} | split as described |`);
+    if (info.tsgo.overlap.length === 0) continue;
+    lines.push(
+      `| \`effect/${info.rule}\` | ${info.tsgo.overlap.join(", ")} | ${info.tsgo.authority} |`,
+    );
   }
   lines.push("");
   lines.push(
-    "Presets keep one authoritative diagnostic per concern: this plugin owns syntactic execution sites, promise syntax, and ambient globals; TSGO owns everything requiring types. Running both produces complementary, not duplicate, diagnostics.",
+    "The rule registry records every known overlap. The documented configuration keeps duplicate syntax diagnostics off while retaining @effect/tsgo diagnostics that require types. Project-context policy remains here; typed Effect facts and editor semantics remain upstream-owned.",
   );
   derivations.push({ path: "docs/tsgo-boundary.md", content: `${lines.join("\n")}\n` });
+}
+
+// --- guidance/** ------------------------------------------------------------
+{
+  const ruleLines = RULE_REGISTRY.map(
+    (info) =>
+      `- ${info.code} \`effect/${info.rule}\`: ${info.invariant}. ${info.diagnostic.help} Default severity: ${info.defaultSeverity}. Proof: ${info.proofSources.join(", ")}.`,
+  );
+  const workflow = [
+    "1. Read the project role, platform, boundary, and trusted-dependency configuration.",
+    "2. Keep pure local computation as plain TypeScript.",
+    "3. Use Effect for effectful computation, Schema for domain and representation boundaries, services for capabilities, Layers for implementations, and Scope for lifetimes.",
+    "4. Run EffectTS enforcement and @effect/tsgo.",
+    "5. Apply only machine-applicable fixes; treat other suggestions as semantic refactors.",
+    "6. Use a narrow two-line reasoned exception only for genuine interop.",
+  ];
+  const escape = [
+    "```ts",
+    "// oxlint-effect-plugin allow(<exact-rule>):",
+    "// reason: <why this boundary cannot yet be Effect-native>",
+    "<next syntax node>",
+    "```",
+  ];
+  derivations.push({
+    path: "guidance/effectts-knowledge.json",
+    content: `${JSON.stringify(
+      {
+        schemaVersion: 2,
+        technology: "effect-v4",
+        rules: EFFECTTS_KNOWLEDGE,
+      },
+      null,
+      2,
+    )}\n`,
+  });
+  derivations.push({
+    path: "guidance/AGENTS.fragment.md",
+    content: [
+      "# EffectTS project profile",
+      "",
+      "TypeScript is the host language. EffectTS is the default-closed application semantics profile.",
+      "",
+      "## Workflow",
+      "",
+      ...workflow,
+      "",
+      "## Enforced invariants",
+      "",
+      ...ruleLines,
+      `- ${IMPORT_CLOSURE_DEFINITION.code} import closure: ${IMPORT_CLOSURE_DEFINITION.diagnostic.help}`,
+      "",
+      "## Reasoned local exception",
+      "",
+      ...escape,
+      "",
+    ].join("\n"),
+  });
+  derivations.push({
+    path: "guidance/skills/effectts-programming/SKILL.md",
+    content: [
+      "---",
+      "name: effectts-programming",
+      "description: Implement and repair TypeScript inside the project's EffectTS profile.",
+      "---",
+      "",
+      "# EffectTS programming",
+      "",
+      ...workflow,
+      "",
+      "Read [references/rules.md](references/rules.md) for the stable rule codes, invariants, repairs, and proof limits.",
+      "",
+    ].join("\n"),
+  });
+  derivations.push({
+    path: "guidance/skills/effectts-programming/references/rules.md",
+    content: ["# EffectTS rule reference", "", ...ruleLines, ""].join("\n"),
+  });
+  derivations.push({
+    path: "guidance/prompts/implement.md",
+    content:
+      "Implement the requested change inside the configured EffectTS role and boundaries. Keep pure computation in TypeScript. Use Effect-native computation, failures, capabilities, resources, concurrency, observability, and Schema boundaries. Run EffectTS and @effect/tsgo; do not bypass diagnostics.\n",
+  });
+  derivations.push({
+    path: "guidance/prompts/refactor-to-effect.md",
+    content:
+      "Refactor the reported ordinary TypeScript mechanism to the Effect concept named by the diagnostic. Preserve caller contracts and resource ownership. Apply only machine-applicable edits automatically; explain boundary-required and refactor-required changes.\n",
+  });
+  derivations.push({
+    path: "guidance/prompts/diagnose.md",
+    content:
+      "Diagnose each EffectTS finding by stable code. State the failed invariant, proof source, analysis limit, owning Effect concept, safe repair class, and any explicit boundary decision still required.\n",
+  });
 }
 
 // --- generated/matrix.json --------------------------------------------------
@@ -263,11 +430,11 @@ derivations.push({
   const table: string[] = [];
   table.push(begin);
   table.push("");
-  table.push("| rule | family | roles | boundary | preset |");
-  table.push("| --- | --- | --- | --- | --- |");
+  table.push("| rule | code | family | default | roles | boundary | strictness |");
+  table.push("| --- | --- | --- | --- | --- | --- | --- |");
   for (const info of RULE_REGISTRY) {
     table.push(
-      `| [\`effect/${info.name}\`](./docs/rules/${info.name}.md) | ${info.family} | ${info.appliesToRoles.join(", ")} | ${info.requiresBoundary ?? "—"} | ${info.strictOnly ? "strict" : "recommended"} |`,
+      `| [\`effect/${info.rule}\`](./docs/rules/${info.rule}.md) | ${info.code} | ${info.family} | ${info.defaultSeverity} | ${info.applicability.roles.join(", ")} | ${info.applicability.boundaries.join(", ") || "—"} | ${info.strictness.join(", ")} |`,
     );
   }
   table.push("");
@@ -278,6 +445,15 @@ derivations.push({
 
   const readmePath = join(repoRoot, "README.md");
   const readme = readFileSync(readmePath, "utf8");
+  const staleConfigurationPatterns = [
+    /\b(?:expandDomains|expandImportClosurePolicy|ExpandInput|DomainGroup|RulePreset)\b/,
+    /["']?(?:technology|profile|preset)["']?\s*:/,
+  ];
+  for (const pattern of staleConfigurationPatterns) {
+    if (pattern.test(readme)) {
+      throw new Error(`README.md retains obsolete configuration syntax: ${pattern.source}`);
+    }
+  }
   const beginIndex = readme.indexOf(begin);
   const endIndex = readme.indexOf(end);
   if (beginIndex < 0 || endIndex < 0) {

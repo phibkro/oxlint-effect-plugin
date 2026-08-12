@@ -14,5 +14,6 @@
     "noEmit": true,
     "types": ["bun"]
   },
-  "include": ["src", "scripts", "tests"]
+  "include": ["src", "scripts", "tests"],
+  "exclude": ["scripts/tracers/fixtures"]
 }

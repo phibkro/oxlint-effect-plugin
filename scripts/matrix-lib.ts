@@ -2,7 +2,7 @@
  * Shared oracle-matrix machinery (runtime adapter code; Bun-only).
  *
  * Responsibilities: expand the fixture matrix into oxlint configuration via
- * the plugin's own `expandDomains` (the same expansion consumers use),
+ * the plugin's own `effect` builder (the same expansion consumers use),
  * collect inline `// expect:` markers from fixture files, run oxlint, and
  * diff actual against expected diagnostics.
  */
@@ -11,7 +11,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import { MATRIX, type FixtureGroup } from "../fixtures/matrix.js";
-import { expandDomains } from "../src/config/expand.js";
+import { effect } from "../src/config/expand.js";
 
 export interface ExpectedDiagnostic {
   readonly file: string;
@@ -78,8 +78,7 @@ export function collectExpected(repoRoot: string, fixturesRoot: string): Expecte
  * only this plugin's diagnostics.
  */
 export function buildMatrixConfig(pluginSpecifier: string): Record<string, unknown> {
-  const fragment = expandDomains({
-    technology: "effect-v4",
+  const fragment = effect({
     pluginSpecifier,
     groups: MATRIX.map((group) => ({
       files: [`fixtures/${group.dir}/**/*.ts`],
@@ -87,6 +86,10 @@ export function buildMatrixConfig(pluginSpecifier: string): Record<string, unkno
       platform: group.platform,
       ...(group.boundaries !== undefined ? { boundaries: group.boundaries } : {}),
       ...(group.strictness !== undefined ? { strictness: group.strictness } : {}),
+      ...(group.severityOverrides !== undefined
+        ? { severityOverrides: group.severityOverrides }
+        : {}),
+      ...(group.ruleOptions !== undefined ? { ruleOptions: group.ruleOptions } : {}),
     })),
   });
   return {

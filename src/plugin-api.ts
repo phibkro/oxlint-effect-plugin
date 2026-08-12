@@ -34,10 +34,24 @@ export interface SourceCode {
   getAllComments(): readonly Comment[];
 }
 
+export interface Fix {
+  readonly range: readonly [number, number];
+  readonly text: string;
+}
+
+export interface Fixer {
+  replaceTextRange(range: readonly [number, number], text: string): Fix;
+  insertTextBeforeRange(range: readonly [number, number], text: string): Fix;
+  insertTextAfterRange(range: readonly [number, number], text: string): Fix;
+}
+
+export type FixFn = (fixer: Fixer) => Fix | readonly Fix[];
+
 export interface ReportDescriptor {
   readonly node?: Node;
   readonly loc?: SourceLocation;
   readonly message: string;
+  readonly fix?: FixFn;
 }
 
 export interface RuleContext {
@@ -62,6 +76,8 @@ export interface RuleMeta {
   };
   readonly schema: readonly unknown[];
   readonly messages?: Readonly<Record<string, string>>;
+  readonly fixable?: "code";
+  readonly hasSuggestions?: boolean;
 }
 
 export interface Rule {

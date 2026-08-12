@@ -11,6 +11,12 @@
         "name": "@effect/language-service",
         "diagnosticSeverity": {
           "floatingEffect": "error",
+          "missingEffectContext": "error",
+          "missingEffectError": "error",
+          "missingLayerContext": "error",
+          "strictEffectProvide": "error",
+          "unsafeEffectTypeAssertion": "error",
+          "lazyPromiseInEffectSync": "error",
           "asyncFunction": "off",
           "globalConsole": "off",
           "globalConsoleInEffect": "off",

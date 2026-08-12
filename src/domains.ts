@@ -1,13 +1,9 @@
 /**
  * Orthogonal domain vocabulary from design spec 0001.
  *
- * Domains determine rule applicability, never severity. The four axes are
- * independent: technology, architectural role, runtime platform, and
- * semantic boundary.
+ * Domains determine rule applicability, never severity. The three axes are
+ * independent: architectural role, runtime platform, and semantic boundary.
  */
-
-export const TECHNOLOGIES = ["effect-v4"] as const;
-export type Technology = (typeof TECHNOLOGIES)[number];
 
 export const ROLES = [
   "pure-library",
@@ -33,17 +29,11 @@ export type Boundary = (typeof BOUNDARIES)[number];
 
 export interface DomainDescription {
   readonly id: string;
-  readonly axis: "technology" | "role" | "platform" | "boundary";
+  readonly axis: "role" | "platform" | "boundary";
   readonly summary: string;
 }
 
 export const DOMAIN_DESCRIPTIONS: readonly DomainDescription[] = [
-  {
-    id: "effect-v4",
-    axis: "technology",
-    summary:
-      "Code written against Effect v4. Explicit configuration is authoritative; import detection may only suggest it.",
-  },
   {
     id: "pure-library",
     axis: "role",
@@ -121,7 +111,6 @@ export const DOMAIN_DESCRIPTIONS: readonly DomainDescription[] = [
 ];
 
 export interface DomainSelection {
-  readonly technology: Technology;
   readonly role: Role;
   readonly platform: Platform;
   readonly boundaries?: readonly Boundary[];
@@ -129,7 +118,6 @@ export interface DomainSelection {
 
 export function describeSelection(selection: Partial<DomainSelection>): string {
   const parts: string[] = [];
-  if (selection.technology !== undefined) parts.push(`technology=${selection.technology}`);
   if (selection.role !== undefined) parts.push(`role=${selection.role}`);
   if (selection.platform !== undefined) parts.push(`platform=${selection.platform}`);
   if (selection.boundaries !== undefined && selection.boundaries.length > 0) {
@@ -140,10 +128,6 @@ export function describeSelection(selection: Partial<DomainSelection>): string {
 
 export function isRole(value: unknown): value is Role {
   return typeof value === "string" && (ROLES as readonly string[]).includes(value);
-}
-
-export function isTechnology(value: unknown): value is Technology {
-  return typeof value === "string" && (TECHNOLOGIES as readonly string[]).includes(value);
 }
 
 export function isPlatform(value: unknown): value is Platform {

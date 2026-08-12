@@ -1,0 +1,1 @@
+Refactor the reported ordinary TypeScript mechanism to the Effect concept named by the diagnostic. Preserve caller contracts and resource ownership. Apply only machine-applicable edits automatically; explain boundary-required and refactor-required changes.

@@ -11,8 +11,22 @@
       "platform": "portable",
       "boundaries": [
         "external-data"
-      ],
-      "strictness": "strict"
+      ]
+    },
+    {
+      "dir": "effect-import-style",
+      "role": "effect-library",
+      "platform": "portable",
+      "severityOverrides": {
+        "no-import-from-barrel-package": "error"
+      },
+      "ruleOptions": {
+        "no-import-from-barrel-package": {
+          "packageNames": [
+            "effect"
+          ]
+        }
+      }
     },
     {
       "dir": "portable-service",
@@ -22,8 +36,7 @@
     {
       "dir": "portable-application",
       "role": "application",
-      "platform": "portable",
-      "strictness": "strict"
+      "platform": "portable"
     },
     {
       "dir": "portable-composition-root",
@@ -33,14 +46,12 @@
     {
       "dir": "portable-runtime-adapter",
       "role": "runtime-adapter",
-      "platform": "portable",
-      "strictness": "strict"
+      "platform": "portable"
     },
     {
       "dir": "portable-test",
       "role": "test",
-      "platform": "portable",
-      "strictness": "strict"
+      "platform": "portable"
     },
     {
       "dir": "node-composition-root",
@@ -55,8 +66,7 @@
     {
       "dir": "node-runtime-adapter",
       "role": "runtime-adapter",
-      "platform": "node",
-      "strictness": "strict"
+      "platform": "node"
     },
     {
       "dir": "bun-composition-root",
@@ -66,8 +76,7 @@
     {
       "dir": "bun-runtime-adapter",
       "role": "runtime-adapter",
-      "platform": "bun",
-      "strictness": "strict"
+      "platform": "bun"
     },
     {
       "dir": "deno-composition-root",
@@ -77,8 +86,7 @@
     {
       "dir": "deno-runtime-adapter",
       "role": "runtime-adapter",
-      "platform": "deno",
-      "strictness": "strict"
+      "platform": "deno"
     },
     {
       "dir": "browser-application",

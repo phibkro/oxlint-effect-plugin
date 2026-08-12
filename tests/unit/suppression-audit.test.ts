@@ -11,6 +11,7 @@ describe("auditNativeDisableDirectives", () => {
       "// eslint-disable-next-line\nconsole.log('hidden')",
     ]) {
       expect(auditNativeDisableDirectives(source)[0]?.reason).toBe("broad-native-disable");
+      expect(auditNativeDisableDirectives(source)[0]?.code).toBe("EFT9031");
     }
   });
 
@@ -21,6 +22,12 @@ describe("auditNativeDisableDirectives", () => {
         { pluginNames: ["architecture"] },
       )[0]?.reason,
     ).toBe("plugin-native-disable");
+    expect(
+      auditNativeDisableDirectives(
+        "// oxlint-disable-next-line architecture/no-ambient-console\nconsole.log('hidden')",
+        { pluginNames: ["architecture"] },
+      )[0]?.code,
+    ).toBe("EFT9032");
     expect(
       auditNativeDisableDirectives(
         "console.log('hidden') // eslint-disable-line effect/no-ambient-console",
@@ -37,7 +44,7 @@ describe("auditNativeDisableDirectives", () => {
   test("custom reasoned directives are outside the native audit namespace", () => {
     expect(
       auditNativeDisableDirectives(
-        "// oxlint-effect-plugin allow(no-ambient-console): dev only: local bring-up\nconsole.log('x')",
+        "// oxlint-effect-plugin allow(no-ambient-console):\n// reason: local bring-up\nconsole.log('x')",
       ),
     ).toEqual([]);
   });

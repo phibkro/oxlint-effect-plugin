@@ -1,5 +1,5 @@
 === matrix run (config form: json, plugin: ./scripts/non-reporting-stub.mjs) ===
-expected=84 actual-plugin-diagnostics=0 missing=84 unexpected=0
+expected=90 actual-plugin-diagnostics=0 missing=90 unexpected=0
 
 missing (expected but not reported):
   fixtures/portable-pure-library/ambient-clock.red.ts:3 no-ambient-authority
@@ -16,6 +16,9 @@ missing (expected but not reported):
   fixtures/portable-effect-library/console-computed.red.ts:3 no-ambient-console
   fixtures/portable-effect-library/console.red.ts:8 no-ambient-console
   fixtures/portable-effect-library/console.red.ts:10 no-ambient-console
+  fixtures/portable-effect-library/effectts-tracer.red.ts:8 no-ambient-console
+  fixtures/portable-effect-library/effectts-tracer.red.ts:12 no-native-promise-control-flow
+  fixtures/portable-effect-library/effectts-tracer.red.ts:13 no-untyped-throw
   fixtures/portable-effect-library/final-provision.red.ts:6 no-cross-runtime
   fixtures/portable-effect-library/final-provision.red.ts:10 no-premature-execution
   fixtures/portable-effect-library/json-raw.red.ts:4 no-raw-json-parse
@@ -27,6 +30,9 @@ missing (expected but not reported):
   fixtures/portable-effect-library/module-authority.red.ts:5 no-cross-runtime
   fixtures/portable-effect-library/named-execution.red.ts:9 no-premature-execution
   fixtures/portable-effect-library/named-execution.red.ts:10 no-premature-execution
+  fixtures/portable-effect-library/opaque-instance.red.ts:6 no-opaque-instance-fields
+  fixtures/portable-effect-library/opaque-instance.red.ts:16 no-opaque-instance-fields
+  fixtures/portable-effect-library/opaque-instance.red.ts:21 no-opaque-instance-fields
   fixtures/portable-effect-library/promise-syntax.red.ts:9 no-native-promise-control-flow
   fixtures/portable-effect-library/promise-syntax.red.ts:10 no-native-promise-control-flow
   fixtures/portable-effect-library/promise-syntax.red.ts:13 no-native-promise-control-flow
@@ -49,13 +55,13 @@ missing (expected but not reported):
   fixtures/portable-effect-library/runs.red.ts:10 no-premature-execution
   fixtures/portable-effect-library/runs.red.ts:12 no-native-promise-control-flow
   fixtures/portable-effect-library/runs.red.ts:14 no-premature-execution
-  fixtures/portable-effect-library/suppress-broad.red.ts:6 no-ambient-console
   fixtures/portable-effect-library/suppress-broad.red.ts:7 no-ambient-console
-  fixtures/portable-effect-library/suppress-duplicate.red.ts:4 no-ambient-console
-  fixtures/portable-effect-library/suppress-missing-reason.red.ts:6 no-ambient-console
+  fixtures/portable-effect-library/suppress-duplicate.red.ts:8 no-ambient-console
   fixtures/portable-effect-library/suppress-missing-reason.red.ts:7 no-ambient-console
-  fixtures/portable-effect-library/suppress-unused.red.ts:9 no-ambient-console
+  fixtures/portable-effect-library/suppress-valid.audit.ts:7 no-ambient-console
   fixtures/portable-effect-library/throw.red.ts:6 no-untyped-throw
+  fixtures/effect-import-style/barrel.red.ts:1 no-import-from-barrel-package
+  fixtures/effect-import-style/barrel.red.ts:2 no-import-from-barrel-package
   fixtures/portable-service/console.red.ts:7 no-ambient-console
   fixtures/portable-application/runs.red.ts:8 no-native-promise-control-flow
   fixtures/portable-application/runs.red.ts:10 no-premature-execution
@@ -90,9 +96,11 @@ missing (expected but not reported):
 missing per rule family:
   no-ambient-authority: 23
   no-cross-runtime: 27
-  no-ambient-console: 10
+  no-ambient-console: 9
+  no-native-promise-control-flow: 15
+  no-untyped-throw: 2
   no-premature-execution: 7
   no-raw-json-parse: 2
-  no-native-promise-control-flow: 14
-  no-untyped-throw: 1
+  no-opaque-instance-fields: 3
+  no-import-from-barrel-package: 2
 runner exit: 1

@@ -2,6 +2,11 @@
 
 Status: frozen for the first tracer bullet
 
+Configuration amendment: design spec 0003 supersedes the selectable technology
+axis, the named `recommended` and `strict` fragments, and the original builder
+interface. Effect v4 remains compatibility metadata. The tracer evidence and
+rule semantics remain historical acceptance evidence.
+
 Date: 2026-07-30
 
 Naming revision: 2026-07-30. Operator direction made the product identity
@@ -40,7 +45,7 @@ Ship one independently reusable compiled Oxlint JavaScript plugin that:
 - package: `@phibkro/oxlint-effect-plugin`;
 - default Oxlint namespace: `effect/*`;
 - technology compatibility: package and compatibility metadata declare Effect
-  major 4, exact reviewed release `4.0.0-beta.102`, and technology domain
+  major 4, exact reviewed release `4.0.0-beta.107`, and technology domain
   `effect-v4`;
 - initial release line: `0.x`;
 - default export: ESLint-v9-compatible Oxlint JavaScript plugin;
@@ -58,7 +63,7 @@ exactly while those surfaces remain pre-stable.
 Configuration expands selected domain intersections into ordinary Oxlint
 rules and file overrides. Domains determine applicability, not severity.
 
-### Technology
+### Technology (superseded as configuration by design spec 0003)
 
 - `effect-v4`
 

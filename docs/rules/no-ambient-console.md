@@ -1,25 +1,48 @@
 # effect/no-ambient-console
 
-Family: observability-capability · Default severity: error
+Code: EFT2101 · Family: observability · Default severity: error
 
-## Rationale
+## Invariant
 
-Ambient console output bypasses the Effect observability capability (levels, spans, structured output, redaction). Severe in Effect-bearing operational code; a genuinely developer-only statement carries one targeted nonempty `dev only:` suppression.
+effect-owned-observability: Ambient console access is outside EffectTS.
 
-## Applicability (domains select rules, never severity)
+## Why EffectTS rejects it
 
+Ambient console output bypasses Effect logging and Console capabilities, including levels, spans, structured output, and redaction.
+
+## Help
+
+Use Effect.log*, effect/Console, or an injected logging service.
+
+Proof: syntax, scope.
+
+## Applicability
+
+- Strictness: recommended, strict
 - Roles: pure-library, effect-library, service, application, composition-root, runtime-adapter
-- Required boundary: none
+- Boundaries: none
 
-## Limitation
+## Limitations
 
-Detects ambient `console` member access and statically named `globalThis`/`window`/`self.console` (including computed string properties); aliased references (`const c = console`) escape syntax analysis. Native oxlint/eslint disables bypass rule execution, so the exported independent suppression audit must be a host gate.
+- Aliases and computed dynamic access escape syntax analysis.
+- The automatic repair is limited to direct console.log statements inside recognized Effect generators.
 
-## Suppression contract
+## Type-aware companion (@effect/tsgo)
+
+Overlaps: globalConsole, globalConsoleInEffect.
+
+This rule owns role-scoped EffectTS console policy and its bounded repair; keep the overlapping @effect/tsgo syntax diagnostics off.
+
+## Replacements
+
+- `console.log` → `yield* Console.log` (machine-applicable)
+
+## Local exception
 
 ```ts
-// oxlint-effect-plugin allow(no-ambient-console): dev only: <nonempty reason>
-console.dir(payload);
+// oxlint-effect-plugin allow(no-ambient-console):
+// reason: <nonempty reason>
+<next syntax node>
 ```
 
-The directive must target exactly this rule and carry a nonempty `dev only:` reason; it applies to the next line (or its own line when trailing). Broad, missing-reason, and unused directives are themselves reported.
+The directive targets exactly one rule and the next syntax node in the same lexical block. Broad, duplicate, missing-reason, misplaced, unused, and stale directives fail the escape audit.

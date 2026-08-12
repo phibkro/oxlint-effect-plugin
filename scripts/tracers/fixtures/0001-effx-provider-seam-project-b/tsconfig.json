@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "es2024",
+    "skipLibCheck": true,
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "diagnosticSeverity": {
+          "floatingEffect": "error"
+        }
+      }
+    ]
+  },
+  "files": ["clean.ts"]
+}

@@ -57,6 +57,10 @@ export interface ImportDeclaration extends BaseNode {
   readonly type: "ImportDeclaration";
   readonly source: Literal;
   readonly specifiers: readonly Node[];
+  readonly importKind?: "type" | "value";
+  /** ESTree import attributes/assertions; either makes a merge unsafe. */
+  readonly attributes?: readonly unknown[];
+  readonly assertions?: readonly unknown[];
 }
 
 export interface ImportSpecifierNode extends BaseNode {
@@ -64,6 +68,32 @@ export interface ImportSpecifierNode extends BaseNode {
   readonly local: Identifier;
   /** Present only for `ImportSpecifier`; Oxc follows the ESTree shape. */
   readonly imported?: Identifier | Literal;
+  readonly importKind?: "type" | "value";
+}
+
+export interface ExpressionStatement extends BaseNode {
+  readonly type: "ExpressionStatement";
+  readonly expression: Node;
+}
+
+export interface BlockStatement extends BaseNode {
+  readonly type: "BlockStatement";
+  readonly body: readonly Node[];
+}
+
+export interface FunctionExpression extends BaseNode {
+  readonly type: "FunctionExpression";
+  readonly id: Identifier | null;
+  readonly params: readonly Node[];
+  readonly body: Node;
+  readonly generator?: boolean;
+  readonly async?: boolean;
+}
+
+export interface YieldExpression extends BaseNode {
+  readonly type: "YieldExpression";
+  readonly argument: Node | null;
+  readonly delegate: boolean;
 }
 
 export interface VariableDeclarator extends BaseNode {
@@ -100,6 +130,7 @@ export interface ThrowStatement extends BaseNode {
 
 export interface Program extends BaseNode {
   readonly type: "Program";
+  readonly body?: readonly Node[];
 }
 
 /** Catch-all for nodes the plugin does not narrow further. */
@@ -115,6 +146,10 @@ export type Node =
   | NewExpression
   | ImportDeclaration
   | ImportSpecifierNode
+  | ExpressionStatement
+  | BlockStatement
+  | FunctionExpression
+  | YieldExpression
   | VariableDeclarator
   | VariableDeclaration
   | ExportNamedDeclaration

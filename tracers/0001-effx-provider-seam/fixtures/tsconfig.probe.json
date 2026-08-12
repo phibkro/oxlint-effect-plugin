@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2023",
+    "skipLibCheck": true,
+    "types": ["bun"]
+  },
+  "files": [
+    "floating.ts",
+    "identity.ts",
+    "unsupported.ts",
+    "effect-heavy.ts",
+    "multi-a.ts",
+    "multi-b.ts"
+  ]
+}

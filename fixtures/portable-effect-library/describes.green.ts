@@ -14,6 +14,11 @@ export const stamped = Effect.gen(function* () {
   return new Date(millis);
 });
 
+export const describeCount = Effect.fn("describeCount")(function* (count: number) {
+  yield* Effect.log("count", { count });
+  return `count:${count}`;
+});
+
 export const Payload = Schema.Struct({
   id: Schema.String,
   at: Schema.Number,

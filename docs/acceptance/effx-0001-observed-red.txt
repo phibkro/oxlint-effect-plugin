@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "status": "tracked",
+  "outcome": "blocked",
+  "providers": {
+    "effectTsgoVersion": "0.36.4",
+    "effectExecutable": "<repo>/node_modules/@effect/tsgo-linux-x64/artifacts/typescript/7.0.2/tsc",
+    "effectExecutableSha256": "<sha256>",
+    "typescriptVersion": "7.0.2",
+    "stockExecutable": "<repo>/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "stockExecutableSha256": "<sha256>"
+  },
+  "fixtureSourceSha256": "88ee68146a88b1749bbd2bb0280236f74264ef20d37531ff289d2398f35c7dff",
+  "diagnostics": [],
+  "codeAction": {
+    "present": false,
+    "hasWorkspaceEdit": false
+  },
+  "advertisedCommands": [],
+  "executedCommandAccepted": false,
+  "staleCommandError": null,
+  "unknownCommandError": null,
+  "diagnosticLifecycle": {
+    "unchangedPreserved": false,
+    "cancellationForwarded": false,
+    "closedDocumentRejected": false
+  },
+  "timingsObserved": {
+    "cold": false,
+    "warm": false,
+    "incremental": false,
+    "effectHeavy": false,
+    "multiProject": false
+  },
+  "memoryObserved": true,
+  "protocolDirections": [],
+  "terminationObserved": true,
+  "unsupportedOperations": [],
+  "failureCases": {
+    "missingProviderBlocked": true,
+    "misVersionedProviderBlocked": true,
+    "nonExecutableProviderBlocked": true,
+    "startedProviderFailureCleanedUp": true
+  },
+  "unsupportedOperationCount": 0,
+  "errors": [
+    "injected provider failure after process startup"
+  ]
+}

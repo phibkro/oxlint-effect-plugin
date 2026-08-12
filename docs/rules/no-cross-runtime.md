@@ -1,16 +1,43 @@
 # effect/no-cross-runtime
 
-Family: platform-portability · Default severity: error
+Code: EFT2301 · Family: platform · Default severity: error
 
-## Rationale
+## Invariant
 
-A declared runtime-platform domain admits only its own built-ins, globals, and platform layers. Compatibility APIs provided by another runtime are not silently portable, and official platform live layers belong only to a matching composition-root or runtime-adapter.
+declared-runtime-authority: Runtime authority crosses the declared platform.
 
-## Applicability (domains select rules, never severity)
+## Why EffectTS rejects it
 
+A platform domain admits only its own built-ins, globals, and official platform layers.
+
+## Help
+
+Move the authority to a matching runtime adapter or select the correct platform domain.
+
+Proof: syntax, scope.
+
+## Applicability
+
+- Strictness: recommended, strict
 - Roles: pure-library, effect-library, service, application, composition-root, runtime-adapter, test
-- Required boundary: none
+- Boundaries: none
 
-## Limitation
+## Limitations
 
-Classifies static import/re-export specifiers and bare or statically global-object-qualified runtime-identifying globals; computed dynamic imports and feature detection escape analysis. `self`/`navigator`/`location` are admitted in both browser and web-worker domains.
+- Computed imports and runtime feature detection escape syntax analysis.
+
+## Type-aware companion (@effect/tsgo)
+
+Overlaps: nodeBuiltinImport.
+
+This rule owns declared-platform compatibility; @effect/tsgo's Node import diagnostic has no project platform context and stays off.
+
+## Local exception
+
+```ts
+// oxlint-effect-plugin allow(no-cross-runtime):
+// reason: <nonempty reason>
+<next syntax node>
+```
+
+The directive targets exactly one rule and the next syntax node in the same lexical block. Broad, duplicate, missing-reason, misplaced, unused, and stale directives fail the escape audit.

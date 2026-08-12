@@ -9,6 +9,7 @@
  */
 
 export interface NativeDisableFinding {
+  readonly code: "EFT9031" | "EFT9032";
   readonly line: number;
   readonly directive: string;
   readonly targets: readonly string[];
@@ -78,6 +79,7 @@ export function auditNativeDisableDirectives(
       .filter(Boolean);
     if (targets.length === 0) {
       findings.push({
+        code: "EFT9031",
         line: comment.line,
         directive,
         targets,
@@ -92,6 +94,7 @@ export function auditNativeDisableDirectives(
       })
     ) {
       findings.push({
+        code: "EFT9032",
         line: comment.line,
         directive,
         targets,
