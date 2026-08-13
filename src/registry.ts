@@ -1,9 +1,8 @@
 /**
- * Rule metadata registry — the single authoritative record of each rule's
- * family, applicability, rationale, limitation, and TSGO overlap.
+ * Canonical executable knowledge for every shipped EffectTS rule.
  *
- * Rule documentation and the preset expansion are derived from this table;
- * nothing else may restate these facts.
+ * Configuration, diagnostics, explanations, documentation, repair metadata, and
+ * agent guidance are projections of this registry.
  */
 
 import type { Boundary, Role } from "./domains.js";
@@ -16,31 +15,90 @@ export const RULE_NAMES = [
   "no-native-promise-control-flow",
   "no-raw-json-parse",
   "no-untyped-throw",
+  "no-opaque-instance-fields",
+  "no-import-from-barrel-package",
 ] as const;
 export type RuleName = (typeof RULE_NAMES)[number];
 
 export type RuleFamily =
-  | "observability-capability"
-  | "ambient-capability"
-  | "platform-portability"
-  | "execution-topology"
-  | "external-decoding"
-  | "typed-failure";
+  | "modeling"
+  | "failure"
+  | "computation"
+  | "capability"
+  | "state"
+  | "lifecycle"
+  | "concurrency"
+  | "execution"
+  | "boundary"
+  | "architecture"
+  | "platform"
+  | "observability";
 
-export interface RuleInfo {
-  readonly name: RuleName;
+export type EnforcementProofSource = "syntax" | "scope" | "module-graph" | "typed-oxlint" | "tsgo";
+export type KnowledgeStatus = "convention" | "unenforceable";
+export type ProofSource = EnforcementProofSource | KnowledgeStatus;
+export type SuggestionApplicability =
+  | "machine-applicable"
+  | "choice-required"
+  | "refactor-required"
+  | "boundary-required";
+export type Strictness = "recommended" | "strict";
+
+type Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+export type EffectTSCode = `EFT${"1" | "2" | "3" | "4" | "5" | "9"}${Digit}${Digit}${Digit}`;
+
+export interface Replacement {
+  readonly from: string;
+  readonly to: string;
+  readonly applicability: SuggestionApplicability;
+  readonly import?: {
+    readonly module: string;
+    readonly symbol: string;
+  };
+}
+
+export interface EffectTSRuleDefinition {
+  readonly rule: RuleName;
+  readonly code: EffectTSCode;
   readonly family: RuleFamily;
-  readonly defaultSeverity: "error" | "warn";
-  /** Roles for which the config expansion enables the rule. */
-  readonly appliesToRoles: readonly Role[];
-  /** Boundary that must be declared for the expansion to enable the rule. */
-  readonly requiresBoundary: Boundary | null;
-  /** Rules only enabled by the strict preset (not recommended). */
-  readonly strictOnly: boolean;
+  readonly invariant: string;
+  readonly summary: string;
   readonly rationale: string;
-  readonly limitation: string;
-  /** Overlapping type-aware @effect/tsgo diagnostics, and who is authoritative. */
-  readonly tsgoOverlap: string | null;
+  readonly proofSources: readonly EnforcementProofSource[];
+  readonly defaultSeverity: "error" | "warn" | "off";
+  readonly defaultOptions: Readonly<Record<string, unknown>>;
+  readonly strictness: readonly Strictness[];
+  readonly applicability: {
+    readonly roles: readonly Role[];
+    /** Any listed boundary activates the rule; an empty list is boundary-independent. */
+    readonly boundaries: readonly Boundary[];
+  };
+  readonly diagnostic: {
+    readonly message: string;
+    readonly explanation: string;
+    readonly help: string;
+    readonly docs: string;
+  };
+  readonly replacements: readonly Replacement[];
+  readonly suppression: "none" | "local-reasoned";
+  readonly tsgo: {
+    readonly overlap: readonly string[];
+    readonly authority: string;
+  };
+  readonly limitations: readonly string[];
+}
+
+export interface ModuleGraphInvariantDefinition {
+  readonly kind: "module-graph";
+  readonly code: EffectTSCode;
+  readonly family: "architecture";
+  readonly invariant: "effectts-import-closure";
+  readonly summary: string;
+  readonly rationale: string;
+  readonly proofSources: readonly ["module-graph"];
+  readonly diagnostic: EffectTSRuleDefinition["diagnostic"];
+  readonly replacements: readonly Replacement[];
+  readonly limitations: readonly string[];
 }
 
 const ALL_BUT_TEST: readonly Role[] = [
@@ -52,103 +110,363 @@ const ALL_BUT_TEST: readonly Role[] = [
   "runtime-adapter",
 ];
 
-export const RULE_REGISTRY: readonly RuleInfo[] = [
+const ALL_ROLES: readonly Role[] = [...ALL_BUT_TEST, "test"];
+
+export const RULE_REGISTRY: readonly EffectTSRuleDefinition[] = [
   {
-    name: "no-ambient-console",
-    family: "observability-capability",
-    defaultSeverity: "error",
-    appliesToRoles: ALL_BUT_TEST,
-    requiresBoundary: null,
-    strictOnly: false,
+    rule: "no-ambient-console",
+    code: "EFT2101",
+    family: "observability",
+    invariant: "effect-owned-observability",
+    summary: "Ambient console access is outside EffectTS.",
     rationale:
-      "Ambient console output bypasses the Effect observability capability (levels, spans, structured output, redaction). Severe in Effect-bearing operational code; a genuinely developer-only statement carries one targeted nonempty `dev only:` suppression.",
-    limitation:
-      "Detects ambient `console` member access and statically named `globalThis`/`window`/`self.console` (including computed string properties); aliased references (`const c = console`) escape syntax analysis. Native oxlint/eslint disables bypass rule execution, so the exported independent suppression audit must be a host gate.",
-    tsgoOverlap: null,
+      "Ambient console output bypasses Effect logging and Console capabilities, including levels, spans, structured output, and redaction.",
+    proofSources: ["syntax", "scope"],
+    defaultSeverity: "error",
+    defaultOptions: {},
+    strictness: ["recommended", "strict"],
+    applicability: { roles: ALL_BUT_TEST, boundaries: [] },
+    diagnostic: {
+      message: "Ambient console access is outside EffectTS.",
+      explanation:
+        "Observability must remain inside Effect capabilities and configured Logger layers.",
+      help: "Use Effect.log*, effect/Console, or an injected logging service.",
+      docs: "docs/rules/no-ambient-console.md",
+    },
+    replacements: [
+      {
+        from: "console.log",
+        to: "yield* Console.log",
+        import: { module: "effect", symbol: "Console" },
+        applicability: "machine-applicable",
+      },
+    ],
+    suppression: "local-reasoned",
+    tsgo: {
+      overlap: ["globalConsole", "globalConsoleInEffect"],
+      authority:
+        "This rule owns role-scoped EffectTS console policy and its bounded repair; keep the overlapping @effect/tsgo syntax diagnostics off.",
+    },
+    limitations: [
+      "Aliases and computed dynamic access escape syntax analysis.",
+      "The automatic repair is limited to direct console.log statements inside recognized Effect generators.",
+    ],
   },
   {
-    name: "no-ambient-authority",
-    family: "ambient-capability",
-    defaultSeverity: "error",
-    appliesToRoles: ["pure-library", "effect-library", "service", "application"],
-    requiresBoundary: null,
-    strictOnly: false,
+    rule: "no-ambient-authority",
+    code: "EFT2201",
+    family: "capability",
+    invariant: "explicit-operational-authority",
+    summary: "Ambient operational authority is outside EffectTS.",
     rationale:
-      "Clock, random, cryptographic, network, timer, environment, filesystem, process, and runtime authority belong to declared Effect services so tests and platforms can replace them. Deterministic `new Date(capturedMilliseconds)` is admitted; observations such as `new Date()`/`Date.now()` are not, and wrapping them in a thunk does not surface the hidden authority to the Effect environment.",
-    limitation:
-      "Syntax/scope detection over known bare or statically global-object-qualified ambient globals plus static import(), import, and re-export module edges; authority reached through aliases, dependency wrappers, or computed dynamic access escapes analysis. Composition roots and runtime adapters are exempt by role.",
-    tsgoOverlap: null,
+      "Clock, randomness, environment, network, filesystem, process, and runtime authority belong to declared Effect or project services.",
+    proofSources: ["syntax", "scope"],
+    defaultSeverity: "error",
+    defaultOptions: {},
+    strictness: ["recommended", "strict"],
+    applicability: {
+      roles: ["pure-library", "effect-library", "service", "application"],
+      boundaries: [],
+    },
+    diagnostic: {
+      message: "Ambient operational authority is outside EffectTS.",
+      explanation:
+        "Hidden authority cannot be replaced by tests or selected at the composition root.",
+      help: "Inject Clock, Random, Config, a platform service, or a project service.",
+      docs: "docs/rules/no-ambient-authority.md",
+    },
+    replacements: [],
+    suppression: "local-reasoned",
+    tsgo: {
+      overlap: [
+        "cryptoRandomUUID",
+        "cryptoRandomUUIDInEffect",
+        "globalDate",
+        "globalDateInEffect",
+        "globalFetch",
+        "globalFetchInEffect",
+        "globalRandom",
+        "globalRandomInEffect",
+        "globalTimers",
+        "globalTimersInEffect",
+        "nodeBuiltinImport",
+        "processEnv",
+        "processEnvInEffect",
+      ],
+      authority:
+        "This rule owns role-scoped ambient-authority policy; keep overlapping @effect/tsgo syntax diagnostics off while typed Effect facts remain upstream-owned.",
+    },
+    limitations: ["Aliases, wrappers, and computed dynamic access escape syntax analysis."],
   },
   {
-    name: "no-cross-runtime",
-    family: "platform-portability",
-    defaultSeverity: "error",
-    appliesToRoles: [...ALL_BUT_TEST, "test"],
-    requiresBoundary: null,
-    strictOnly: false,
+    rule: "no-cross-runtime",
+    code: "EFT2301",
+    family: "platform",
+    invariant: "declared-runtime-authority",
+    summary: "Runtime authority crosses the declared platform.",
     rationale:
-      "A declared runtime-platform domain admits only its own built-ins, globals, and platform layers. Compatibility APIs provided by another runtime are not silently portable, and official platform live layers belong only to a matching composition-root or runtime-adapter.",
-    limitation:
-      "Classifies static import/re-export specifiers and bare or statically global-object-qualified runtime-identifying globals; computed dynamic imports and feature detection escape analysis. `self`/`navigator`/`location` are admitted in both browser and web-worker domains.",
-    tsgoOverlap: null,
+      "A platform domain admits only its own built-ins, globals, and official platform layers.",
+    proofSources: ["syntax", "scope"],
+    defaultSeverity: "error",
+    defaultOptions: {},
+    strictness: ["recommended", "strict"],
+    applicability: { roles: [...ALL_BUT_TEST, "test"], boundaries: [] },
+    diagnostic: {
+      message: "Runtime authority crosses the declared platform.",
+      explanation: "Compatibility APIs from another runtime are not evidence of portability.",
+      help: "Move the authority to a matching runtime adapter or select the correct platform domain.",
+      docs: "docs/rules/no-cross-runtime.md",
+    },
+    replacements: [],
+    suppression: "local-reasoned",
+    tsgo: {
+      overlap: ["nodeBuiltinImport"],
+      authority:
+        "This rule owns declared-platform compatibility; @effect/tsgo's Node import diagnostic has no project platform context and stays off.",
+    },
+    limitations: ["Computed imports and runtime feature detection escape syntax analysis."],
   },
   {
-    name: "no-premature-execution",
-    family: "execution-topology",
-    defaultSeverity: "error",
-    appliesToRoles: ["pure-library", "effect-library", "service", "application", "runtime-adapter"],
-    requiresBoundary: null,
-    strictOnly: false,
+    rule: "no-premature-execution",
+    code: "EFT4101",
+    family: "execution",
+    invariant: "composition-root-execution",
+    summary: "Effect execution occurs outside its composition root.",
     rationale:
-      "Libraries may describe Effects but only composition roots may execute them or provide the final platform environment. Layer construction and internal service composition remain admitted.",
-    limitation:
-      "Recognizes namespace and named Effect/ManagedRuntime/platform imports by resolved lexical binding identity; execution reached through re-exports or value aliases escapes analysis. When `no-native-promise-control-flow` is active for the same files, `Effect.runPromise*` is reported by that rule alone.",
-    tsgoOverlap:
-      "@effect/tsgo detects floating Effects, leaking requirements, and strict provision type-aware; it is authoritative for whether requirements are actually closed. This rule is authoritative for the syntactic execution site.",
+      "Libraries describe Effects; only composition roots select final Layers and execute programs.",
+    proofSources: ["syntax", "scope"],
+    defaultSeverity: "error",
+    defaultOptions: {},
+    strictness: ["recommended", "strict"],
+    applicability: {
+      roles: ["pure-library", "effect-library", "service", "application", "runtime-adapter"],
+      boundaries: [],
+    },
+    diagnostic: {
+      message: "Effect execution occurs outside its composition root.",
+      explanation:
+        "Early execution hides requirements and fixes runtime ownership too low in the graph.",
+      help: "Return the Effect and execute it from the designated composition root.",
+      docs: "docs/rules/no-premature-execution.md",
+    },
+    replacements: [],
+    suppression: "local-reasoned",
+    tsgo: {
+      overlap: [
+        "floatingEffect",
+        "missingEffectContext",
+        "missingEffectError",
+        "runEffectInsideEffect",
+        "strictEffectProvide",
+      ],
+      authority:
+        "@effect/tsgo owns Effect types and requirement closure; this rule owns the syntactic execution site.",
+    },
+    limitations: ["Execution reached through re-exports or value aliases escapes syntax analysis."],
   },
   {
-    name: "no-native-promise-control-flow",
-    family: "execution-topology",
-    defaultSeverity: "error",
-    appliesToRoles: ["effect-library", "service", "application", "runtime-adapter"],
-    requiresBoundary: null,
-    strictOnly: true,
+    rule: "no-native-promise-control-flow",
+    code: "EFT3101",
+    family: "computation",
+    invariant: "effect-owned-asynchronous-computation",
+    summary: "Native async control flow is outside EffectTS.",
     rationale:
-      "Native Promise control flow (async/await, new Promise, Promise combinators, resolve/reject) bypasses Effect's structured concurrency, typed failures, and interruption. Runtime adapters may use native Promise mechanics only inside Effect.tryPromise, Effect.promise for genuinely non-rejecting promises, or Effect.async with cancellation mapped where available; composition roots perform final Effect.runPromise; tests may execute explicitly.",
-    limitation:
-      "Owns high-confidence AST/scope cases only: async/await and top-level for-await syntax, ambient/globalThis Promise construction and static control flow, direct immutable Promise aliases, and imported Effect.runPromise* variants. Promise type references and declared external Promise signatures are never diagnosed. The reviewed typed companions currently expose no domain-aware general `.then`/`.catch`/`.finally` policy, so arbitrary typed chains remain an explicit gap.",
-    tsgoOverlap:
-      "@effect/tsgo is authoritative for Effect-specific typed promise diagnostics such as lazyPromiseInEffectSync; this rule is authoritative for the listed Promise syntax and ambient globals. A general typed chain policy requires a future type-and-domain-aware companion hook.",
+      "Native Promise control flow bypasses Effect failure, requirement, interruption, resource, and structured concurrency semantics.",
+    proofSources: ["syntax", "scope"],
+    defaultSeverity: "error",
+    defaultOptions: {},
+    strictness: ["strict"],
+    applicability: {
+      roles: ["effect-library", "service", "application", "runtime-adapter"],
+      boundaries: [],
+    },
+    diagnostic: {
+      message: "Native async control flow is outside EffectTS.",
+      explanation:
+        "Asynchronous application computation must expose Effect errors, requirements, and interruption.",
+      help: "Use Effect.fn and Effect combinators; lift vendor Promises at a runtime-adapter boundary.",
+      docs: "docs/rules/no-native-promise-control-flow.md",
+    },
+    replacements: [],
+    suppression: "local-reasoned",
+    tsgo: {
+      overlap: ["asyncFunction", "lazyPromiseInEffectSync", "newPromise", "promiseInEffectSuccess"],
+      authority:
+        "@effect/tsgo owns typed Promise values and contextual Effect semantics; this rule owns role-scoped native Promise syntax, so direct syntax duplicates stay off upstream.",
+    },
+    limitations: ["Arbitrary typed then, catch, and finally chains remain unenforceable."],
   },
   {
-    name: "no-raw-json-parse",
-    family: "external-decoding",
-    defaultSeverity: "error",
-    appliesToRoles: [...ALL_BUT_TEST],
-    requiresBoundary: "external-data",
-    strictOnly: false,
+    rule: "no-raw-json-parse",
+    code: "EFT1201",
+    family: "boundary",
+    invariant: "schema-owned-external-decoding",
+    summary: "Raw external JSON decoding bypasses Schema.",
     rationale:
-      "External JSON must cross an explicit Effect Schema decoding seam instead of raw JSON.parse. Only JSON syntax is claimed; other syntaxes require their own parser/Schema seam.",
-    limitation:
-      "Flags ambient bare or statically global-object-qualified `JSON.parse`; parsing behind aliases, wrappers, computed dynamic properties, or other syntaxes escapes analysis. Lint enforces the seam, it does not validate data.",
-    tsgoOverlap: null,
+      "External JSON must cross an explicit Effect Schema decoding seam instead of becoming unvalidated data through JSON.parse.",
+    proofSources: ["syntax", "scope"],
+    defaultSeverity: "error",
+    defaultOptions: {},
+    strictness: ["recommended", "strict"],
+    applicability: { roles: ALL_BUT_TEST, boundaries: ["external-data"] },
+    diagnostic: {
+      message: "Raw external JSON decoding bypasses Schema.",
+      explanation:
+        "External representations remain unknown until a declared Schema validates and transforms them.",
+      help: "Decode with Schema.decodeUnknownEffect at the external-data boundary.",
+      docs: "docs/rules/no-raw-json-parse.md",
+    },
+    replacements: [],
+    suppression: "local-reasoned",
+    tsgo: {
+      overlap: ["preferSchemaOverJson"],
+      authority:
+        "This rule owns external-data boundary policy for JSON.parse; keep the broader @effect/tsgo syntax suggestion off when this profile rule applies.",
+    },
+    limitations: ["Aliases, wrappers, other syntaxes, and post-parse value flow escape analysis."],
   },
   {
-    name: "no-untyped-throw",
-    family: "typed-failure",
-    defaultSeverity: "error",
-    appliesToRoles: ["pure-library", "effect-library", "service", "application"],
-    requiresBoundary: null,
-    strictOnly: true,
+    rule: "no-untyped-throw",
+    code: "EFT3201",
+    family: "failure",
+    invariant: "typed-expected-failure",
+    summary: "Throw-based expected failure is outside EffectTS.",
     rationale:
-      "In roles whose contract is total or whose failures belong in the Effect error channel, `throw` erases failure typing. This is not a JavaScript-wide ban: composition roots, runtime adapters, and tests keep their untyped-boundary contracts.",
-    limitation:
-      "Purely syntactic: every `throw` in an enabled role is reported, including rethrow helpers; narrow the file group or use Effect.die for defects instead.",
-    tsgoOverlap:
-      "@effect/tsgo tracks unknown error values in Effect types and is authoritative for error-channel typing; this rule is authoritative for the `throw` syntax site.",
+      "Throw erases expected application failure from the Effect error channel and caller contract.",
+    proofSources: ["syntax"],
+    defaultSeverity: "error",
+    defaultOptions: {},
+    strictness: ["strict"],
+    applicability: {
+      roles: ["pure-library", "effect-library", "service", "application"],
+      boundaries: [],
+    },
+    diagnostic: {
+      message: "Throw-based expected failure is outside EffectTS.",
+      explanation:
+        "Expected failures must remain visible as Schema-backed values in Effect<A, E, R>.",
+      help: "Define a Schema.TaggedErrorClass and fail through the Effect error channel.",
+      docs: "docs/rules/no-untyped-throw.md",
+    },
+    replacements: [],
+    suppression: "local-reasoned",
+    tsgo: {
+      overlap: ["missingEffectError"],
+      authority:
+        "@effect/tsgo owns typed error-channel facts; this rule owns the role-scoped throw syntax site.",
+    },
+    limitations: ["The syntax rule cannot distinguish expected failure from a defect or rethrow."],
+  },
+  {
+    rule: "no-opaque-instance-fields",
+    code: "EFT1101",
+    family: "modeling",
+    invariant: "schema-opaque-runtime-shape",
+    summary: "A Schema.Opaque declaration defines instance behavior absent from decoded values.",
+    rationale:
+      "Schema.Opaque changes nominal typing without constructing class instances; decoded values retain the wrapped schema's runtime representation.",
+    proofSources: ["syntax", "scope"],
+    defaultSeverity: "error",
+    defaultOptions: {},
+    strictness: ["recommended", "strict"],
+    applicability: { roles: ALL_ROLES, boundaries: [] },
+    diagnostic: {
+      message: "A Schema.Opaque declaration defines instance behavior absent from decoded values.",
+      explanation:
+        "Opaque schemas preserve structural runtime behavior, so decoded values do not receive instance fields or methods from the declaration shell.",
+      help: "Remove instance members; use pure functions or an explicit schema transformation for constructed runtime behavior.",
+      docs: "docs/rules/no-opaque-instance-fields.md",
+    },
+    replacements: [],
+    suppression: "local-reasoned",
+    tsgo: {
+      overlap: [],
+      authority:
+        "This syntax-and-scope rule enforces the documented Schema.Opaque runtime-shape contract; @effect/tsgo has no reviewed overlapping diagnostic.",
+    },
+    limitations: [
+      "Re-exported Schema bindings, wrapper functions, and inherited instance members escape this syntax analysis.",
+    ],
+  },
+  {
+    rule: "no-import-from-barrel-package",
+    code: "EFT5102",
+    family: "architecture",
+    invariant: "configured-package-import-topology",
+    summary: "A named value or namespace import uses a configured package barrel.",
+    rationale:
+      "For packages explicitly selected by the project, imports must name the owning module subpath instead of entering through the package barrel.",
+    proofSources: ["syntax"],
+    defaultSeverity: "off",
+    defaultOptions: { packageNames: [] },
+    strictness: ["recommended", "strict"],
+    applicability: { roles: ALL_ROLES, boundaries: [] },
+    diagnostic: {
+      message: "A value import uses a configured package barrel.",
+      explanation:
+        "Package import topology is an explicit project policy, independent of EffectTS import closure and package purity.",
+      help: "Import the owning module subpath selected by the package's public exports.",
+      docs: "docs/rules/no-import-from-barrel-package.md",
+    },
+    replacements: [],
+    suppression: "local-reasoned",
+    tsgo: {
+      overlap: [],
+      authority:
+        "This optional syntax policy is adapted from @effect/eslint-plugin; no typed diagnostic ownership is claimed.",
+    },
+    limitations: [
+      "Configured package names are exact strings; the rule does not resolve package exports, relative barrels, re-exports, or subpath validity.",
+      "No automatic fix is offered because a package root export does not prove an equivalent module namespace subpath.",
+    ],
   },
 ];
 
-export const RULE_INFO_BY_NAME: ReadonlyMap<RuleName, RuleInfo> = new Map(
-  RULE_REGISTRY.map((info) => [info.name, info]),
+export const IMPORT_CLOSURE_DEFINITION: ModuleGraphInvariantDefinition = {
+  kind: "module-graph",
+  code: "EFT5101",
+  family: "architecture",
+  invariant: "effectts-import-closure",
+  summary: "An import edge lies outside the configured EffectTS closure.",
+  rationale:
+    "Governed modules may import Effect, admitted project modules, reasoned trusted pure packages, or declared adapter packages.",
+  proofSources: ["module-graph"],
+  diagnostic: {
+    message: "An import edge lies outside the configured EffectTS closure.",
+    explanation:
+      "Capability-bearing packages must not become ambient dependencies of application code.",
+    help: "Move the package behind a runtime adapter, or record a reasoned trusted-pure dependency.",
+    docs: "docs/import-closure.md",
+  },
+  replacements: [],
+  limitations: [
+    "Trust is a reviewed project assertion, not static proof of package purity.",
+    "Dynamic module provenance remains outside the Stage 2 tracer.",
+  ],
+};
+
+export type EffectTSKnowledgeDefinition = EffectTSRuleDefinition | ModuleGraphInvariantDefinition;
+
+export const EFFECTTS_KNOWLEDGE: readonly EffectTSKnowledgeDefinition[] = [
+  ...RULE_REGISTRY,
+  IMPORT_CLOSURE_DEFINITION,
+];
+
+const createLookup = <Value>(
+  entries: readonly (readonly [string, Value])[],
+): Readonly<Record<string, Value>> => {
+  const lookup = Object.create(null) as Record<string, Value>;
+  for (const [key, value] of entries) lookup[key] = value;
+  return lookup;
+};
+
+export const RULE_INFO_BY_NAME: Readonly<Record<RuleName, EffectTSRuleDefinition>> = createLookup(
+  RULE_REGISTRY.map((info) => [info.rule, info] as const),
 );
+
+export const RULE_INFO_BY_CODE: Readonly<Partial<Record<EffectTSCode, EffectTSRuleDefinition>>> =
+  createLookup(RULE_REGISTRY.map((info) => [info.code, info] as const));
+
+export const KNOWLEDGE_INFO_BY_CODE: Readonly<
+  Partial<Record<EffectTSCode, EffectTSKnowledgeDefinition>>
+> = createLookup(EFFECTTS_KNOWLEDGE.map((info) => [info.code, info] as const));

@@ -1,20 +1,43 @@
 # effect/no-premature-execution
 
-Family: execution-topology · Default severity: error
+Code: EFT4101 · Family: execution · Default severity: error
 
-## Rationale
+## Invariant
 
-Libraries may describe Effects but only composition roots may execute them or provide the final platform environment. Layer construction and internal service composition remain admitted.
+composition-root-execution: Effect execution occurs outside its composition root.
 
-## Applicability (domains select rules, never severity)
+## Why EffectTS rejects it
 
+Libraries describe Effects; only composition roots select final Layers and execute programs.
+
+## Help
+
+Return the Effect and execute it from the designated composition root.
+
+Proof: syntax, scope.
+
+## Applicability
+
+- Strictness: recommended, strict
 - Roles: pure-library, effect-library, service, application, runtime-adapter
-- Required boundary: none
+- Boundaries: none
 
-## Limitation
+## Limitations
 
-Recognizes namespace and named Effect/ManagedRuntime/platform imports by resolved lexical binding identity; execution reached through re-exports or value aliases escapes analysis. When `no-native-promise-control-flow` is active for the same files, `Effect.runPromise*` is reported by that rule alone.
+- Execution reached through re-exports or value aliases escapes syntax analysis.
 
 ## Type-aware companion (@effect/tsgo)
 
-@effect/tsgo detects floating Effects, leaking requirements, and strict provision type-aware; it is authoritative for whether requirements are actually closed. This rule is authoritative for the syntactic execution site.
+Overlaps: floatingEffect, missingEffectContext, missingEffectError, runEffectInsideEffect, strictEffectProvide.
+
+@effect/tsgo owns Effect types and requirement closure; this rule owns the syntactic execution site.
+
+## Local exception
+
+```ts
+// oxlint-effect-plugin allow(no-premature-execution):
+// reason: <nonempty reason>
+<next syntax node>
+```
+
+The directive targets exactly one rule and the next syntax node in the same lexical block. Broad, duplicate, missing-reason, misplaced, unused, and stale directives fail the escape audit.

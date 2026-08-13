@@ -29,7 +29,7 @@ const expectedTechnology = {
   name: "effect",
   domain: "effect-v4",
   major: 4,
-  reviewed: "4.0.0-beta.102",
+  reviewed: "4.0.0-beta.107",
   reviewPolicy: "exact",
 };
 if (
@@ -56,12 +56,60 @@ if (
 ) {
   fail("portable suppression-audit subpath did not detect native bypass");
 }
-for (const invalid of [{ groups: [] }, { technology: "effect-v3", groups: [] }]) {
+for (const apiName of [
+  "effect",
+  "importClosurePolicy",
+  "auditEffectTSEscapes",
+  "evaluateImportClosure",
+  "explainEffectTS",
+  "translateOxlintJson",
+]) {
+  if (typeof api[apiName] !== "function") fail(`missing EffectTS API ${apiName}`);
+}
+const projectedPolicy = api.importClosurePolicy({
+  groups: [
+    { files: ["src/**"], role: "application", platform: "portable" },
+    {
+      files: ["adapters/**"],
+      role: "runtime-adapter",
+      platform: "deno",
+      adapterDependencies: ["stripe"],
+    },
+  ],
+});
+if (
+  projectedPolicy.groups[0]?.adapterDependencies.length !== 0 ||
+  projectedPolicy.groups[1]?.adapterDependencies[0] !== "stripe"
+) {
+  fail("packed import closure policy projection drifted");
+}
+if (api.explainEffectTS("EFT5101")?.invariant !== "effectts-import-closure") {
+  fail("explain API did not resolve EFT5101");
+}
+const importViolation = api.evaluateImportClosure({
+  edges: [
+    {
+      importer: { file: "src/app.ts", role: "application", platform: "portable" },
+      specifier: "stripe",
+      kind: "value",
+      target: { kind: "package" },
+      span: { offset: 0, length: 6, line: 1, column: 1 },
+    },
+  ],
+});
+if (importViolation[0]?.code !== "EFT5101") fail("import closure did not reject a raw SDK");
+for (const { input, errorText } of [
+  { input: { groups: [] }, errorText: "at least one rule group is required" },
+  {
+    input: { strictness: "recomended", groups: [] },
+    errorText: 'unknown strictness "recomended"',
+  },
+]) {
   try {
-    api.expandDomains(invalid);
-    fail(`invalid technology declaration was accepted: ${JSON.stringify(invalid)}`);
+    api.effect(input);
+    fail(`invalid configuration was accepted: ${JSON.stringify(input)}`);
   } catch (error) {
-    if (!String(error).includes('requires "effect-v4"')) throw error;
+    if (!String(error).includes(errorText)) throw error;
   }
 }
 for (const rule of Object.values(plugin.rules)) {
@@ -71,10 +119,9 @@ if (api.ROLES.length !== 7 || api.PLATFORMS.length !== 6 || api.BOUNDARIES.lengt
   fail("domain vocabulary drifted");
 }
 
-const fragment = api.expandDomains({
-  technology: "effect-v4",
+const fragment = api.effect({
   groups: [
-    { files: ["src/**"], role: "effect-library", platform: "portable", strictness: "strict" },
+    { files: ["src/**"], role: "effect-library", platform: "portable" },
     { files: ["main.ts"], role: "composition-root", platform: "deno" },
   ],
 });

@@ -8,13 +8,23 @@
 import type { CallExpression, Identifier, MemberExpression, Node } from "./ast.js";
 import { isIdentifier, staticPropertyName } from "./ast.js";
 import type { DomainSelection } from "./domains.js";
-import { describeSelection, isBoundary, isPlatform, isRole, isTechnology } from "./domains.js";
+import {
+  BOUNDARIES,
+  describeSelection,
+  isBoundary,
+  isPlatform,
+  isRole,
+  PLATFORMS,
+  ROLES,
+} from "./domains.js";
 import type { RuleContext, Scope } from "./plugin-api.js";
+import type { RuleName } from "./registry.js";
+import { RULE_INFO_BY_NAME } from "./registry.js";
 
 export const LIMITATION = "limitation: syntax and scope analysis only, not type-aware verification";
 
 export interface MessageParts {
-  readonly rule: string;
+  readonly rule: RuleName;
   readonly finding: string;
   readonly remedy: string;
   readonly domains: Partial<DomainSelection>;
@@ -26,47 +36,59 @@ export interface MessageParts {
  * (spec 0001 acceptance 17).
  */
 export function formatMessage(parts: MessageParts): string {
-  return (
-    `effect/${parts.rule}: ${parts.finding} ${parts.remedy} ` +
-    `[domains: ${describeSelection(parts.domains)}] [${LIMITATION}]`
-  );
+  const definition = RULE_INFO_BY_NAME[parts.rule];
+  return [
+    `${definition.code}: ${parts.finding}`,
+    `why: ${definition.rationale}`,
+    `help: ${parts.remedy}`,
+    `domains: ${describeSelection(parts.domains)}`,
+    `proof: ${definition.proofSources.join(", ")}`,
+    LIMITATION,
+  ].join("\n");
 }
 
 /** Domain selection passed to every rule by the config expansion. */
-export function domainOptionsOf(context: RuleContext): Partial<DomainSelection> {
+export function domainOptionsOf(context: RuleContext): DomainSelection {
   const raw = context.options[0];
   if (typeof raw !== "object" || raw === null) {
     throw new Error(
-      'oxlint-effect-plugin: rule configuration requires an options object with technology: "effect-v4"',
+      "oxlint-effect-plugin: rule configuration requires an options object with role and platform",
     );
   }
   const record = raw as Record<string, unknown>;
-  const technology = record["technology"];
-  if (!isTechnology(technology)) {
+  const role = record["role"];
+  if (!isRole(role)) {
     throw new Error(
-      `oxlint-effect-plugin: rule configuration requires technology "effect-v4"; received ${JSON.stringify(technology)}`,
+      `oxlint-effect-plugin: rule configuration requires a valid role; received ${JSON.stringify(role)}`,
     );
   }
-  const role = record["role"];
   const platform = record["platform"];
+  if (!isPlatform(platform)) {
+    throw new Error(
+      `oxlint-effect-plugin: rule configuration requires a valid platform; received ${JSON.stringify(platform)}`,
+    );
+  }
   const boundaries = record["boundaries"];
+  if (boundaries !== undefined && (!Array.isArray(boundaries) || !boundaries.every(isBoundary))) {
+    throw new Error(
+      `oxlint-effect-plugin: rule configuration requires valid boundaries; received ${JSON.stringify(boundaries)}`,
+    );
+  }
   return {
-    technology,
-    ...(isRole(role) ? { role } : {}),
-    ...(isPlatform(platform) ? { platform } : {}),
-    ...(Array.isArray(boundaries) ? { boundaries: boundaries.filter(isBoundary) } : {}),
+    role,
+    platform,
+    ...(boundaries === undefined ? {} : { boundaries }),
   };
 }
 
-/** Shared JSON-schema fragments for every rule's authoritative domains. */
+/** Shared JSON-schema fragments for every rule's architectural context. */
 export const DOMAIN_SCHEMA_PROPERTIES = {
-  technology: { type: "string", enum: ["effect-v4"] },
-  role: { type: "string" },
-  platform: { type: "string" },
-  boundaries: { type: "array", items: { type: "string" } },
+  role: { type: "string", enum: ROLES },
+  platform: { type: "string", enum: PLATFORMS },
+  boundaries: { type: "array", items: { type: "string", enum: BOUNDARIES } },
 } as const;
 
-export const REQUIRED_DOMAIN_SCHEMA_KEYS = ["technology"] as const;
+export const REQUIRED_DOMAIN_SCHEMA_KEYS = ["role", "platform"] as const;
 
 export function ruleOptionRecord(context: RuleContext): Record<string, unknown> {
   const raw = context.options[0];

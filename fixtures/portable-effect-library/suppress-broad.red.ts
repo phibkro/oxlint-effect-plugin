@@ -2,7 +2,7 @@
 // and the console use itself stays reported.
 
 export const debugDump = (payload: unknown): void => {
-  // expect-next-line: no-ambient-console
-  // oxlint-effect-plugin allow(*): dev only: broad suppressions are rejected
+  // oxlint-effect-plugin allow(*):
+  // reason: broad suppressions are forbidden
   console.dir(payload); // expect: no-ambient-console
 };

@@ -1,20 +1,43 @@
 # effect/no-untyped-throw
 
-Family: typed-failure · Default severity: error · strict preset only
+Code: EFT3201 · Family: failure · Default severity: error
 
-## Rationale
+## Invariant
 
-In roles whose contract is total or whose failures belong in the Effect error channel, `throw` erases failure typing. This is not a JavaScript-wide ban: composition roots, runtime adapters, and tests keep their untyped-boundary contracts.
+typed-expected-failure: Throw-based expected failure is outside EffectTS.
 
-## Applicability (domains select rules, never severity)
+## Why EffectTS rejects it
 
+Throw erases expected application failure from the Effect error channel and caller contract.
+
+## Help
+
+Define a Schema.TaggedErrorClass and fail through the Effect error channel.
+
+Proof: syntax.
+
+## Applicability
+
+- Strictness: strict
 - Roles: pure-library, effect-library, service, application
-- Required boundary: none
+- Boundaries: none
 
-## Limitation
+## Limitations
 
-Purely syntactic: every `throw` in an enabled role is reported, including rethrow helpers; narrow the file group or use Effect.die for defects instead.
+- The syntax rule cannot distinguish expected failure from a defect or rethrow.
 
 ## Type-aware companion (@effect/tsgo)
 
-@effect/tsgo tracks unknown error values in Effect types and is authoritative for error-channel typing; this rule is authoritative for the `throw` syntax site.
+Overlaps: missingEffectError.
+
+@effect/tsgo owns typed error-channel facts; this rule owns the role-scoped throw syntax site.
+
+## Local exception
+
+```ts
+// oxlint-effect-plugin allow(no-untyped-throw):
+// reason: <nonempty reason>
+<next syntax node>
+```
+
+The directive targets exactly one rule and the next syntax node in the same lexical block. Broad, duplicate, missing-reason, misplaced, unused, and stale directives fail the escape audit.

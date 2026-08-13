@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "command": "bun run scripts/tracers/0001-effx-provider-seam.ts --summary",
+  "providers": {
+    "effectTsgoVersion": "0.36.4",
+    "effectExecutableSha256": "6fc6cc7d3d95c3498ca17c0aa7cf80cb22f1542a6a1915deb66b6fc1d623f1b5",
+    "typescriptVersion": "7.0.2",
+    "stockExecutableSha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4"
+  },
+  "fixtureSourceSha256": "88ee68146a88b1749bbd2bb0280236f74264ef20d37531ff289d2398f35c7dff",
+  "timingsMs": {
+    "cold": 127.543,
+    "warm": 0.071,
+    "incremental": 2.483,
+    "effectHeavy": 26.852,
+    "multiProject": 33.515
+  },
+  "memory": {
+    "coordinatorRssBefore": 98160640,
+    "coordinatorRssAfter": 110960640
+  }
+}

@@ -2,9 +2,9 @@
 
 ## Thesis
 
-Oxlint Effect Plugin is a reusable, compiled Oxlint JavaScript plugin for explicit
-Effect architecture, capability, runtime, and boundary policies. It detects
-high-confidence syntax and scope violations without claiming type-aware proof.
+Oxlint Effect Plugin is a compiled EffectTS enforcement layer for TypeScript.
+It combines Oxlint syntax and scope policy with structured diagnostics, safe
+repair metadata, module-graph policy, reasoned escapes, and agent guidance.
 
 ## Non-negotiable invariants
 
@@ -14,15 +14,15 @@ high-confidence syntax and scope violations without claiming type-aware proof.
   producer packing must delete, rebuild, and verify it through `prepack`;
   `--ignore-scripts` is for isolated consumer installation, not production.
 - Keep the package independent of Semantic Systems, Workgraph, and Reef.
-- Keep technology, architectural role, runtime platform, and semantic boundary
-  as orthogonal domains.
+- Keep architectural role, runtime platform, and semantic boundary as
+  orthogonal applicability domains; strictness selects the rule collection.
 - Never present syntax analysis as type-aware analysis or formal proof.
 - Delegate type-aware Effect diagnostics to `@effect/tsgo` and document
   overlaps.
 - Keep portable code free of Node, Bun, Deno, browser, and worker authority.
 - Libraries may describe Effects but only composition roots may execute them.
-- Ambient console use is severe in Effect-bearing operational code. A targeted
-  suppression must contain a `dev only:` reason.
+- A local escape must name one exact rule, target one syntax node in the same
+  lexical block, and carry a nonempty reason on the canonical second line.
 - Automatic fixes are allowed only when locally semantics-preserving.
 - Bun is the default development runtime; packed consumers must load under Bun
   and Node, with Deno-oriented compatibility tested through its declared
@@ -35,8 +35,8 @@ The repository and package are `oxlint-effect-plugin` and
 `@phibkro/oxlint-effect-plugin`. The product name, package coordinate, default
 `effect/*` rule namespace, and suppression protocol are version-neutral.
 Supported Effect majors and exact reviewed releases are machine-readable
-compatibility metadata; `effect-v4` is the current technology domain. The
-package is third-party and does not imply Effect project endorsement.
+compatibility metadata; `effect-v4` is the current reviewed technology target.
+The package is third-party and does not imply Effect project endorsement.
 
 Reef may distribute configuration that consumes this package, and Semantic
 Systems may consume it, but neither product controls its rule semantics or
@@ -58,6 +58,7 @@ source layout.
 bun install --frozen-lockfile --ignore-scripts
 bun run check
 bun run accept:0001
+bun run accept:effx:0001
 git diff --check
 ```
 
@@ -65,17 +66,20 @@ Until these commands exist and pass, report only the checks actually run.
 
 ## Current status
 
-Tracer 0001 is implemented and integrated locally. The compiled package exposes
-seven AST/scope-aware Effect policy rules for the metadata-declared Effect v4
-target, orthogonal domain presets,
-targeted suppression auditing, generated compatibility metadata, and packed
-Bun/Node consumers with a bounded Deno journey. Generic typed diagnostics are
-verified through `oxlint-tsgolint`; Effect-specific typed diagnostics remain
-owned by `@effect/tsgo`.
+Tracers 0001 through 0003 are implemented and integrated locally. The package
+exposes seven AST/scope-aware Effect rules through the strict-by-default
+`effect()` builder. Explicit `recommended` lowering, orthogonal role, platform,
+and boundary applicability, stable structured diagnostics, import closure,
+reasoned escapes, one bounded Console repair, and agent guidance are integrated.
 
-The independently accepted implementation head is `f552dbc`. Its frozen
-install, full check, and two acceptance runs passed with an 84/84 oracle matrix
-and byte-identical evidence under reviewed Bun 1.3.13, Node 24.18.0, and Deno
-2.9.2. The package has not been published. Syntax/scope analysis does not claim
-type proof, alias tracking, wrapper provenance, or arbitrary typed
-`.then`/`.catch`/`.finally` detection.
+The current working tree passed frozen install, the full repository check, and
+packed Bun/Node/Deno acceptance with an 85/85 oracle matrix. Generic typed
+diagnostics are verified through `oxlint-tsgolint`; Effect-specific typed
+diagnostics remain owned by `@effect/tsgo`. The package has not been published.
+The tracked `effx` Stage 0 coordinator tracer now preserves real Effect and stock
+TypeScript provider diagnostics, semantic identity and channel probes, standard
+LSP command routing, lifecycle and failure evidence, and a local performance
+baseline. This is implementation evidence, not a shipped CLI, daemon, or LSP.
+Syntax/scope analysis does not claim type proof, arbitrary alias or wrapper
+provenance, package purity, or arbitrary typed `.then`/`.catch`/`.finally`
+detection.

@@ -1,8 +1,8 @@
-// role: effect-library, platform: portable — a suppression without a nonempty
-// `dev only:` reason is rejected and the console use stays reported.
+// role: effect-library, platform: portable — an empty reason is rejected by
+// the escape coordinator; the raw console diagnostic also remains.
 
 export const debugDump = (payload: unknown): void => {
-  // expect-next-line: no-ambient-console
-  // oxlint-effect-plugin allow(no-ambient-console): dev only:
+  // oxlint-effect-plugin allow(no-ambient-console):
+  // reason:
   console.dir(payload); // expect: no-ambient-console
 };

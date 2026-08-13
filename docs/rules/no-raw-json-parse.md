@@ -1,16 +1,43 @@
 # effect/no-raw-json-parse
 
-Family: external-decoding · Default severity: error
+Code: EFT1201 · Family: boundary · Default severity: error
 
-## Rationale
+## Invariant
 
-External JSON must cross an explicit Effect Schema decoding seam instead of raw JSON.parse. Only JSON syntax is claimed; other syntaxes require their own parser/Schema seam.
+schema-owned-external-decoding: Raw external JSON decoding bypasses Schema.
 
-## Applicability (domains select rules, never severity)
+## Why EffectTS rejects it
 
+External JSON must cross an explicit Effect Schema decoding seam instead of becoming unvalidated data through JSON.parse.
+
+## Help
+
+Decode with Schema.decodeUnknownEffect at the external-data boundary.
+
+Proof: syntax, scope.
+
+## Applicability
+
+- Strictness: recommended, strict
 - Roles: pure-library, effect-library, service, application, composition-root, runtime-adapter
-- Required boundary: external-data
+- Boundaries: external-data
 
-## Limitation
+## Limitations
 
-Flags ambient bare or statically global-object-qualified `JSON.parse`; parsing behind aliases, wrappers, computed dynamic properties, or other syntaxes escapes analysis. Lint enforces the seam, it does not validate data.
+- Aliases, wrappers, other syntaxes, and post-parse value flow escape analysis.
+
+## Type-aware companion (@effect/tsgo)
+
+Overlaps: preferSchemaOverJson.
+
+This rule owns external-data boundary policy for JSON.parse; keep the broader @effect/tsgo syntax suggestion off when this profile rule applies.
+
+## Local exception
+
+```ts
+// oxlint-effect-plugin allow(no-raw-json-parse):
+// reason: <nonempty reason>
+<next syntax node>
+```
+
+The directive targets exactly one rule and the next syntax node in the same lexical block. Broad, duplicate, missing-reason, misplaced, unused, and stale directives fail the escape audit.

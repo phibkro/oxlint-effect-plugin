@@ -1,0 +1,301 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-08-12T14:46:38.375Z",
+  "expectedQualifying": 12,
+  "verifiedPullRequests": 12,
+  "exactlyOnePerQualifying": true,
+  "defaultBranchesUnchanged": true,
+  "expectedFilesPresent": true,
+  "analysisGatesGreen": true,
+  "entries": [
+    {
+      "identity": "phibkro/agent-engine",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 1,
+      "url": "https://github.com/phibkro/agent-engine/pull/1",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "3fce8f37e1f4ff122db63e3103ae9ec9acba9d9c",
+      "defaultBranchSha": "65bee8f242a316d5c0db294133a14a8fd8ba5a17",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608404890,
+        "headSha": "3fce8f37e1f4ff122db63e3103ae9ec9acba9d9c",
+        "status": "completed",
+        "url": "https://github.com/phibkro/agent-engine/actions/runs/31608404890"
+      }
+    },
+    {
+      "identity": "phibkro/aoc",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 1,
+      "url": "https://github.com/phibkro/aoc/pull/1",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "559e3f19f99d96846fce4b878d6afb5589341f92",
+      "defaultBranchSha": "c3f27eda9febb96662e844517da9fe930a2891a3",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608415102,
+        "headSha": "559e3f19f99d96846fce4b878d6afb5589341f92",
+        "status": "completed",
+        "url": "https://github.com/phibkro/aoc/actions/runs/31608415102"
+      }
+    },
+    {
+      "identity": "phibkro/bang-lang",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 1,
+      "url": "https://github.com/phibkro/bang-lang/pull/1",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "3e2de6e37cb93133364d886a097a226800de7ad9",
+      "defaultBranchSha": "54b0a27b993d59f8ff28d99a66a1aeec3be03e37",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608421316,
+        "headSha": "3e2de6e37cb93133364d886a097a226800de7ad9",
+        "status": "completed",
+        "url": "https://github.com/phibkro/bang-lang/actions/runs/31608421316"
+      }
+    },
+    {
+      "identity": "phibkro/chess",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 1,
+      "url": "https://github.com/phibkro/chess/pull/1",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "3378cef19340ef66146f168a182dee166184c215",
+      "defaultBranchSha": "4cb08d754572594b5f9ed7146f5956b9a62d41f2",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608428478,
+        "headSha": "3378cef19340ef66146f168a182dee166184c215",
+        "status": "completed",
+        "url": "https://github.com/phibkro/chess/actions/runs/31608428478"
+      }
+    },
+    {
+      "identity": "phibkro/clamor",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 16,
+      "url": "https://github.com/phibkro/clamor/pull/16",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "aa5d639a46ffbb116961cb40c756cb4ea0a53d2d",
+      "defaultBranchSha": "59b21d62d494e25fbdaa687b1c96fb350e351d0a",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608565405,
+        "headSha": "aa5d639a46ffbb116961cb40c756cb4ea0a53d2d",
+        "status": "completed",
+        "url": "https://github.com/phibkro/clamor/actions/runs/31608565405"
+      }
+    },
+    {
+      "identity": "phibkro/course-data-platform",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 11,
+      "url": "https://github.com/phibkro/course-data-platform/pull/11",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "9f8ad2a061908254f2a720781805ef4eb59d12d3",
+      "defaultBranchSha": "6bc3e99ed38b97b0741c6f33f70a3d8adde3b19d",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608439599,
+        "headSha": "9f8ad2a061908254f2a720781805ef4eb59d12d3",
+        "status": "completed",
+        "url": "https://github.com/phibkro/course-data-platform/actions/runs/31608439599"
+      }
+    },
+    {
+      "identity": "phibkro/homelab",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 41,
+      "url": "https://github.com/phibkro/homelab/pull/41",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "0e2535bb56930636e47f4bd42596381aca6829a8",
+      "defaultBranchSha": "d6cd4d3df08d98e6454edfe4b4f8f06c3559b5aa",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608444208,
+        "headSha": "0e2535bb56930636e47f4bd42596381aca6829a8",
+        "status": "completed",
+        "url": "https://github.com/phibkro/homelab/actions/runs/31608444208"
+      }
+    },
+    {
+      "identity": "phibkro/occupational-health",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 4,
+      "url": "https://github.com/phibkro/occupational-health/pull/4",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "f15d0ca33f0fdcba6ca50da4e70b0b137450c5f0",
+      "defaultBranchSha": "71af859dd93fd6f96be7f31e73e1da8b3cd29663",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608567082,
+        "headSha": "f15d0ca33f0fdcba6ca50da4e70b0b137450c5f0",
+        "status": "completed",
+        "url": "https://github.com/phibkro/occupational-health/actions/runs/31608567082"
+      }
+    },
+    {
+      "identity": "phibkro/oxlint-effect-plugin",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 1,
+      "url": "https://github.com/phibkro/oxlint-effect-plugin/pull/1",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "publish/effx-github-review",
+      "headSha": "33e2cbffe9b7f98a78354f0d2f3b72c109e88251",
+      "defaultBranchSha": "adb43a3b41269a0e6437b0324254e3ddd3ba39c0",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        ".github/workflows/effx-review.yml"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608549486,
+        "headSha": "33e2cbffe9b7f98a78354f0d2f3b72c109e88251",
+        "status": "completed",
+        "url": "https://github.com/phibkro/oxlint-effect-plugin/actions/runs/31608549486"
+      }
+    },
+    {
+      "identity": "phibkro/semantic-systems",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 34,
+      "url": "https://github.com/phibkro/semantic-systems/pull/34",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "44ffb3a62ec7985ce38354998849291d717a3063",
+      "defaultBranchSha": "51076b53408dafa1fa8f2b75cbf5593aec3c7fc4",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608452030,
+        "headSha": "44ffb3a62ec7985ce38354998849291d717a3063",
+        "status": "completed",
+        "url": "https://github.com/phibkro/semantic-systems/actions/runs/31608452030"
+      }
+    },
+    {
+      "identity": "phibkro/vevx",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 32,
+      "url": "https://github.com/phibkro/vevx/pull/32",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "61e15b87e82cb74354049de2a04095489f8f0c4e",
+      "defaultBranchSha": "5b9d055ecff1cdb2fb8e0c2ad2176e0e439176d4",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608458688,
+        "headSha": "61e15b87e82cb74354049de2a04095489f8f0c4e",
+        "status": "completed",
+        "url": "https://github.com/phibkro/vevx/actions/runs/31608458688"
+      }
+    },
+    {
+      "identity": "phibkro/workgraph",
+      "classification": "agent-migration-opt-in-required",
+      "prNumber": 2,
+      "url": "https://github.com/phibkro/workgraph/pull/2",
+      "state": "OPEN",
+      "baseRefName": "main",
+      "headRefName": "effx/github-review",
+      "headSha": "08c6e3a9d7b526553bb54513cfac5c9772c2cf08",
+      "defaultBranchSha": "6a5c767ec68684399198954e1e02565f69389d44",
+      "defaultBranchUnchanged": true,
+      "files": [
+        ".github/workflows/effx-analyze.yml",
+        ".github/workflows/effx-publish.yml",
+        "docs/effx-migration-guide.md"
+      ],
+      "analysis": {
+        "conclusion": "success",
+        "databaseId": 31608462117,
+        "headSha": "08c6e3a9d7b526553bb54513cfac5c9772c2cf08",
+        "status": "completed",
+        "url": "https://github.com/phibkro/workgraph/actions/runs/31608462117"
+      }
+    }
+  ],
+  "failures": []
+}

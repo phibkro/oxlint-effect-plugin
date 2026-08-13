@@ -7,7 +7,7 @@
  * than degrading to a warning.
  */
 
-import { chmodSync, existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 import {
@@ -134,10 +134,6 @@ const steps: Step[] = [
       if (!executablePath.includes("node_modules/@effect/tsgo-")) {
         throw new Error(`effect-tsgo returned unexpected executable path: ${executablePath}`);
       }
-      // @effect/tsgo 0.24.3's platform package is extracted mode 0644 by
-      // Bun 1.3.13. The dev-only probe repairs that cache-local mode; no
-      // distributed artifact or consumer source is mutated.
-      chmodSync(executablePath, 0o755);
       const effect = await capture([
         ...nodeShell,
         local("effect-tsgo"),
@@ -163,11 +159,18 @@ const steps: Step[] = [
     run: () => exec(["bun", "run", "build"]),
   },
   {
-    name: "authoritative technology runtime rejection",
+    name: "approved Console repair through real Oxlint RuleTester",
+    run: () =>
+      exec(["nix", "shell", "nixpkgs#nodejs", "-c", "node", "scripts/verify-console-fix.mjs"]),
+  },
+  {
+    name: "authoritative role and platform runtime rejection",
     run: async () => {
-      for (const config of [
-        "fixtures/domain-validation/missing-technology.json",
-        "fixtures/domain-validation/invalid-technology.json",
+      for (const { config, context } of [
+        { config: "fixtures/domain-validation/missing-role.json", context: "role" },
+        { config: "fixtures/domain-validation/invalid-role.json", context: "role" },
+        { config: "fixtures/domain-validation/missing-platform.json", context: "platform" },
+        { config: "fixtures/domain-validation/invalid-platform.json", context: "platform" },
       ]) {
         const result = await capture([
           "bun",
@@ -176,9 +179,10 @@ const steps: Step[] = [
           config,
           "fixtures/domain-validation/input.ts",
         ]);
-        if (result.exitCode === 0 || !`${result.stdout}\n${result.stderr}`.includes("technology")) {
+        const output = `${result.stdout}\n${result.stderr}`;
+        if (result.exitCode === 0 || !output.includes(context)) {
           throw new Error(
-            `${config} was not rejected for its technology declaration\n${result.stdout}\n${result.stderr}`,
+            `${config} was not rejected for its ${context} declaration\n${result.stdout}\n${result.stderr}`,
           );
         }
       }
@@ -215,14 +219,18 @@ const steps: Step[] = [
     name: "package exports (compiled plugin shape and files)",
     run: async () => {
       const distIndex = join(repoRoot, "dist", "index.js");
+      // Runtime-selected build output: this check must load the generated dist artifact.
       const module = (await import(distIndex)) as {
         default: { meta: { name: string; version: string }; rules: Record<string, unknown> };
-        expandDomains: unknown;
+        effect: unknown;
+        importClosurePolicy: unknown;
         auditNativeDisableDirectives: unknown;
-        recommended: { overrides: readonly unknown[] };
-        strict: unknown;
-        RULE_REGISTRY: readonly { name: string }[];
-      };
+        auditEffectTSEscapes: unknown;
+        evaluateImportClosure: unknown;
+        explainEffectTS: unknown;
+        translateOxlintJson: unknown;
+        RULE_REGISTRY: readonly { rule: string }[];
+      } & Record<string, unknown>;
       const pkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")) as {
         version: string;
         files: readonly string[];
@@ -237,23 +245,51 @@ const steps: Step[] = [
         throw new Error("plugin rules and registry disagree");
       }
       for (const info of module.RULE_REGISTRY) {
-        if (!ruleNames.includes(info.name))
-          throw new Error(`registry rule not exported: ${info.name}`);
+        if (!ruleNames.includes(info.rule))
+          throw new Error(`registry rule not exported: ${info.rule}`);
       }
-      if (typeof module.expandDomains !== "function") throw new Error("expandDomains missing");
+      if (typeof module.effect !== "function") throw new Error("effect builder missing");
+      if (typeof module.importClosurePolicy !== "function") {
+        throw new Error("import-closure policy builder missing");
+      }
+      for (const removedName of [
+        "expandDomains",
+        "expandImportClosurePolicy",
+        "recommended",
+        "strict",
+        "TECHNOLOGIES",
+        "isTechnology",
+      ]) {
+        if (removedName in module) {
+          throw new Error(`removed public export remains: ${removedName}`);
+        }
+      }
       if (typeof module.auditNativeDisableDirectives !== "function") {
         throw new Error("suppression audit export missing");
       }
-      if (module.recommended.overrides.length === 0) throw new Error("recommended preset empty");
+      for (const apiName of [
+        "auditEffectTSEscapes",
+        "evaluateImportClosure",
+        "explainEffectTS",
+        "translateOxlintJson",
+      ] as const) {
+        if (typeof module[apiName] !== "function") throw new Error(`${apiName} export missing`);
+      }
       for (const file of [
         "dist/index.js",
         "dist/index.d.ts",
+        "dist/cli.js",
+        "dist/cli.d.ts",
         "LICENSE",
         "README.md",
         "PROVENANCE.md",
         "compatibility.json",
         "docs/tsgo-boundary.md",
+        "docs/import-closure.md",
         "docs/suppression-audit.md",
+        "guidance/effectts-knowledge.json",
+        "guidance/AGENTS.fragment.md",
+        "guidance/skills/effectts-programming/SKILL.md",
       ]) {
         if (!existsSync(join(repoRoot, file))) throw new Error(`distributed file missing: ${file}`);
       }
@@ -266,6 +302,10 @@ const steps: Step[] = [
   {
     name: "observed-red/green oracle evidence consistency",
     run: () => exec(["bun", "run", "scripts/record-oracle-evidence.ts", "check"]),
+  },
+  {
+    name: "effx provider seam tracer acceptance",
+    run: () => exec(["bun", "run", "scripts/accept-effx-0001.ts"]),
   },
   {
     name: "oracle matrix (json + ts config forms, equivalence)",

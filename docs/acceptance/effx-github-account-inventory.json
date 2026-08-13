@@ -1,0 +1,458 @@
+{
+  "schemaVersion": 1,
+  "owner": "phibkro",
+  "entries": [
+    {
+      "identity": "phibkro/IT3212",
+      "defaultBranch": "main",
+      "defaultBranchSha": "f92c31483b5390f5a21b17ae89c4c3291d98a1b1",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/NTNU-BIT",
+      "defaultBranch": "main",
+      "defaultBranchSha": "08a781a57fb963c6cc90d1c5f3a083488c902b22",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/TDT4136",
+      "defaultBranch": "main",
+      "defaultBranchSha": "ee84f167eb3af0d90f9512841ee80757b15d4a1d",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/TDT4145",
+      "defaultBranch": "main",
+      "defaultBranchSha": "f06125c618b74e04eb7c29706f9e4f90864e1347",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/TDT4165",
+      "defaultBranch": "main",
+      "defaultBranchSha": "5283455cfad84500d02a93ffa6f33c5171967986",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/TDT4258",
+      "defaultBranch": "main",
+      "defaultBranchSha": "8c979abaed5b79c6da7a2f8cf5321b7572acedc8",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/UiO_Python",
+      "defaultBranch": "main",
+      "defaultBranchSha": "041601a1ba0726dd106c0a6dbd3f7a893deba9b6",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/advent-of-code-kotlin",
+      "defaultBranch": "main",
+      "defaultBranchSha": "9d9a0c418ef7d3eb5e80ff275e383b896b078ee2",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/advent_of_code",
+      "defaultBranch": "main",
+      "defaultBranchSha": "20e1b6bbf254ffc13d1edcca4d7da96a9eb1a274",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/agent-engine",
+      "defaultBranch": "main",
+      "defaultBranchSha": "65bee8f242a316d5c0db294133a14a8fd8ba5a17",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/agent-orchestration",
+      "defaultBranch": "main",
+      "defaultBranchSha": "ae0529858dcc91a1497382c10fc179e5d3765169",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/aoc",
+      "defaultBranch": "main",
+      "defaultBranchSha": "c3f27eda9febb96662e844517da9fe930a2891a3",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/bang",
+      "defaultBranch": "main",
+      "defaultBranchSha": "d68985676373ebddc9688c27bed4d967c3659b7c",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/bang-lang",
+      "defaultBranch": "main",
+      "defaultBranchSha": "54b0a27b993d59f8ff28d99a66a1aeec3be03e37",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/buddyblast",
+      "defaultBranch": "main",
+      "defaultBranchSha": "430bb9b99c8b867830408950863ba4e2888e09d4",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/chatlog",
+      "defaultBranch": "main",
+      "defaultBranchSha": "09857c1e10f0e855a341ffa27b823a81865168e2",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/chess",
+      "defaultBranch": "main",
+      "defaultBranchSha": "4cb08d754572594b5f9ed7146f5956b9a62d41f2",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/clamor",
+      "defaultBranch": "main",
+      "defaultBranchSha": "59b21d62d494e25fbdaa687b1c96fb350e351d0a",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/claudex",
+      "defaultBranch": "main",
+      "defaultBranchSha": "ba6790effe8b300d7c26afb30a7ed05850433ace",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/content-creation",
+      "defaultBranch": "main",
+      "defaultBranchSha": "6bbd0800751b03abf4e2e3b291586c2666d19871",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/course-data-platform",
+      "defaultBranch": "main",
+      "defaultBranchSha": "6bc3e99ed38b97b0741c6f33f70a3d8adde3b19d",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/drinks",
+      "defaultBranch": "main",
+      "defaultBranchSha": "48f58124fece4a2818dcaa6ef3b89c454dd3e792",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/express-locallibrary-tutorial",
+      "defaultBranch": "main",
+      "defaultBranchSha": "ab116ba00e60e9beed8d7281b5f55344e6b5a3c6",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/filmder",
+      "defaultBranch": "main",
+      "defaultBranchSha": "170e523fb1eccf78e61b7dffeef28f84d11b82ad",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/finnbydel",
+      "defaultBranch": "main",
+      "defaultBranchSha": "cab316d61adede5895b4dd8f88201b4f52e3129b",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/flow",
+      "defaultBranch": "main",
+      "defaultBranchSha": "5079f8bf3e6024404c924a7bf0755c6e74aedb66",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/giphy_API_exercise",
+      "defaultBranch": "main",
+      "defaultBranchSha": "c48aa4942cfe90246526f37d0378983cbb0d98db",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/google-homepage",
+      "defaultBranch": "main",
+      "defaultBranchSha": "61f595c3ddcb58cd7dd89c0196631d47fc01f77b",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/heim",
+      "defaultBranch": "main",
+      "defaultBranchSha": "fc73ad7a16722d42d7c940c43e7a93c80866b069",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/herdr-mcp",
+      "defaultBranch": "main",
+      "defaultBranchSha": "b7a6f085c679f255a52a7f2df967d7e7badb6cc3",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/homelab",
+      "defaultBranch": "main",
+      "defaultBranchSha": "d6cd4d3df08d98e6454edfe4b4f8f06c3559b5aa",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/informatics-notes",
+      "defaultBranch": "main",
+      "defaultBranchSha": "b65dc405e4ad8ea329fed78f83f81c0ffbed9910",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/interactive-rating-component",
+      "defaultBranch": "main",
+      "defaultBranchSha": "793b95d0741b365120706def24a39fbe9c0b7848",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/kaggriculture",
+      "defaultBranch": "main",
+      "defaultBranchSha": "1903a81f1f015d905e44896155bfd002b3fde3cd",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/lox",
+      "defaultBranch": "main",
+      "defaultBranchSha": "9325f428c2494b790c9c0f5fa45bdec2751597d9",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/mini-message-board",
+      "defaultBranch": "main",
+      "defaultBranchSha": "155443874a7a9a22cb38dff0ebaa0dcc6f342c4a",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/my-vault",
+      "defaultBranch": "main",
+      "defaultBranchSha": "5618d6158980399deb59897970e21e8285e6b773",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/my_vault",
+      "defaultBranch": "main",
+      "defaultBranchSha": "8e5a3f00298d1e34d69ad598a35e05ab24a6ff63",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/news-homepage",
+      "defaultBranch": "main",
+      "defaultBranchSha": "a99890f735764b4815ccfd39668ce7561d891562",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/nixpkgs-agent",
+      "defaultBranch": "main",
+      "defaultBranchSha": "51749bc4477f7c2946bc66d5648c5f4ff3508db5",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/notes",
+      "defaultBranch": "main",
+      "defaultBranchSha": "e44206321ac5f36f4b74b571e8a0c6a0388fa125",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/occupational-health",
+      "defaultBranch": "main",
+      "defaultBranchSha": "71af859dd93fd6f96be7f31e73e1da8b3cd29663",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/odin-authentication",
+      "defaultBranch": "main",
+      "defaultBranchSha": "48660268ee6b46315caf9fc9ebd9574ec9228c16",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/odin-clubhouse",
+      "defaultBranch": "main",
+      "defaultBranchSha": "bb21b73c2482cd00cce746d292775fb3295f505f",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/odin-landing-page",
+      "defaultBranch": "main",
+      "defaultBranchSha": "08edb63c57caff199d661706cc5dc0a70e97781d",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/odin-recipes",
+      "defaultBranch": "main",
+      "defaultBranchSha": "89100a82edeabc0e4e6015fc242e0f351b9b0c9a",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/os-in-1k-loc",
+      "defaultBranch": "main",
+      "defaultBranchSha": "82928d837b766f80c901165b63bf5b0ec2435ccd",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/oxlint-effect-plugin",
+      "defaultBranch": "main",
+      "defaultBranchSha": "adb43a3b41269a0e6437b0324254e3ddd3ba39c0",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/pagu",
+      "defaultBranch": "main",
+      "defaultBranchSha": "eed1f29fc00d06aff47b94c26d0c4ee67274d08e",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/playground",
+      "defaultBranch": "main",
+      "defaultBranchSha": "77fd9e2bdbc1af8f06d99954ad7a1e905c704bed",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/ray-tracing",
+      "defaultBranch": "main",
+      "defaultBranchSha": "646f69c70b586aa11261a86331be9df6794726dd",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/rice-registry",
+      "defaultBranch": "main",
+      "defaultBranchSha": "05834a8be64d68963ef89dd5738da1aec965d9b8",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/rock-paper-scissors",
+      "defaultBranch": "main",
+      "defaultBranchSha": "e20aa2cc33edf8da739dacf880198f5938dfe5e7",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/roomietive",
+      "defaultBranch": "main",
+      "defaultBranchSha": "a73ee956c3934c779ab70ef5f5c87d7379ea3c2c",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/semantic-packages",
+      "defaultBranch": "master",
+      "defaultBranchSha": "8aa4f1a0683b3d165b5361fe627152ac8c2d6fed",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/semantic-systems",
+      "defaultBranch": "main",
+      "defaultBranchSha": "51076b53408dafa1fa8f2b75cbf5593aec3c7fc4",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/shear-chaos",
+      "defaultBranch": "main",
+      "defaultBranchSha": "c013d6744dfc2f18fdf5a302f371cbe01fb23fbc",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/snowy",
+      "defaultBranch": "main",
+      "defaultBranchSha": "d36aa8e2a5b0767b1b5cd9f931ddadfc9e72554b",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/sunnyside-agency-landing-page",
+      "defaultBranch": "main",
+      "defaultBranchSha": "96b5f0e81fb7a61f935aa9354707ca9c5178747e",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/taskbox",
+      "defaultBranch": "main",
+      "defaultBranchSha": "5a98c1bfd7914fb7bd1a62338a272b774e5d73b2",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/tdt4186",
+      "defaultBranch": "main",
+      "defaultBranchSha": "d26b1351c84d8e2374b4cd88d6708f5c5c44c3fd",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/tdt4205",
+      "defaultBranch": "main",
+      "defaultBranchSha": "521e31f2db6a0b54420dd7f5d70c18f7c51c546c",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/tic_tac_toe",
+      "defaultBranch": "main",
+      "defaultBranchSha": "ba3c89f5328149bd3629b6d1709db40211c50389",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/tonic",
+      "defaultBranch": "main",
+      "defaultBranchSha": "6e54c2648ead09290195407a55c8da97673a341a",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/uNotes",
+      "defaultBranch": "main",
+      "defaultBranchSha": "2d131ccb26e1329de01d8d24f1b1a7a90f7a867d",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/vevx",
+      "defaultBranch": "main",
+      "defaultBranchSha": "5b9d055ecff1cdb2fb8e0c2ad2176e0e439176d4",
+      "classification": "agent-migration-opt-in-required"
+    },
+    {
+      "identity": "phibkro/web-development-resources",
+      "defaultBranch": "main",
+      "defaultBranchSha": "871055cd5384adad9c403d47cb9428faea98cd04",
+      "classification": "not-applicable"
+    },
+    {
+      "identity": "phibkro/workgraph",
+      "defaultBranch": "main",
+      "defaultBranchSha": "6a5c767ec68684399198954e1e02565f69389d44",
+      "classification": "agent-migration-opt-in-required"
+    }
+  ],
+  "counts": {
+    "supported-effect-v4": 0,
+    "mechanically-migratable": 0,
+    "agent-migration-opt-in-required": 12,
+    "not-applicable": 56
+  },
+  "excludedIdentities": {
+    "archived": [
+      "phibkro/admin-dashboard",
+      "phibkro/ai-code-audit",
+      "phibkro/algdat_assignments",
+      "phibkro/automate-job-application",
+      "phibkro/better-mazemap",
+      "phibkro/brutalist-art-site",
+      "phibkro/bun-effect-oxc",
+      "phibkro/claude-config",
+      "phibkro/connect4-javafx",
+      "phibkro/dsa-lib",
+      "phibkro/eager-lazy",
+      "phibkro/git_test",
+      "phibkro/home-server",
+      "phibkro/nvim",
+      "phibkro/odin-project",
+      "phibkro/ostep-homework",
+      "phibkro/pagu-box",
+      "phibkro/web-builder"
+    ],
+    "forks": [
+      "phibkro/ai-job-search",
+      "phibkro/cpufetch",
+      "phibkro/lean4-unicode-basic",
+      "phibkro/nixpkgs",
+      "phibkro/nvim",
+      "phibkro/ostep-homework",
+      "phibkro/personal-portfolio"
+    ]
+  },
+  "completeness": {
+    "observedSourceRepositories": 68,
+    "classifiedRepositories": 68,
+    "classifiedExactlyOnce": true,
+    "excludedArchived": 18,
+    "excludedForks": 7
+  }
+}

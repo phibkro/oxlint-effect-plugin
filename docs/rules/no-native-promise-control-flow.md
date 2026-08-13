@@ -1,20 +1,43 @@
 # effect/no-native-promise-control-flow
 
-Family: execution-topology · Default severity: error · strict preset only
+Code: EFT3101 · Family: computation · Default severity: error
 
-## Rationale
+## Invariant
 
-Native Promise control flow (async/await, new Promise, Promise combinators, resolve/reject) bypasses Effect's structured concurrency, typed failures, and interruption. Runtime adapters may use native Promise mechanics only inside Effect.tryPromise, Effect.promise for genuinely non-rejecting promises, or Effect.async with cancellation mapped where available; composition roots perform final Effect.runPromise; tests may execute explicitly.
+effect-owned-asynchronous-computation: Native async control flow is outside EffectTS.
 
-## Applicability (domains select rules, never severity)
+## Why EffectTS rejects it
 
+Native Promise control flow bypasses Effect failure, requirement, interruption, resource, and structured concurrency semantics.
+
+## Help
+
+Use Effect.fn and Effect combinators; lift vendor Promises at a runtime-adapter boundary.
+
+Proof: syntax, scope.
+
+## Applicability
+
+- Strictness: strict
 - Roles: effect-library, service, application, runtime-adapter
-- Required boundary: none
+- Boundaries: none
 
-## Limitation
+## Limitations
 
-Owns high-confidence AST/scope cases only: async/await and top-level for-await syntax, ambient/globalThis Promise construction and static control flow, direct immutable Promise aliases, and imported Effect.runPromise* variants. Promise type references and declared external Promise signatures are never diagnosed. The reviewed typed companions currently expose no domain-aware general `.then`/`.catch`/`.finally` policy, so arbitrary typed chains remain an explicit gap.
+- Arbitrary typed then, catch, and finally chains remain unenforceable.
 
 ## Type-aware companion (@effect/tsgo)
 
-@effect/tsgo is authoritative for Effect-specific typed promise diagnostics such as lazyPromiseInEffectSync; this rule is authoritative for the listed Promise syntax and ambient globals. A general typed chain policy requires a future type-and-domain-aware companion hook.
+Overlaps: asyncFunction, lazyPromiseInEffectSync, newPromise, promiseInEffectSuccess.
+
+@effect/tsgo owns typed Promise values and contextual Effect semantics; this rule owns role-scoped native Promise syntax, so direct syntax duplicates stay off upstream.
+
+## Local exception
+
+```ts
+// oxlint-effect-plugin allow(no-native-promise-control-flow):
+// reason: <nonempty reason>
+<next syntax node>
+```
+
+The directive targets exactly one rule and the next syntax node in the same lexical block. Broad, duplicate, missing-reason, misplaced, unused, and stale directives fail the escape audit.

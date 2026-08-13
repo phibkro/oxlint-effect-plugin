@@ -1,0 +1,61 @@
+name: effx review
+
+on:
+  workflow_call:
+    inputs:
+      diagnostics-artifact:
+        description: Artifact containing decoded effx-input.json from an unprivileged analysis workflow
+        required: true
+        type: string
+      expected-head-sha:
+        description: Immutable pull-request head SHA observed by the analysis workflow
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out effx at the called revision
+        uses: actions/checkout@v4
+        with:
+          repository: phibkro/oxlint-effect-plugin
+          path: .effx-tool
+          ref: 0e41f6b05b08f7ecfd91c7e55e77e98d8b650b02
+          persist-credentials: false
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+      - name: Download unprivileged analysis result
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.diagnostics-artifact }}
+          path: .effx-input
+      - name: Verify immutable head binding
+        env:
+          EXPECTED_HEAD_SHA: ${{ inputs.expected-head-sha }}
+        run: |
+          observed="$(jq -r '.observedHeadSha' .effx-input/effx-input.json)"
+          test -n "$EXPECTED_HEAD_SHA"
+          test "$observed" = "$EXPECTED_HEAD_SHA"
+      - name: Build the reviewed effx command
+        working-directory: .effx-tool
+        run: |
+          bun install --frozen-lockfile --ignore-scripts
+          bun run build
+      - name: Produce fail-closed publication plan
+        run: bun .effx-tool/dist/cli.js github plan < .effx-input/effx-input.json > .effx-input/effx-plan.json
+      - name: Publish canonical Check and review comments
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EXPECTED_HEAD_SHA: ${{ inputs.expected-head-sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: bun run .effx-tool/scripts/publish-github-plan.ts .effx-input/effx-plan.json

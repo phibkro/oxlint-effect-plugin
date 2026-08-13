@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "status": "tracked",
+  "outcome": "worked",
+  "exactHead": "1111111111111111111111111111111111111111",
+  "finding": {
+    "fingerprint": "effx-b67e9499",
+    "code": "EFT2101",
+    "rule": "effect/no-ambient-console",
+    "family": "observability",
+    "invariant": "effect-owned-observability",
+    "path": "src/load.ts",
+    "line": 18,
+    "column": 3,
+    "message": "Ambient console access is outside EffectTS.",
+    "explanation": "Observability must remain inside Effect capabilities.",
+    "help": "Use Effect.log or effect/Console.",
+    "docs": "docs/rules/no-ambient-console.md",
+    "proofSources": [
+      "syntax",
+      "scope"
+    ],
+    "applicability": "no-fix",
+    "origin": {
+      "engine": "oxlint",
+      "code": "effect(no-ambient-console)"
+    }
+  },
+  "first": {
+    "annotations": 2,
+    "summaryOnly": 1,
+    "operations": [
+      "create"
+    ]
+  },
+  "second": [
+    "update"
+  ],
+  "fixed": [
+    "resolve"
+  ],
+  "stale": {
+    "accepted": false,
+    "status": "rejected",
+    "reason": "head-sha-mismatch"
+  },
+  "evidence": [
+    "changed-line finding produced one inline create",
+    "outside-diff finding remained in the canonical Check summary",
+    "second revision updated the existing fingerprint without duplication",
+    "fixed revision resolved the existing comment",
+    "mismatched immutable head was rejected before publication"
+  ]
+}

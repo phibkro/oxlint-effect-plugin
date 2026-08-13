@@ -12,7 +12,6 @@
     "effect/no-ambient-console": [
       "error",
       {
-        "role": "application",
         "platform": "portable"
       }
     ]

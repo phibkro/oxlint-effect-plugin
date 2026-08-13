@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "status": "tracked",
+  "outcome": "worked",
+  "providers": {
+    "effectTsgoVersion": "0.36.4",
+    "effectExecutable": "<repo>/node_modules/@effect/tsgo-linux-x64/artifacts/typescript/7.0.2/tsc",
+    "effectExecutableSha256": "<sha256>",
+    "typescriptVersion": "7.0.2",
+    "stockExecutable": "<repo>/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "stockExecutableSha256": "<sha256>"
+  },
+  "fixtureSourceSha256": "88ee68146a88b1749bbd2bb0280236f74264ef20d37531ff289d2398f35c7dff",
+  "diagnostics": [
+    {
+      "code": 377001,
+      "source": "@effect/tsgo",
+      "range": {
+        "start": {
+          "line": 2,
+          "character": 0
+        },
+        "end": {
+          "line": 2,
+          "character": 17
+        }
+      }
+    },
+    {
+      "code": 2322,
+      "source": "typescript",
+      "range": {
+        "start": {
+          "line": 3,
+          "character": 6
+        },
+        "end": {
+          "line": 3,
+          "character": 17
+        }
+      }
+    }
+  ],
+  "codeAction": {
+    "present": true,
+    "hasWorkspaceEdit": false,
+    "data": {
+      "schemaVersion": 1,
+      "applicability": "choice-required",
+      "snapshotSha256": "88ee68146a88b1749bbd2bb0280236f74264ef20d37531ff289d2398f35c7dff"
+    }
+  },
+  "advertisedCommands": [
+    "effx.chooseEffectComposition",
+    "effx.status"
+  ],
+  "executedCommandAccepted": true,
+  "staleCommandError": -32001,
+  "unknownCommandError": -32001,
+  "diagnosticLifecycle": {
+    "unchangedPreserved": true,
+    "cancellationForwarded": true,
+    "closedDocumentRejected": true
+  },
+  "timingsObserved": {
+    "cold": true,
+    "warm": true,
+    "incremental": true,
+    "effectHeavy": true,
+    "multiProject": true
+  },
+  "memoryObserved": true,
+  "protocolDirections": [
+    "client->proxy",
+    "effect-lsp->proxy",
+    "proxy->client",
+    "proxy->effect-lsp",
+    "proxy->stock-sidecar",
+    "stock-sidecar->proxy"
+  ],
+  "terminationObserved": true,
+  "unsupportedOperations": [
+    {
+      "operation": "provider textDocument/diagnostic pull",
+      "reason": "one provider rejected diagnostic pull; the proxy returned the last complete merged publication",
+      "responseErrorCode": -32800
+    }
+  ],
+  "semantic": {
+    "identity": {
+      "accepted": [
+        "direct-imported-effect",
+        "renamed-imported-effect",
+        "namespace-qualified-effect",
+        "direct-type-alias-effect",
+        "wrapped-type-alias-effect",
+        "function-returned-effect",
+        "generic-effect-subtype"
+      ],
+      "rejected": [
+        "shadowed-effect-name",
+        "local-effect-lookalike"
+      ],
+      "unsupportedCount": 2,
+      "unsupported": [
+        "unresolved-effect-alias",
+        "opaque-wrapper-provenance"
+      ],
+      "unsupportedApiCount": 0,
+      "floatingOracleCode": 377001,
+      "cleanDiagnosticCount": 0,
+      "experimentalApiFailureReported": true
+    },
+    "channels": {
+      "result": "reproduced",
+      "oracleCode": 377004,
+      "oracleStart": 278,
+      "oracleLength": 6,
+      "actualOracleCode": 377004,
+      "actualOracleStart": 278,
+      "actualOracleLength": 6,
+      "relationCount": 1,
+      "unsupportedCount": 0
+    }
+  },
+  "unsupportedOperationCount": 1,
+  "errors": []
+}

@@ -1,22 +1,29 @@
 {
   "name": "@phibkro/oxlint-effect-plugin",
   "version": "0.1.0",
-  "description": "Reusable compiled Oxlint JavaScript plugin for explicit Effect architecture, capability, runtime-platform, and semantic-boundary policies. Effect compatibility is declared as metadata. Syntax and scope diagnostics only; type-aware Effect diagnostics are delegated to @effect/tsgo.",
+  "description": "Compiled EffectTS enforcement layer for TypeScript: Oxlint rules, semantic diagnostics, safe repair metadata, import policy, escape auditing, and agent guidance. Effect-specific type diagnostics remain owned by @effect/tsgo.",
   "keywords": [
     "architecture",
     "effect",
     "effect-v4",
+    "effectts",
     "eslint-plugin",
     "lint",
     "oxlint",
-    "oxlint-plugin"
+    "oxlint-plugin",
+    "static-analysis"
   ],
   "license": "MIT",
+  "bin": {
+    "effx": "./dist/cli.js"
+  },
   "files": [
     "dist",
     "docs/rules",
     "docs/tsgo-boundary.md",
+    "docs/import-closure.md",
     "docs/suppression-audit.md",
+    "guidance",
     "compatibility.json",
     "PROVENANCE.md",
     "LICENSE",
@@ -24,13 +31,6 @@
   ],
   "type": "module",
   "sideEffects": false,
-  "effectCompatibility": {
-    "name": "effect",
-    "domain": "effect-v4",
-    "major": 4,
-    "reviewed": "4.0.0-beta.102",
-    "reviewPolicy": "exact"
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -48,21 +48,24 @@
     "prepack": "bun run scripts/prepare-package.ts",
     "check": "bun run scripts/check.ts",
     "accept:0001": "bun run scripts/accept-0001.ts",
+    "accept:effx:0001": "bun run scripts/accept-effx-0001.ts",
+    "accept:effx:github:0001": "bun run scripts/accept-effx-github-0001.ts",
+    "accept:effx:github:0001:write": "bun run scripts/accept-effx-github-0001.ts write",
     "gen": "bun run scripts/generate.ts write"
   },
   "devDependencies": {
-    "@effect/platform-bun": "4.0.0-beta.102",
-    "@effect/platform-node": "4.0.0-beta.102",
-    "@effect/tsgo": "0.24.3",
+    "@effect/platform-bun": "4.0.0-beta.107",
+    "@effect/platform-node": "4.0.0-beta.107",
+    "@effect/tsgo": "0.36.4",
     "@types/bun": "1.3.14",
-    "effect": "4.0.0-beta.102",
+    "effect": "4.0.0-beta.107",
     "oxfmt": "0.61.0",
-    "oxlint": "1.76.0",
+    "oxlint": "1.77.0",
     "oxlint-tsgolint": "7.0.2001",
     "typescript": "7.0.2"
   },
   "peerDependencies": {
-    "oxlint": "1.76.0"
+    "oxlint": "1.77.0"
   },
   "peerDependenciesMeta": {
     "oxlint": {
@@ -71,5 +74,12 @@
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
+  },
+  "effectCompatibility": {
+    "name": "effect",
+    "domain": "effect-v4",
+    "major": 4,
+    "reviewed": "4.0.0-beta.107",
+    "reviewPolicy": "exact"
   }
 }

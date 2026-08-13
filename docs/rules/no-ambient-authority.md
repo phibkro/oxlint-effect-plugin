@@ -1,16 +1,43 @@
 # effect/no-ambient-authority
 
-Family: ambient-capability · Default severity: error
+Code: EFT2201 · Family: capability · Default severity: error
 
-## Rationale
+## Invariant
 
-Clock, random, cryptographic, network, timer, environment, filesystem, process, and runtime authority belong to declared Effect services so tests and platforms can replace them. Deterministic `new Date(capturedMilliseconds)` is admitted; observations such as `new Date()`/`Date.now()` are not, and wrapping them in a thunk does not surface the hidden authority to the Effect environment.
+explicit-operational-authority: Ambient operational authority is outside EffectTS.
 
-## Applicability (domains select rules, never severity)
+## Why EffectTS rejects it
 
+Clock, randomness, environment, network, filesystem, process, and runtime authority belong to declared Effect or project services.
+
+## Help
+
+Inject Clock, Random, Config, a platform service, or a project service.
+
+Proof: syntax, scope.
+
+## Applicability
+
+- Strictness: recommended, strict
 - Roles: pure-library, effect-library, service, application
-- Required boundary: none
+- Boundaries: none
 
-## Limitation
+## Limitations
 
-Syntax/scope detection over known bare or statically global-object-qualified ambient globals plus static import(), import, and re-export module edges; authority reached through aliases, dependency wrappers, or computed dynamic access escapes analysis. Composition roots and runtime adapters are exempt by role.
+- Aliases, wrappers, and computed dynamic access escape syntax analysis.
+
+## Type-aware companion (@effect/tsgo)
+
+Overlaps: cryptoRandomUUID, cryptoRandomUUIDInEffect, globalDate, globalDateInEffect, globalFetch, globalFetchInEffect, globalRandom, globalRandomInEffect, globalTimers, globalTimersInEffect, nodeBuiltinImport, processEnv, processEnvInEffect.
+
+This rule owns role-scoped ambient-authority policy; keep overlapping @effect/tsgo syntax diagnostics off while typed Effect facts remain upstream-owned.
+
+## Local exception
+
+```ts
+// oxlint-effect-plugin allow(no-ambient-authority):
+// reason: <nonempty reason>
+<next syntax node>
+```
+
+The directive targets exactly one rule and the next syntax node in the same lexical block. Broad, duplicate, missing-reason, misplaced, unused, and stale directives fail the escape audit.

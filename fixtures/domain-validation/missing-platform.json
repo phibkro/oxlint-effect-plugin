@@ -12,9 +12,7 @@
     "effect/no-ambient-console": [
       "error",
       {
-        "technology": "effect-v3",
-        "role": "application",
-        "platform": "portable"
+        "role": "application"
       }
     ]
   }

@@ -19,5 +19,7 @@ export default {
     "no-native-promise-control-flow": emptyRule,
     "no-raw-json-parse": emptyRule,
     "no-untyped-throw": emptyRule,
+    "no-opaque-instance-fields": emptyRule,
+    "no-import-from-barrel-package": emptyRule,
   },
 };
