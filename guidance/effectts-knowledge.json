@@ -333,7 +333,7 @@
       "diagnostic": {
         "message": "Throw-based expected failure is outside EffectTS.",
         "explanation": "Expected failures must remain visible as Schema-backed values in Effect<A, E, R>.",
-        "help": "Define a Schema.TaggedErrorClass and fail through the Effect error channel.",
+        "help": "Define a Schema.TaggedError and fail through the Effect error channel.",
         "docs": "docs/rules/no-untyped-throw.md"
       },
       "replacements": [],

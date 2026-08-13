@@ -353,9 +353,7 @@ if (
   !green.summary.diagnosticLifecycle.unchangedPreserved ||
   !green.summary.diagnosticLifecycle.cancellationForwarded ||
   !green.summary.diagnosticLifecycle.closedDocumentRejected ||
-  green.summary.unsupportedOperationCount !== 1 ||
-  green.summary.unsupportedOperations[0]?.operation !== "provider textDocument/diagnostic pull" ||
-  green.summary.unsupportedOperations[0]?.responseErrorCode !== -32800 ||
+  green.summary.unsupportedOperationCount !== 0 ||
   green.summary.staleCommandError !== -32001 ||
   green.summary.unknownCommandError !== -32001 ||
   !green.summary.termination.terminated ||

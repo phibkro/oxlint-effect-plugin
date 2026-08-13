@@ -10,9 +10,9 @@ export const REVIEWED_DEPENDENCIES = {
   oxlint: "1.77.0",
   oxfmt: "0.61.0",
   typescript: "7.0.2",
-  effect: "4.0.0-beta.107",
-  "@effect/platform-node": "4.0.0-beta.107",
-  "@effect/platform-bun": "4.0.0-beta.107",
+  effect: "4.0.0-rc.108",
+  "@effect/platform-node": "4.0.0-rc.108",
+  "@effect/platform-bun": "4.0.0-rc.108",
   "@effect/tsgo": "0.36.4",
   "oxlint-tsgolint": "7.0.2001",
 } as const;

@@ -4,7 +4,7 @@
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 
-export class NotPositive extends Schema.TaggedErrorClass<NotPositive>()("NotPositive", {
+export class NotPositive extends Schema.TaggedError<NotPositive>()("NotPositive", {
   value: Schema.Number,
 }) {}
 

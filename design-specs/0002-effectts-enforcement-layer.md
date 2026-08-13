@@ -23,7 +23,7 @@ The repository and package names stay unchanged:
 - package: `@phibkro/oxlint-effect-plugin`
 - default rule namespace: `effect/*`
 - current technology target: `effect-v4`
-- exact reviewed Effect release: `4.0.0-beta.107`
+- exact reviewed Effect release: `4.0.0-rc.108`
 
 The product description changes from “an Effect lint plugin” to:
 
@@ -115,11 +115,11 @@ The project dialect adds role policy, explicit rule overrides, and recorded esca
 
 ### 4.2 Admitted semantic vocabulary
 
-| Responsibility              | Admitted vocabulary                                                                          | Exact beta.107 evidence                                                                                                                             |
+| Responsibility              | Admitted vocabulary                                                                          | Exact RC.108 evidence                                                                                                                               |
 | --------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Domain model                | `Schema`, schema classes                                                                     | `node_modules/effect/src/Schema.ts`                                                                                                                 |
 | Domain branching            | `Match` when typed pattern exhaustiveness improves domain code                               | `node_modules/effect/src/Match.ts`                                                                                                                  |
-| Domain error                | `Schema.TaggedErrorClass` and the typed error channel                                        | `node_modules/effect/src/Schema.ts`                                                                                                                 |
+| Domain error                | `Schema.TaggedError` and the typed error channel                                             | `node_modules/effect/src/Schema.ts`                                                                                                                 |
 | External decoding           | `Schema.decodeUnknownEffect` and named decoders                                              | `node_modules/effect/src/Schema.ts`                                                                                                                 |
 | Representation change       | `Schema.decodeTo` and `SchemaTransformation`                                                 | `node_modules/effect/src/Schema.ts`, `SchemaTransformation.ts`                                                                                      |
 | Effectful computation       | `Effect<A, E, R>`                                                                            | `node_modules/effect/src/Effect.ts`                                                                                                                 |
@@ -141,7 +141,7 @@ The project dialect adds role policy, explicit rule overrides, and recorded esca
 
 The pinned public service module is `Context`, not `ServiceMap`. `Config<T>` is an Effect-backed decoder, and its default provider can read ambient environment.
 
-The live `../effect` checkout is `effect@4.0.0-beta.107` at commit `2e1ddbebd9dd5cf0738ea08b2e832a7c39ae990f`. Its guides corroborate the installed pinned source used for exact API claims.
+The installed `effect@4.0.0-rc.108` package supplies the pinned source for exact API claims.
 
 ### 4.3 Restricted pure TypeScript kernel
 
@@ -687,7 +687,7 @@ Initial allocations:
 
 | Code      | Rule or audit invariant                               |
 | --------- | ----------------------------------------------------- |
-| `EFT1101` | `no-opaque-instance-fields`                            |
+| `EFT1101` | `no-opaque-instance-fields`                           |
 | `EFT1201` | `no-raw-json-parse`                                   |
 | `EFT1301` | optional Stage 3 `prefer-match-over-switch` candidate |
 | `EFT2101` | `no-ambient-console`                                  |
@@ -697,7 +697,7 @@ Initial allocations:
 | `EFT3201` | `no-untyped-throw`                                    |
 | `EFT4101` | `no-premature-execution`                              |
 | `EFT5101` | module-graph import-closure gate                      |
-| `EFT5102` | opt-in `no-import-from-barrel-package`                 |
+| `EFT5102` | opt-in `no-import-from-barrel-package`                |
 | `EFT9001` | invalid local exception                               |
 | `EFT9002` | unused or stale local exception                       |
 | `EFT9011` | invalid file opt-out                                  |
@@ -1013,25 +1013,25 @@ A compiler becomes relevant only if valid EffectTS needs semantics ordinary Type
 
 ## 24. Prior art and provenance
 
-| Source                                             | License                  | Reuse decision                                                                                                       |
-| -------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| Effect v4 beta.107 source and current guides       | MIT                      | Exact API claims use the installed beta.107 source and are corroborated by the matching checkout.                      |
-| Oxlint 1.77.0 plugin, fix, typed, and output APIs  | MIT                      | Reuse plugin surface, spans, severity, formats, fixes, and suggestions.                                                |
+| Source                                             | License                  | Reuse decision                                                                                                        |
+| -------------------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Effect v4 RC.108 source and current guides         | MIT                      | Exact API claims use the installed RC.108 source.                                                                     |
+| Oxlint 1.77.0 plugin, fix, typed, and output APIs  | MIT                      | Reuse plugin surface, spans, severity, formats, fixes, and suggestions.                                               |
 | `@effect/tsgo@0.36.4`                              | MIT                      | Keep typed authority and original identities. Reuse supported CLI, LSP, and preset surfaces; do not use private data. |
-| TypeScript-Go `7.1.0-dev.20260722.1` internal host | MIT                      | Boundary evidence only. Reject the internal Go host as a public JavaScript API.                                      |
-| ESLint 10.8.1 rules and bulk suppressions          | MIT                      | Reuse fixer safety and baseline concepts. Do not copy code or claim native Oxlint behavior.                          |
-| Biome 2.5.7 domains and organize imports           | MIT or Apache-2.0        | Reuse configuration and structured import concepts. Do not copy scanner assumptions.                                 |
-| Rust 1.97.1 JSON diagnostics and applicability     | MIT or Apache-2.0        | Adapt concepts only. Rust JSON is unstable, and Oxlint has no native applicability field.                            |
-| `effect-oxlint@0.3.3`                              | MIT                      | Re-evaluated and rejected as a dependency. It pins older Effect and adds a lint-time Effect runtime. No code copied. |
-| `joelhooks/effectts-skills`                        | advisory                 | Agent-guidance prior art only. Effect claims require pinned-source corroboration.                                    |
-| AGENTS.md                                          | open Markdown convention | Ship a portable agent guidance fragment.                                                                             |
-| Agent Skills specification                         | Apache-2.0               | Ship a standards-conforming minimal skill.                                                                           |
-| TypeScript Handbook                                | documentation            | Treat TypeScript as the host language.                                                                               |
-| Shared “Enforcing Idiomatic Effect” conversation   | advisory                 | Problem input only.                                                                                                  |
+| TypeScript-Go `7.1.0-dev.20260722.1` internal host | MIT                      | Boundary evidence only. Reject the internal Go host as a public JavaScript API.                                       |
+| ESLint 10.8.1 rules and bulk suppressions          | MIT                      | Reuse fixer safety and baseline concepts. Do not copy code or claim native Oxlint behavior.                           |
+| Biome 2.5.7 domains and organize imports           | MIT or Apache-2.0        | Reuse configuration and structured import concepts. Do not copy scanner assumptions.                                  |
+| Rust 1.97.1 JSON diagnostics and applicability     | MIT or Apache-2.0        | Adapt concepts only. Rust JSON is unstable, and Oxlint has no native applicability field.                             |
+| `effect-oxlint@0.3.3`                              | MIT                      | Re-evaluated and rejected as a dependency. It pins older Effect and adds a lint-time Effect runtime. No code copied.  |
+| `joelhooks/effectts-skills`                        | advisory                 | Agent-guidance prior art only. Effect claims require pinned-source corroboration.                                     |
+| AGENTS.md                                          | open Markdown convention | Ship a portable agent guidance fragment.                                                                              |
+| Agent Skills specification                         | Apache-2.0               | Ship a standards-conforming minimal skill.                                                                            |
+| TypeScript Handbook                                | documentation            | Treat TypeScript as the host language.                                                                                |
+| Shared “Enforcing Idiomatic Effect” conversation   | advisory                 | Problem input only.                                                                                                   |
 
 Primary references:
 
-- [Effect beta.107](https://github.com/Effect-TS/effect/tree/effect%404.0.0-beta.107)
+- [Effect RC.108](https://github.com/Effect-TS/effect/tree/effect%404.0.0-rc.108)
 - [Oxlint JS plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins)
 - [Oxlint automatic fixes](https://oxc.rs/docs/guide/usage/linter/automatic-fixes)
 - [Oxlint output formats](https://oxc.rs/docs/guide/usage/linter/output-formats.html)

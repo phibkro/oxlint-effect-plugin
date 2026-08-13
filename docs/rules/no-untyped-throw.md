@@ -12,7 +12,7 @@ Throw erases expected application failure from the Effect error channel and call
 
 ## Help
 
-Define a Schema.TaggedErrorClass and fail through the Effect error channel.
+Define a Schema.TaggedError and fail through the Effect error channel.
 
 Proof: syntax.
 

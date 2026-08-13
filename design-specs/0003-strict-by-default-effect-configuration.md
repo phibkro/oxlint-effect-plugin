@@ -19,42 +19,38 @@ applicability context. They do not select the product domain.
 
 ## Decisions
 
-| Concern | Decision |
-| --- | --- |
-| Product domain | The installed plugin is the Effect enforcement domain. |
+| Concern        | Decision                                                                                |
+| -------------- | --------------------------------------------------------------------------------------- |
+| Product domain | The installed plugin is the Effect enforcement domain.                                  |
 | Effect version | `compatibility.json` declares the reviewed Effect version. User configuration does not. |
-| Builder | `effect(input)` |
-| Strictness | `"strict"` or `"recommended"` |
-| Default | `"strict"` when the project and group omit strictness |
-| Required floor | Retired. `strict` is the floor. `recommended` may omit rules that Stage 2 forced on. |
-| Lowering | `strictness: "recommended"` or an explicit rule override |
-| Applicability | Role, platform, and boundary groups |
-| Precedence | Group strictness replaces project strictness. This supersedes additive presets. |
-| Topology | No topology axis until one shipped rule has different topology semantics |
-| Migration | Clean cutover with no aliases or deprecated fields |
+| Builder        | `effect(input)`                                                                         |
+| Strictness     | `"strict"` or `"recommended"`                                                           |
+| Default        | `"strict"` when the project and group omit strictness                                   |
+| Required floor | Retired. `strict` is the floor. `recommended` may omit rules that Stage 2 forced on.    |
+| Lowering       | `strictness: "recommended"` or an explicit rule override                                |
+| Applicability  | Role, platform, and boundary groups                                                     |
+| Precedence     | Group strictness replaces project strictness. This supersedes additive presets.         |
+| Topology       | No topology axis until one shipped rule has different topology semantics                |
+| Migration      | Clean cutover with no aliases or deprecated fields                                      |
 
 ## Public interface
 
 ```ts
-import { defineConfig } from "oxlint"
-import {
-  effect,
-  importClosurePolicy,
-  type EffectConfigInput
-} from "@phibkro/oxlint-effect-plugin"
+import { defineConfig } from "oxlint";
+import { effect, importClosurePolicy, type EffectConfigInput } from "@phibkro/oxlint-effect-plugin";
 
 const effectConfig = {
   trustedPureDependencies: [
     {
       specifier: "date-fns/format",
-      reason: "reviewed total transform over caller-owned Date values"
-    }
+      reason: "reviewed total transform over caller-owned Date values",
+    },
   ],
   groups: [
     {
       files: ["src/core/**"],
       role: "application",
-      platform: "portable"
+      platform: "portable",
     },
     {
       files: ["src/legacy/**"],
@@ -63,26 +59,26 @@ const effectConfig = {
       boundaries: ["external-data"],
       strictness: "recommended",
       severityOverrides: {
-        "no-ambient-console": "warn"
-      }
+        "no-ambient-console": "warn",
+      },
     },
     {
       files: ["src/adapters/node/**"],
       role: "runtime-adapter",
       platform: "node",
-      adapterDependencies: ["stripe"]
-    }
+      adapterDependencies: ["stripe"],
+    },
   ],
   rules: {
-    "no-raw-json-parse": "off"
-  }
-} satisfies EffectConfigInput
+    "no-raw-json-parse": "off",
+  },
+} satisfies EffectConfigInput;
 
 export default defineConfig({
-  ...effect(effectConfig)
-})
+  ...effect(effectConfig),
+});
 
-const closure = importClosurePolicy(effectConfig)
+const closure = importClosurePolicy(effectConfig);
 ```
 
 The builder output remains a plain Oxlint configuration fragment. It contains
@@ -130,13 +126,13 @@ stale. The migration must rename or remove those exceptions.
 The old word `domain` covered unrelated concepts. This specification replaces
 it with precise terms.
 
-| Term | Meaning | Examples |
-| --- | --- | --- |
-| Role | A module's architectural responsibility | `effect-library`, `application`, `composition-root` |
-| Platform | Runtime authority admitted for the group | `portable`, `node`, `browser` |
-| Boundary | A semantic seam that activates relevant checks | `external-data`, `persistence` |
-| Strictness | The size of the enabled rule collection | `strict`, `recommended` |
-| Severity | How Oxlint reports one enabled rule | `error`, `warn`, `off` |
+| Term       | Meaning                                        | Examples                                            |
+| ---------- | ---------------------------------------------- | --------------------------------------------------- |
+| Role       | A module's architectural responsibility        | `effect-library`, `application`, `composition-root` |
+| Platform   | Runtime authority admitted for the group       | `portable`, `node`, `browser`                       |
+| Boundary   | A semantic seam that activates relevant checks | `external-data`, `persistence`                      |
+| Strictness | The size of the enabled rule collection        | `strict`, `recommended`                             |
+| Severity   | How Oxlint reports one enabled rule            | `error`, `warn`, `off`                              |
 
 Roles still own execution authority. Platforms still own concrete runtime
 access. Boundaries still activate boundary-specific rules.
@@ -157,17 +153,17 @@ The implementation must remove these configuration and public API names:
 
 The replacement names are:
 
-| Removed | Replacement |
-| --- | --- |
-| `expandDomains` | `effect` |
-| `expandImportClosurePolicy` | `importClosurePolicy` |
-| `DomainGroup` | `RuleGroup` |
-| `ExpandInput` | `EffectConfigInput` |
-| `Preset` or `RulePreset` | `Strictness` |
-| Registry `presets` | `strictness` |
-| Registry `profile.roles` and `profile.boundaries` | `applicability.roles` and `applicability.boundaries` |
-| Registry `profile.required` | Deleted; every shipped rule belongs to `strict` |
-| `ExpansionPolicy.profile` and `ExpansionPolicy.preset` | `ExpansionPolicy.strictness` |
+| Removed                                                | Replacement                                          |
+| ------------------------------------------------------ | ---------------------------------------------------- |
+| `expandDomains`                                        | `effect`                                             |
+| `expandImportClosurePolicy`                            | `importClosurePolicy`                                |
+| `DomainGroup`                                          | `RuleGroup`                                          |
+| `ExpandInput`                                          | `EffectConfigInput`                                  |
+| `Preset` or `RulePreset`                               | `Strictness`                                         |
+| Registry `presets`                                     | `strictness`                                         |
+| Registry `profile.roles` and `profile.boundaries`      | `applicability.roles` and `applicability.boundaries` |
+| Registry `profile.required`                            | Deleted; every shipped rule belongs to `strict`      |
+| `ExpansionPolicy.profile` and `ExpansionPolicy.preset` | `ExpansionPolicy.strictness`                         |
 
 `expandGroupRules` keeps its name. Its signature becomes
 `expandGroupRules(group, pluginName?, policy?)`.
@@ -204,13 +200,13 @@ superseded design decision must migrate.
 
 This specification supersedes these decisions:
 
-| Prior decision | Replacement |
-| --- | --- |
-| 0001 exports named `recommended` and `strict` fragments | Consumers call `effect()` with explicit groups. |
-| 0002 makes `effectts` a selectable profile | The plugin itself selects Effect enforcement. |
-| 0002 prefers `preset` over `strictness` | `strictness` now names rule-collection size exactly. |
-| 0002 prevents presets from removing required rules | The required floor is retired. `recommended` is an explicit lowering. |
-| 0002 adds group and project presets | Group strictness replaces project strictness. |
+| Prior decision                                          | Replacement                                                           |
+| ------------------------------------------------------- | --------------------------------------------------------------------- |
+| 0001 exports named `recommended` and `strict` fragments | Consumers call `effect()` with explicit groups.                       |
+| 0002 makes `effectts` a selectable profile              | The plugin itself selects Effect enforcement.                         |
+| 0002 prefers `preset` over `strictness`                 | `strictness` now names rule-collection size exactly.                  |
+| 0002 prevents presets from removing required rules      | The required floor is retired. `recommended` is an explicit lowering. |
+| 0002 adds group and project presets                     | Group strictness replaces project strictness.                         |
 
 The implementation must mark the affected 0001 and 0002 text as superseded by
 this specification.
@@ -219,14 +215,14 @@ this specification.
 
 Current rules do not justify a topology configuration axis.
 
-| Candidate topology | Distinct Effect concern | Current enforcement result |
-| --- | --- | --- |
-| GUI | Reactive state, event fibers, registry disposal, framework runtime bridge | Candidate only; current rules use role and browser platform |
-| Server | Per-request scope, client-abort interruption, request context, shared server lifetime | Candidate only; current rules cannot prove request ownership |
-| Executable | Process lifetime, signals, `runMain`, `Layer.launch`, CLI environment | Existing composition-root and platform policy cover shipped rules |
-| Library | Open requirements, no execution, no final platform provision | Existing pure/effect-library roles cover shipped rules |
+| Candidate topology | Distinct Effect concern                                                               | Current enforcement result                                        |
+| ------------------ | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| GUI                | Reactive state, event fibers, registry disposal, framework runtime bridge             | Candidate only; current rules use role and browser platform       |
+| Server             | Per-request scope, client-abort interruption, request context, shared server lifetime | Candidate only; current rules cannot prove request ownership      |
+| Executable         | Process lifetime, signals, `runMain`, `Layer.launch`, CLI environment                 | Existing composition-root and platform policy cover shipped rules |
+| Library            | Open requirements, no execution, no final platform provision                          | Existing pure/effect-library roles cover shipped rules            |
 
-Evidence was read from the installed `effect@4.0.0-beta.107` package:
+Evidence was read from the installed `effect@4.0.0-rc.108` package:
 
 - `Layer.launch` models a long-running executable lifetime
   (`node_modules/effect/src/Layer.ts:3897-3898`).
