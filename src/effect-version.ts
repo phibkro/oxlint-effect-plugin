@@ -6,7 +6,7 @@
  * network work, and it never edits source files.
  */
 
-export const REVIEWED_EFFECT_VERSION = "4.0.0-beta.107" as const;
+export const REVIEWED_EFFECT_VERSION = "4.0.0-rc.108" as const;
 
 export type EffectRepositoryClassification =
   | "supported-effect-v4"

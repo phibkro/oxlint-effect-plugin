@@ -45,7 +45,7 @@ Ship one independently reusable compiled Oxlint JavaScript plugin that:
 - package: `@phibkro/oxlint-effect-plugin`;
 - default Oxlint namespace: `effect/*`;
 - technology compatibility: package and compatibility metadata declare Effect
-  major 4, exact reviewed release `4.0.0-beta.107`, and technology domain
+  major 4, exact reviewed release `4.0.0-rc.108`, and technology domain
   `effect-v4`;
 - initial release line: `0.x`;
 - default export: ESLint-v9-compatible Oxlint JavaScript plugin;

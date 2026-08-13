@@ -79,13 +79,7 @@
     "stock-sidecar->proxy"
   ],
   "terminationObserved": true,
-  "unsupportedOperations": [
-    {
-      "operation": "provider textDocument/diagnostic pull",
-      "reason": "one provider rejected diagnostic pull; the proxy returned the last complete merged publication",
-      "responseErrorCode": -32800
-    }
-  ],
+  "unsupportedOperations": [],
   "semantic": {
     "identity": {
       "accepted": [
@@ -123,6 +117,6 @@
       "unsupportedCount": 0
     }
   },
-  "unsupportedOperationCount": 1,
+  "unsupportedOperationCount": 0,
   "errors": []
 }
