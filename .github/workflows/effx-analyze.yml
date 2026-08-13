@@ -37,7 +37,7 @@ jobs:
           cat > .effx-oxlintrc.json <<'JSON'
           {
             "jsPlugins": [{ "name": "effect", "specifier": "./.effx-tool/dist/index.js" }],
-            "ignorePatterns": [".effx-tool/**", "node_modules/**", "dist/**", "build/**", "coverage/**", ".git/**"],
+            "ignorePatterns": [".effx-tool/**", "node_modules/**", "dist/**", "build/**", "coverage/**", ".git/**", "fixtures/**", "scripts/tracers/fixtures/**"],
             "rules": {
               "effect/no-ambient-console": ["error", { "role": "effect-library", "platform": "portable" }],
               "effect/no-ambient-authority": ["error", { "role": "effect-library", "platform": "portable" }],
