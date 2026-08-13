@@ -60,7 +60,12 @@ describe("compatibility policy mutation resistance", () => {
   test("rejects every package and resolved-lock mutation", () => {
     for (const name of Object.keys(REVIEWED_DEPENDENCIES)) {
       const packageMutation = clone(source);
-      packageMutation.packageJson.devDependencies[name] = "0.0.0-mutated";
+      const packageDependencies = packageMutation.packageJson.dependencies;
+      const dependencyGroup =
+        packageDependencies !== undefined && name in packageDependencies
+          ? packageDependencies
+          : packageMutation.packageJson.devDependencies;
+      dependencyGroup[name] = "0.0.0-mutated";
       expect(() => assertCompatibilityState(packageMutation)).toThrow(name);
 
       const lockMutation = clone(source);

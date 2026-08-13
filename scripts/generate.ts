@@ -35,6 +35,7 @@ const pkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")) as 
   name: string;
   version: string;
   effectCompatibility: typeof EFFECT_COMPATIBILITY;
+  dependencies: Record<string, string>;
   devDependencies: Record<string, string>;
   peerDependencies: Record<string, string>;
   engines: { node: string };
@@ -63,9 +64,9 @@ derivations.push({
 // --- compatibility.json -----------------------------------------------------
 // The reviewed compatibility matrix, pinned exactly during the 0.x line.
 // Versions are asserted against package.json so the two never drift.
-const devPin = (name: string): string => {
-  const version = pkg.devDependencies[name];
-  if (version === undefined) throw new Error(`package.json devDependencies missing ${name}`);
+const reviewedPin = (name: string): string => {
+  const version = pkg.dependencies[name] ?? pkg.devDependencies[name];
+  if (version === undefined) throw new Error(`package.json dependencies missing ${name}`);
   const reviewed = REVIEWED_DEPENDENCIES[name as keyof typeof REVIEWED_DEPENDENCIES];
   if (reviewed !== undefined && version !== reviewed) {
     throw new Error(`package.json ${name} must equal reviewed ${reviewed}; received ${version}`);
@@ -83,14 +84,14 @@ const compatibility = {
   package: { name: pkg.name, version: pkg.version },
   technology: EFFECT_COMPATIBILITY,
   reviewed: {
-    oxlint: devPin("oxlint"),
-    oxfmt: devPin("oxfmt"),
-    typescript: devPin("typescript"),
-    effect: devPin("effect"),
-    "@effect/platform-node": devPin("@effect/platform-node"),
-    "@effect/platform-bun": devPin("@effect/platform-bun"),
-    "@effect/tsgo": devPin("@effect/tsgo"),
-    "oxlint-tsgolint": devPin("oxlint-tsgolint"),
+    oxlint: reviewedPin("oxlint"),
+    oxfmt: reviewedPin("oxfmt"),
+    typescript: reviewedPin("typescript"),
+    effect: reviewedPin("effect"),
+    "@effect/platform-node": reviewedPin("@effect/platform-node"),
+    "@effect/platform-bun": reviewedPin("@effect/platform-bun"),
+    "@effect/tsgo": reviewedPin("@effect/tsgo"),
+    "oxlint-tsgolint": reviewedPin("oxlint-tsgolint"),
   },
   runtimes: {
     bun: {
@@ -121,13 +122,13 @@ const compatibility = {
   typedCompanions: {
     oxlint: {
       package: "oxlint-tsgolint",
-      reviewed: devPin("oxlint-tsgolint"),
+      reviewed: reviewedPin("oxlint-tsgolint"),
       scope:
         "Generic built-in typed Oxlint rules via options.typeAware; custom JavaScript plugin rules do not receive type information.",
     },
     effect: {
       package: "@effect/tsgo",
-      reviewed: devPin("@effect/tsgo"),
+      reviewed: reviewedPin("@effect/tsgo"),
       scope:
         "Effect-specific typed diagnostics, language-service features, and upstream Oxlint presets. This package owns project-context policy and keeps overlapping syntax diagnostics disabled when its profile rules own them.",
     },
@@ -276,10 +277,10 @@ for (const info of RULE_REGISTRY) {
     "1. **This package:** domain-aware custom policy over Oxc AST and resolved lexical bindings.",
   );
   lines.push(
-    `2. **Oxlint typed engine:** generic built-in typed rules via \`options.typeAware: true\`, backed by exactly pinned \`oxlint-tsgolint@${devPin("oxlint-tsgolint")}\`. This does not inject types into JavaScript plugin rules.`,
+    `2. **Oxlint typed engine:** generic built-in typed rules via \`options.typeAware: true\`, backed by exactly pinned \`oxlint-tsgolint@${reviewedPin("oxlint-tsgolint")}\`. This does not inject types into JavaScript plugin rules.`,
   );
   lines.push(
-    `3. **Effect language service:** Effect-specific typed diagnostics via exactly pinned \`@effect/tsgo@${devPin("@effect/tsgo")}\`, including floating Effects, requirements/error-channel diagnostics, strict provision, unsafe assertions, and outdated APIs.`,
+    `3. **Effect language service:** Effect-specific typed diagnostics via exactly pinned \`@effect/tsgo@${reviewedPin("@effect/tsgo")}\`, including floating Effects, requirements/error-channel diagnostics, strict provision, unsafe assertions, and outdated APIs.`,
   );
   lines.push("");
   lines.push(

@@ -112,14 +112,18 @@ export function assertCompatibilityState(args: {
     EFFECT_COMPATIBILITY,
     "package.json.effectCompatibility",
   );
+  const dependencies = record(pkg["dependencies"], "package.json.dependencies");
   const devDependencies = record(pkg["devDependencies"], "package.json.devDependencies");
   const peerDependencies = record(pkg["peerDependencies"], "package.json.peerDependencies");
   assertExactRecord(
     Object.fromEntries(
-      Object.keys(REVIEWED_DEPENDENCIES).map((name) => [name, devDependencies[name]]),
+      Object.keys(REVIEWED_DEPENDENCIES).map((name) => [
+        name,
+        dependencies[name] ?? devDependencies[name],
+      ]),
     ),
     REVIEWED_DEPENDENCIES,
-    "package.json reviewed devDependencies",
+    "package.json reviewed dependencies",
   );
   if (peerDependencies["oxlint"] !== REVIEWED_DEPENDENCIES.oxlint) {
     throw new Error(`package.json peer oxlint must equal ${REVIEWED_DEPENDENCIES.oxlint}`);
@@ -135,12 +139,18 @@ export function assertCompatibilityState(args: {
   if (root["name"] !== PACKAGE_NAME) {
     throw new Error(`bun.lock root name must equal ${PACKAGE_NAME}`);
   }
+  const lockedDependencies = record(root["dependencies"], "bun.lock root dependencies");
   const lockedDev = record(root["devDependencies"], "bun.lock root devDependencies");
   const lockedPeer = record(root["peerDependencies"], "bun.lock root peerDependencies");
   assertExactRecord(
-    Object.fromEntries(Object.keys(REVIEWED_DEPENDENCIES).map((name) => [name, lockedDev[name]])),
+    Object.fromEntries(
+      Object.keys(REVIEWED_DEPENDENCIES).map((name) => [
+        name,
+        lockedDependencies[name] ?? lockedDev[name],
+      ]),
+    ),
     REVIEWED_DEPENDENCIES,
-    "bun.lock reviewed root devDependencies",
+    "bun.lock reviewed root dependencies",
   );
   if (lockedPeer["oxlint"] !== REVIEWED_DEPENDENCIES.oxlint) {
     throw new Error(`bun.lock root peer oxlint must equal ${REVIEWED_DEPENDENCIES.oxlint}`);
