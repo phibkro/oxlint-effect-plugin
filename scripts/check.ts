@@ -198,9 +198,14 @@ const steps: Step[] = [
           if (entry.isDirectory()) walk(path);
           else if (
             entry.name.endsWith(".js") &&
-            !["cli.js", "check.js", "project.js", "providers.js", "source-analysis.js"].includes(
-              entry.name,
-            )
+            ![
+              "cli.js",
+              "check.js",
+              "doctor.js",
+              "project.js",
+              "providers.js",
+              "source-analysis.js",
+            ].includes(entry.name)
           ) {
             const text = readFileSync(path, "utf8");
             for (const match of text.matchAll(

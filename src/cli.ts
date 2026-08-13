@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { check, renderCheckHuman } from "./check.js";
+import { doctor, renderDoctorHuman } from "./doctor.js";
 import { translateOxlintJson } from "./diagnostics.js";
 import { explainEffectTS, type EffectTSExplanation } from "./explain.js";
 import { planGitHubReview, type PlanGitHubReviewInput } from "./github-review.js";
@@ -51,6 +52,7 @@ function usageError(message?: string): void {
   if (message !== undefined) process.stderr.write(`effx: ${message}\n`);
   process.stderr.write(
     "usage: effx check [--format json] [paths...]\n" +
+      "       effx doctor [--format json|human]\n" +
       "       effx explain <EFT-code|rule> [--format json]\n" +
       "       effx translate [--plugin <alias>] < oxlint.json\n" +
       "       effx github plan < decoded-input.json\n",
@@ -59,7 +61,17 @@ function usageError(message?: string): void {
 }
 
 const command = args[0];
-if (command === "check") {
+if (command === "doctor") {
+  const formatIndex = args.indexOf("--format");
+  const format = formatIndex < 0 ? "human" : args[formatIndex + 1];
+  if (format !== "human" && format !== "json") usageError("--format requires json or human");
+  else {
+    const output = doctor({ cwd: process.cwd() });
+    if (format === "json") writeJson(output);
+    else process.stdout.write(`${renderDoctorHuman(output)}\n`);
+    process.exitCode = output.status;
+  }
+} else if (command === "check") {
   const formatIndex = args.indexOf("--format");
   const format = formatIndex < 0 ? "human" : args[formatIndex + 1];
   if (format !== "human" && format !== "json") usageError("--format requires json or human");

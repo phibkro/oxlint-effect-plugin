@@ -27,6 +27,8 @@ const config = {
 
 const run = (cwd, args, env = process.env) =>
   spawnSync(node, [cli, "check", ...args], { cwd, env, encoding: "utf8" });
+const runDoctor = (cwd, args, env = process.env) =>
+  spawnSync(node, [cli, "doctor", ...args], { cwd, env, encoding: "utf8" });
 const parse = (result) => {
   try {
     return JSON.parse(result.stdout);
@@ -53,6 +55,24 @@ const validHuman = run(valid, []);
 assert(
   validHuman.status === 0 && validHuman.stdout === "effx check: clean\n",
   `invalid clean human output: ${validHuman.stdout}`,
+);
+
+const doctorRun = runDoctor(valid, ["--format", "json"]);
+const doctorJson = parse(doctorRun);
+assert(
+  doctorRun.status === 0 &&
+    doctorJson.schemaVersion === 1 &&
+    doctorJson.status === 0 &&
+    doctorJson.checks.some(
+      (check) => check.id === "provider:@effect/tsgo" && check.status === "pass",
+    ) &&
+    doctorJson.checks.some((check) => check.id === "binary-hash" && check.status === "unverified"),
+  `doctor did not report bounded provider health: ${doctorRun.stdout}\n${doctorRun.stderr}`,
+);
+const doctorHuman = runDoctor(valid, []);
+assert(
+  doctorHuman.status === 0 && doctorHuman.stdout.startsWith("effx doctor: healthy\n"),
+  `invalid doctor human output: ${doctorHuman.stdout}`,
 );
 
 const invalid = writeProject("check-invalid", "export const value = 1\n", {
@@ -96,6 +116,18 @@ assert(
   `provider failure did not fail closed: ${providerRun.stdout}`,
 );
 
+const doctorProviderRun = runDoctor(missingProvider, ["--format", "json"], {
+  ...process.env,
+  EFFX_OXLINT_PATH: join(root, "does-not-exist"),
+});
+const doctorProviderJson = parse(doctorProviderRun);
+assert(
+  doctorProviderRun.status === 2 &&
+    doctorProviderJson.status === 2 &&
+    doctorProviderJson.failure?.code === "EFFX_PROVIDER_MISSING",
+  `doctor provider failure did not fail closed: ${doctorProviderRun.stdout}`,
+);
+
 console.log(
-  "CHECK JOURNEY OK: packed clean=0 violation=1 config/provider=2 with deterministic v2 JSON",
+  "CHECK JOURNEY OK: packed check clean=0 violation=1 config/provider=2; doctor health=0 provider=2",
 );

@@ -12,7 +12,12 @@ import type {
 import { EffxFailure, snapshotSource } from "./effx-types.js";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const reviewed = { oxlint: "1.77.0", typescript: "7.0.2", "@effect/tsgo": "0.36.4" } as const;
+export const REVIEWED_PROVIDER_VERSIONS = {
+  oxlint: "1.77.0",
+  typescript: "7.0.2",
+  "@effect/tsgo": "0.36.4",
+} as const;
+const reviewed = REVIEWED_PROVIDER_VERSIONS;
 
 const resolvePackage = (project: EffxProject, name: string): string => {
   const relativeName = `${name}/package.json`;
@@ -93,6 +98,46 @@ const run = (
     );
   return { stdout: result.stdout, stderr: result.stderr, status };
 };
+export interface ProviderInspection {
+  readonly id: string;
+  readonly reviewedVersion: string;
+  readonly version: string;
+  readonly manifestPath: string;
+  readonly executablePath: string;
+  readonly executableOverride: boolean;
+}
+
+export function inspectCheckProviders(project: EffxProject): readonly ProviderInspection[] {
+  const binaries: Readonly<Record<string, string>> = {
+    oxlint: "bin/oxlint",
+    typescript: "bin/tsc",
+    "@effect/tsgo": "dist/effect-tsgo.cjs",
+  };
+  return Object.entries(REVIEWED_PROVIDER_VERSIONS).map(([id, reviewedVersion]) => {
+    const manifestPath = resolvePackage(project, id);
+    const version = packageVersion(manifestPath);
+    if (version !== reviewedVersion)
+      throw new EffxFailure(
+        "EFFX_PROVIDER_VERSION",
+        `effx: ${id} ${version} does not match reviewed ${reviewedVersion}`,
+      );
+    const override = id === "oxlint" ? process.env.EFFX_OXLINT_PATH : undefined;
+    const executablePath = override ?? resolve(dirname(manifestPath), binaries[id]!);
+    if (!existsSync(executablePath))
+      throw new EffxFailure(
+        "EFFX_PROVIDER_MISSING",
+        `effx: provider executable is unavailable: ${executablePath}`,
+      );
+    return {
+      id,
+      reviewedVersion,
+      version,
+      manifestPath,
+      executablePath,
+      executableOverride: override !== undefined,
+    };
+  });
+}
 
 const snapshotByPath = (project: EffxProject, file: string): SourceSnapshot => {
   const absolute = isAbsolute(file) ? resolve(file) : resolve(project.root, file);
