@@ -202,6 +202,7 @@ const steps: Step[] = [
               "cli.js",
               "check.js",
               "doctor.js",
+              "init.js",
               "project.js",
               "providers.js",
               "source-analysis.js",

@@ -26,26 +26,44 @@ a workspace dependency.
 ```mermaid
 flowchart LR
   Developer --> Config[EffectTS configuration]
-  Config --> Oxlint
-  Oxlint --> Plugin[EffectTS plugin]
-  Plugin --> Diagnostics[Translate or explain diagnostics]
-  Plugin --> Escape[Escape coordinator]
-  Config --> Graph[Import graph coordinator]
-  Developer --> TSGO[Effect TSGO]
+  Config --> Effx[effx check]
+  Effx --> Oxlint
+  Effx --> TypeScript[TypeScript 7]
+  Effx --> TSGO[Effect TSGO]
+  Oxlint --> Diagnostics[Normalized diagnostics]
+  TypeScript --> Diagnostics
+  TSGO --> Diagnostics
   Diagnostics --> CI
-  Escape --> CI
-  Graph --> CI
-  TSGO --> CI
+  Developer --> Doctor[effx doctor]
+  Developer --> Explain[effx explain]
+  Developer --> Translate[effx translate]
+  Developer --> GitHub[effx github plan]
+  GitHub --> Review[GitHub review operations]
 ```
+
+`effx check` is the shipped bounded one-shot coordinator for the CLI gate. It loads
+the project, discovers governed files, runs Oxlint, TypeScript, and Effect TSGO,
+applies escape and diagnostic policy, sorts one diagnostic stream, and exits.
+
+`effx doctor` is a separate bounded environment check. It validates the project,
+required configuration files, reviewed provider versions, and provider executables.
+
+`effx github plan` is a pure review-plan command. It converts decoded diagnostics
+and changed-line ranges into check annotations and create, update, or resolve
+operations. It rejects a missing or mismatched immutable head SHA before planning.
+
+The package still does not start a daemon or provide an LSP command. Those remain
+future work.
 
 ### Evaluate
 
 The developer reads `README.md`, `compatibility.json`, the rule catalog, and
 `docs/tsgo-boundary.md`. They decide whether the exact reviewed Effect and Oxlint
-versions, the architectural role model, and the split typed-analysis pipeline fit the
-project.
+versions, the architectural role model, and the split typed-analysis pipeline fit
+the project.
 
-There is no compatibility or environment inspection command.
+`effx doctor` provides bounded project and provider inspection. It does not compare
+two compatibility tables or produce a migration report.
 
 ### Install and configure
 
@@ -76,23 +94,67 @@ There is no interactive initializer.
 
 ### Develop and diagnose
 
-The developer runs Oxlint. The strict profile reports eight default EffectTS syntax and scope rules. A ninth package-barrel rule is available only when the project configures package roots and enables it.
-For structured output:
+The developer runs the shipped coordinator:
 
 ```sh
-oxlint --format json | effectts translate --plugin effect
+effx check
+effx check --format json
+```
+
+The check discovers TypeScript source files, runs Oxlint, TypeScript 7.0.2, and
+Effect TSGO 0.36.4, then combines governed and external diagnostics in one ordered
+stream. A clean check returns exit status `0`. A check with diagnostics returns `1`.
+Invalid configuration, missing providers, provider version mismatch, malformed
+provider output, or another operational failure returns `2`.
+
+The strict profile reports eight default EffectTS syntax and scope rules. A ninth
+package-barrel rule is available only when the project configures package roots and
+enables it.
+
+The lower-level translation workflow remains available:
+
+```sh
+oxlint --format json | effx translate --plugin effect
 ```
 
 For an explanation:
 
 ```sh
-effectts explain EFT3101
-effectts explain no-native-promise-control-flow
+effx explain EFT3101
+effx explain no-native-promise-control-flow
 ```
 
 The translator adds stable EFT codes, semantic families, invariants, proof sources,
-help, documentation references, and repair applicability. The CLI currently contains
-only `explain` and `translate`.
+help, documentation references, and repair applicability. The CLI now contains
+`check`, `doctor`, `explain`, `translate`, and `github plan`.
+
+`effx doctor` accepts `--format human` or `--format json`. It returns exit status `0`
+when project, configuration, and reviewed providers are healthy. It returns `2` for
+project loading, configuration, or provider inspection failure. Its output names
+these checks as `unverified`, because they are not implemented:
+
+- `binary-hash`;
+- `registry-integrity`;
+- `patch-detection`;
+- `editor-ownership`;
+- `daemon-custody`; and
+- `platform-artifact-provenance`.
+
+These unverified checks do not make a healthy doctor run fail. Doctor does not prove
+binary hashes, registry integrity, provider patch state, editor ownership, daemon
+custody, or platform artifact provenance.
+
+`effx github plan` reads one decoded JSON input from standard input:
+
+```sh
+effx github plan < decoded-input.json
+```
+
+It returns exit status `0` for an accepted plan and `1` for a rejected plan or
+planning error. It fingerprints findings, limits inline comments, keeps outside-
+diff findings in the check summary, updates existing fingerprints, resolves stale
+comments, and rejects duplicate existing fingerprints. It plans operations only; a
+runtime GitHub adapter must publish them.
 
 ### Repair
 
@@ -117,7 +179,7 @@ A local exception names one exact rule and supplies an immediate nonempty reason
 ```ts
 // oxlint-effect-plugin allow(no-ambient-console):
 // reason: vendor payload inspection at the adapter boundary
-console.dir(payload)
+console.dir(payload);
 ```
 
 A valid exception applies to the next syntax node in the same lexical block. Invalid,
@@ -127,54 +189,60 @@ audit.
 A top-level file opt-out also requires a reason and must appear before executable code.
 Late, malformed, duplicate, or missing-reason file opt-outs fail.
 
-The package exports `auditEffectTSEscapes`, but a host must supply source discovery,
-AST-derived syntax and block ranges, normalized diagnostics, and final aggregation.
-Without syntax targets, local exceptions are reported as misplaced.
+The package exports `auditEffectTSEscapes`, but the shipped `effx check` coordinator
+supplies source discovery, AST-derived syntax and block ranges, normalized
+diagnostics, and final aggregation. Hosts that call the pure audit directly remain
+responsible for those inputs. Without syntax targets, local exceptions are reported
+as misplaced.
 
-Native Oxlint and ESLint disable directives require an independent
+Native Oxlint and ESLint disable directives require the independent
 `auditNativeDisableDirectives` pass because native disables run before plugin rules.
-The package does not provide file discovery or a command for this audit.
+The shipped check runs this audit. The package still has no separate suppression-audit
+command.
 
 ### Govern imports
 
 `importClosurePolicy(...)` projects the same configuration into import-policy context.
-A coordinator resolves and classifies import edges before calling
+The shipped check resolves and classifies import edges before calling
 `evaluateImportClosure(...)`.
 
 The gate admits type-only imports, core Effect imports, permitted governed-project
 edges, exact reasoned trusted-pure value imports, and raw dependencies declared by the
 owning runtime adapter. Other edges produce EFT5101.
 
-The package does not discover files, resolve modules, classify targets, or provide an
-import-closure command.
+The pure import policy does not discover files or resolve modules. The shipped check
+provides that integration; there is no separate import-closure command.
 
 ### Run typed diagnostics
 
-The analysis layers are separate:
+The shipped check runs the analysis layers in one bounded process:
 
 1. This package owns EffectTS syntax and scope policy through Oxlint.
-2. Oxlint's typed engine owns generic TypeScript typed rules.
-3. `@effect/tsgo` owns Effect-specific typed diagnostics and quick fixes.
+2. TypeScript 7.0.2 owns generic compiler diagnostics.
+3. `@effect/tsgo` 0.36.4 owns Effect-specific typed diagnostics and quick fixes.
 
 Enabling Oxlint type-aware mode does not provide TypeScript types to JavaScript plugin
-rules. Consumers must run and combine the typed tools separately. Arbitrary typed
-`.then`, `.catch`, and `.finally` ownership remains an explicit analysis gap.
+rules. The coordinator combines provider output, but arbitrary typed `.then`, `.catch`,
+and `.finally` ownership remains an explicit analysis gap.
 
 ### Enforce in CI
 
-A complete consumer gate must currently compose:
+`effx check` composes:
 
 1. configuration validation and expansion;
-2. native-disable auditing;
-3. Oxlint execution;
-4. reasoned-escape matching and inventory;
-5. import graph resolution and closure evaluation;
-6. generic typed Oxlint diagnostics;
-7. Effect TSGO diagnostics; and
-8. deterministic reporting and exit status.
+2. source discovery and immutable snapshots;
+3. native-disable auditing;
+4. Oxlint execution;
+5. reasoned-escape matching and inventory;
+6. import graph resolution and closure evaluation;
+7. generic TypeScript diagnostics;
+8. Effect TSGO diagnostics;
+9. deterministic reporting; and
+10. exit status.
 
-The repository's `bun run check` proves these layers independently. It is a maintainer
-gate, not a consumer-facing orchestration command.
+Its exit status is `0` for no diagnostics, `1` for diagnostics, and `2` for an
+operational failure. The check is a bounded one-shot command and closes its
+providers before it exits.
 
 ### Migrate and upgrade
 
@@ -182,8 +250,9 @@ Existing projects can lower selected groups to `recommended`, override named rul
 use explicit escapes. There is no migration baseline that admits existing violations
 while rejecting new ones.
 
-Compatibility metadata records exact reviewed versions. There is no doctor,
-compatibility comparison, migration report, or automated upgrade procedure.
+Compatibility metadata records exact reviewed versions. `effx doctor` checks the
+current project and providers, but there is no compatibility comparison, migration
+report, or automated upgrade procedure.
 
 ### Guide coding agents
 
@@ -193,38 +262,38 @@ workflow manually.
 
 ## Maturity by surface
 
-| Surface | Current maturity |
-| --- | --- |
-| Compiled package and Oxlint loading | Strong |
-| Typed configuration and validation | Strong |
-| Strictness and applicability model | Strong |
-| Rule diagnostics and explanations | Strong |
-| Automatic repair | Sound but narrow |
-| Reasoned escape semantics | Strong |
-| Escape integration | Coordinator required |
-| Import-closure semantics | Strong |
-| Import graph integration | Coordinator missing |
-| Typed-analysis ownership | Clear |
-| Typed-analysis execution | Separate external workflow |
-| Typed-provider coordinator tracer | Stage 0 accepted; not shipped |
-| Consumer CI | Not packaged |
-| Existing-project migration | Limited |
-| Upgrade journey | Metadata only |
-| Agent guidance | Shipped, manually installed |
+| Surface                             | Current maturity                                                   |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| Compiled package and Oxlint loading | Strong                                                             |
+| Typed configuration and validation  | Strong                                                             |
+| Strictness and applicability model  | Strong                                                             |
+| Rule diagnostics and explanations   | Strong                                                             |
+| Automatic repair                    | Sound but narrow                                                   |
+| Reasoned escape semantics           | Strong                                                             |
+| Escape integration                  | Shipped in `effx check`                                            |
+| Import-closure semantics            | Strong                                                             |
+| Import graph integration            | Shipped in `effx check`                                            |
+| Typed-analysis ownership            | Clear                                                              |
+| Typed-analysis execution            | Shipped in `effx check`                                            |
+| Typed-provider coordinator tracer   | Stage 0 accepted; not shipped                                      |
+| Consumer CI                         | Check command shipped; workflow integration remains consumer-owned |
+| Existing-project migration          | Limited                                                            |
+| Upgrade journey                     | Metadata plus bounded doctor                                       |
+| Agent guidance                      | Shipped, manually installed                                        |
 
 ## Primary ergonomic gap
 
-Adoption currently means assembling an enforcement toolchain. The highest-leverage
-next step is a consumer-facing command that owns configuration loading, file discovery,
-Oxlint execution, diagnostic translation, escape auditing, import closure, Effect TSGO
-integration, reporting, and exit status.
+`effx check`, `effx doctor`, and `effx github plan` now provide bounded CLI
+surfaces. Adoption still requires project configuration and consumer-owned CI or
+GitHub runtime adapters.
 
-The approved direction for that command is
-[`effx`](../design-specs/0004-effx-coordinator.md). The design keeps this file
-as the current-state baseline and does not present planned coordinator work as shipped.
+The next approved direction is the broader
+[`effx`](../design-specs/0004-effx-coordinator.md) lifecycle: initialization,
+setup, fix, suppression inventory, and daemon-backed LSP commands. Those surfaces
+remain future work.
 
-The repository now retains an executable Stage 0 coordinator tracer and acceptance
+The repository retains an executable Stage 0 coordinator tracer and acceptance
 evidence. It merges one real Effect diagnostic with one stock TypeScript diagnostic,
 tests editor lifecycle and failure paths, and reproduces two stock semantic proofs.
-This changes implementation confidence only. It does not add an `effx` command,
-daemon, LSP package, or consumer workflow.
+This changes implementation confidence only. It does not add a daemon, LSP package,
+or those future lifecycle commands.

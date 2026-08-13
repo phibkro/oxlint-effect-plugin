@@ -1,0 +1,29 @@
+name: conventional commits
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pull request history
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@a9c9e4950177b716e286b3f2e6d7bd8429a154ba # v2.1.2
+        with:
+          bun-version: 1.3.13
+      - name: Install pinned dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+      - name: Validate pull-request commits
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bun run commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
