@@ -632,6 +632,32 @@ Keep the version 1 library schema available.
 
 Implement `effx lsp` with Effect TSGO as the sole base LSP.
 Add diagnostic interception, client overlays, command routing, status, suspend, resume, cancellation, and deterministic cleanup.
+
+### Stage B executable tracer contract
+
+The first product tracer is an `effx lsp` coordinator, not a second TypeScript
+language server. It starts `@effect/tsgo` as the sole base LSP, forwards the
+standard LSP surface unchanged, and overlays coordinator-owned diagnostics,
+escapes, import policy, and repairs.
+
+The bounded acceptance journey is:
+
+1. initialize one client-owned overlay and advertise the base provider's
+   capabilities plus `textDocument/diagnostic`;
+2. open one governed document at version 1 and preserve its exact UTF-16 text;
+3. pull merged diagnostics and return a deterministic result identifier;
+4. change the document to version 2, forward cancellation for the superseded
+   pull, and reject its stale provider result;
+5. return the existing machine-applicable Console repair as a code action;
+6. route one standard command to Effect TSGO and one `effx.status` command to
+   the coordinator;
+7. close the document, reject a later diagnostic pull for the closed overlay,
+   shut down the child, and record deterministic termination evidence.
+
+The tracer must also record one provider failure without returning a clean
+diagnostic result. It does not establish multi-client daemon isolation,
+workspace-wide incremental analysis, performance parity, or arbitrary code
+action support.
 Do not run stock TypeScript as a second LSP.
 
 ### Stage C: stock typed rules

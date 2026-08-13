@@ -1,0 +1,72 @@
+{
+  "effect": {
+    "strictness": "recommended",
+    "trustedPureDependencies": [
+      {
+        "specifier": "oxc-parser",
+        "reason": "Pure source parsing over coordinator-owned source text"
+      }
+    ],
+    "groups": [
+      {
+        "files": [
+          "src/config/**/*.ts",
+          "src/rules/**/*.ts",
+          "src/import-planner.ts",
+          "src/account-inventory.ts",
+          "src/ast.ts",
+          "src/bindings.ts",
+          "src/diagnostics.ts",
+          "src/domains.ts",
+          "src/effect-version.ts",
+          "src/effx-types.ts",
+          "src/github-review.ts",
+          "src/import-closure.ts",
+          "src/index.ts",
+          "src/explain.ts",
+          "src/registry.ts",
+          "src/rule-support.ts",
+          "src/suppression-audit.ts",
+          "src/suppression.ts",
+          "src/version.ts"
+        ],
+        "role": "service",
+        "platform": "portable"
+      },
+      {
+        "files": ["src/check.ts", "src/policy-check.ts"],
+        "role": "composition-root",
+        "platform": "node"
+      },
+      {
+        "files": ["src/project.ts", "src/providers.ts", "src/source-analysis.ts"],
+        "role": "runtime-adapter",
+        "platform": "node",
+        "adapterDependencies": [
+          "node:child_process",
+          "node:crypto",
+          "node:fs",
+          "node:path",
+          "node:url"
+        ]
+      },
+      {
+        "files": ["src/cli.ts", "scripts/**/*.ts"],
+        "role": "composition-root",
+        "platform": "node"
+      },
+      {
+        "files": ["tests/**/*.ts"],
+        "role": "test",
+        "platform": "node"
+      },
+      {
+        "files": ["fixtures/**/*.ts"],
+        "role": "test",
+        "platform": "portable"
+      }
+    ]
+  },
+  "oxlintConfig": ".oxlintrc.json",
+  "tsconfig": "tsconfig.json"
+}

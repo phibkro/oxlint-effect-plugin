@@ -234,6 +234,8 @@ const makeConsumer = (name: string): string => {
         dependencies: {
           "@phibkro/oxlint-effect-plugin": `file:${tarballPath}`,
           oxlint: "1.77.0",
+          typescript: "7.0.2",
+          "@effect/tsgo": "0.36.4",
         },
       },
       null,
@@ -246,6 +248,10 @@ const makeConsumer = (name: string): string => {
   });
   cpSync(join(repoRoot, "generated", "matrix.json"), join(dir, "matrix.json"));
   cpSync(join(repoRoot, "scripts", "consumer", "run-matrix.mjs"), join(dir, "run-matrix.mjs"));
+  cpSync(
+    join(repoRoot, "scripts", "consumer", "check-journey.mjs"),
+    join(dir, "check-journey.mjs"),
+  );
   return dir;
 };
 
@@ -255,6 +261,11 @@ const makeConsumer = (name: string): string => {
   await exec(["bun", "install", "--ignore-scripts"], { cwd: dir, label: "bun consumer install" });
   const output = await exec(["bun", "run-matrix.mjs"], { cwd: dir, label: "bun consumer matrix" });
   note(`bun-consumer: ${output.trim().split("\n").join("\n  ")}`);
+  const checkOutput = await exec(["bun", "check-journey.mjs"], {
+    cwd: dir,
+    label: "bun packed effx check journey",
+  });
+  note(`bun-consumer: ${checkOutput.trim()}`);
 }
 
 // Node consumer: same tarball, loaded and executed under Node.
@@ -266,6 +277,11 @@ const makeConsumer = (name: string): string => {
     label: "node consumer matrix",
   });
   note(`node-consumer: ${output.trim().split("\n").join("\n  ")}`);
+  const checkOutput = await exec(
+    ["nix", "shell", "nixpkgs#nodejs", "-c", "node", "check-journey.mjs"],
+    { cwd: dir, label: "node packed effx check journey" },
+  );
+  note(`node-consumer: ${checkOutput.trim()}`);
 }
 
 // Deno-oriented consumer: declared journey over the compiled artifact only.

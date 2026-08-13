@@ -196,7 +196,12 @@ const steps: Step[] = [
         for (const entry of readdirSync(dir, { withFileTypes: true })) {
           const path = join(dir, entry.name);
           if (entry.isDirectory()) walk(path);
-          else if (entry.name.endsWith(".js")) {
+          else if (
+            entry.name.endsWith(".js") &&
+            !["cli.js", "check.js", "project.js", "providers.js", "source-analysis.js"].includes(
+              entry.name,
+            )
+          ) {
             const text = readFileSync(path, "utf8");
             for (const match of text.matchAll(
               /\bfrom\s*["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']\s*\)|(?:^|\n)\s*import\s*["']([^"']+)["']/g,

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { check, renderCheckHuman } from "./check.js";
 import { translateOxlintJson } from "./diagnostics.js";
 import { explainEffectTS, type EffectTSExplanation } from "./explain.js";
 import { planGitHubReview, type PlanGitHubReviewInput } from "./github-review.js";
@@ -15,7 +16,7 @@ interface ProcessLike {
   readonly stderr: { write(text: string): void };
   exitCode: number;
 }
-declare const process: ProcessLike;
+declare const process: ProcessLike & { readonly cwd: () => string };
 
 const args = process.argv.slice(2);
 const writeJson = (value: unknown): void =>
@@ -49,7 +50,8 @@ function writeExplanation(explanation: EffectTSExplanation): void {
 function usageError(message?: string): void {
   if (message !== undefined) process.stderr.write(`effx: ${message}\n`);
   process.stderr.write(
-    "usage: effx explain <EFT-code|rule> [--format json]\n" +
+    "usage: effx check [--format json] [paths...]\n" +
+      "       effx explain <EFT-code|rule> [--format json]\n" +
       "       effx translate [--plugin <alias>] < oxlint.json\n" +
       "       effx github plan < decoded-input.json\n",
   );
@@ -57,7 +59,22 @@ function usageError(message?: string): void {
 }
 
 const command = args[0];
-if (command === "explain") {
+if (command === "check") {
+  const formatIndex = args.indexOf("--format");
+  const format = formatIndex < 0 ? "human" : args[formatIndex + 1];
+  if (format !== "human" && format !== "json") usageError("--format requires json or human");
+  else {
+    const paths = args
+      .slice(1)
+      .filter(
+        (argument, index) => argument !== "--format" && (index === 0 || args[index] !== "--format"),
+      );
+    const output = check({ cwd: process.cwd(), ...(paths.length === 0 ? {} : { paths }) });
+    if (format === "json") writeJson(output);
+    else process.stdout.write(`${renderCheckHuman(output)}\n`);
+    process.exitCode = output.status;
+  }
+} else if (command === "explain") {
   const query = args[1];
   if (query === undefined || query.startsWith("--"))
     usageError("explain requires a diagnostic code or rule name");
