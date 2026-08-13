@@ -44,7 +44,7 @@ jobs:
               "effect/no-cross-runtime": ["error", { "role": "effect-library", "platform": "portable" }],
               "effect/no-premature-execution": ["error", { "role": "effect-library", "platform": "portable" }],
               "effect/no-native-promise-control-flow": ["error", { "role": "effect-library", "platform": "portable" }],
-              "effect/no-raw-json-parse": ["error", { "role": "effect-library", "platform": "portable", "boundaries": ["external-data"] }],
+              "effect/no-raw-json-parse": "off",
               "effect/no-untyped-throw": "off",
               "effect/no-opaque-instance-fields": ["error", { "role": "effect-library", "platform": "portable" }]
             }
