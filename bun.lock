@@ -23,7 +23,7 @@
         "oxlint-tsgolint": "7.0.2001",
       },
       "peerDependencies": {
-        "oxlint": "1.77.0",
+        "oxlint": "^1.56.0",
       },
       "optionalPeers": [
         "oxlint",

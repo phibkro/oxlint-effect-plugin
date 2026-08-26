@@ -22,6 +22,8 @@ import {
   REVIEWED_DEPENDENCIES,
   REVIEWED_NODE_ENGINE,
   REVIEWED_RUNTIMES,
+  SUPPORTED_OXLINT_FLOOR,
+  satisfiesOxlintFloor,
 } from "./compatibility-policy.js";
 
 const repoRoot = join(import.meta.dir, "..");
@@ -73,9 +75,16 @@ const reviewedPin = (name: string): string => {
   }
   return version;
 };
-if (pkg.peerDependencies["oxlint"] !== REVIEWED_DEPENDENCIES.oxlint) {
-  throw new Error(`package.json peer oxlint must equal ${REVIEWED_DEPENDENCIES.oxlint}`);
+if (!satisfiesOxlintFloor(pkg.peerDependencies["oxlint"], SUPPORTED_OXLINT_FLOOR)) {
+  throw new Error(
+    `package.json peer oxlint must satisfy supported floor ${SUPPORTED_OXLINT_FLOOR}; received ${pkg.peerDependencies["oxlint"]}`,
+  );
 }
+
+const supported = {
+  oxlint: SUPPORTED_OXLINT_FLOOR,
+};
+
 if (pkg.engines.node !== REVIEWED_NODE_ENGINE) {
   throw new Error(`package.json Node engines must equal ${REVIEWED_NODE_ENGINE}`);
 }
@@ -83,6 +92,7 @@ if (pkg.engines.node !== REVIEWED_NODE_ENGINE) {
 const compatibility = {
   package: { name: pkg.name, version: pkg.version },
   technology: EFFECT_COMPATIBILITY,
+  supported,
   reviewed: {
     oxlint: reviewedPin("oxlint"),
     oxfmt: reviewedPin("oxfmt"),

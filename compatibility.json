@@ -10,6 +10,9 @@
     "reviewed": "4.0.0-rc.108",
     "reviewPolicy": "exact"
   },
+  "supported": {
+    "oxlint": "1.56.0"
+  },
   "reviewed": {
     "oxlint": "1.77.0",
     "oxfmt": "0.61.0",

@@ -16,6 +16,26 @@ export const REVIEWED_DEPENDENCIES = {
   "@effect/tsgo": "0.36.4",
   "oxlint-tsgolint": "7.0.2001",
 } as const;
+/** Lowest oxlint release empirically verified against the packed rule surface. */
+export const SUPPORTED_OXLINT_FLOOR = "1.56.0";
+
+/**
+ * True when a package.json range or exact version admits the supported oxlint
+ * floor as its lower bound. The rule-engine peer surface is a verified range;
+ * every other reviewed dependency remains an exact pin.
+ */
+export const satisfiesOxlintFloor = (range: unknown, floor: string): boolean => {
+  if (typeof range !== "string") return false;
+  const [base = ""] = range.split(" ");
+  const [major, minor] = base.slice(1).split(".");
+  const [floorMajor, floorMinor] = floor.split(".");
+  return (
+    major === floorMajor &&
+    minor !== undefined &&
+    floorMinor !== undefined &&
+    Number(minor) >= Number(floorMinor)
+  );
+};
 
 export const REVIEWED_RUNTIMES = {
   bun: "1.3.13",
@@ -95,6 +115,15 @@ export function assertCompatibilityDocument(compatibility: unknown): void {
   if (node["engines"] !== REVIEWED_NODE_ENGINE) {
     throw new Error(`compatibility Node engines must equal ${REVIEWED_NODE_ENGINE}`);
   }
+
+  // The rule-engine peer surface is a verified range, not an exact pin: the
+  // packed plugin is exercised at both endpoints of this floor before release.
+  const supported = record(document["supported"], "compatibility.supported");
+  if (supported["oxlint"] !== SUPPORTED_OXLINT_FLOOR) {
+    throw new Error(
+      `compatibility.supported.oxlint must equal ${SUPPORTED_OXLINT_FLOOR}; received ${String(supported["oxlint"])}`,
+    );
+  }
 }
 
 export function assertCompatibilityState(args: {
@@ -125,8 +154,10 @@ export function assertCompatibilityState(args: {
     REVIEWED_DEPENDENCIES,
     "package.json reviewed dependencies",
   );
-  if (peerDependencies["oxlint"] !== REVIEWED_DEPENDENCIES.oxlint) {
-    throw new Error(`package.json peer oxlint must equal ${REVIEWED_DEPENDENCIES.oxlint}`);
+  if (!satisfiesOxlintFloor(peerDependencies["oxlint"], SUPPORTED_OXLINT_FLOOR)) {
+    throw new Error(
+      `package.json peer oxlint must satisfy supported floor ${SUPPORTED_OXLINT_FLOOR}; received ${String(peerDependencies["oxlint"])}`,
+    );
   }
   if (pkg["engines"] === undefined) throw new Error("package.json engines missing");
   if (record(pkg["engines"], "package.json.engines")["node"] !== REVIEWED_NODE_ENGINE) {
@@ -152,8 +183,10 @@ export function assertCompatibilityState(args: {
     REVIEWED_DEPENDENCIES,
     "bun.lock reviewed root dependencies",
   );
-  if (lockedPeer["oxlint"] !== REVIEWED_DEPENDENCIES.oxlint) {
-    throw new Error(`bun.lock root peer oxlint must equal ${REVIEWED_DEPENDENCIES.oxlint}`);
+  if (!satisfiesOxlintFloor(lockedPeer["oxlint"], SUPPORTED_OXLINT_FLOOR)) {
+    throw new Error(
+      `bun.lock root peer oxlint must satisfy supported floor ${SUPPORTED_OXLINT_FLOOR}; received ${String(lockedPeer["oxlint"])}`,
+    );
   }
 
   const packages = record(lock["packages"], "bun.lock.packages");
