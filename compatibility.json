@@ -1,13 +1,13 @@
 {
   "package": {
     "name": "@phibkro/oxlint-effect-plugin",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "technology": {
     "name": "effect",
     "domain": "effect-v4",
     "major": 4,
-    "reviewed": "4.0.0-rc.108",
+    "reviewed": "4.0.0-rc.109",
     "reviewPolicy": "exact"
   },
   "supported": {
@@ -17,9 +17,9 @@
     "oxlint": "1.77.0",
     "oxfmt": "0.61.0",
     "typescript": "7.0.2",
-    "effect": "4.0.0-rc.108",
-    "@effect/platform-node": "4.0.0-rc.108",
-    "@effect/platform-bun": "4.0.0-rc.108",
+    "effect": "4.0.0-rc.109",
+    "@effect/platform-node": "4.0.0-rc.109",
+    "@effect/platform-bun": "4.0.0-rc.109",
     "@effect/tsgo": "0.36.4",
     "oxlint-tsgolint": "7.0.2001"
   },
@@ -31,13 +31,13 @@
     },
     "node": {
       "role": "packed consumer",
-      "reviewed": "24.18.0",
+      "reviewed": "24.19.0",
       "reviewPolicy": "exact",
       "engines": "^20.19.0 || >=22.12.0"
     },
     "deno": {
       "role": "declared compatibility journey only",
-      "reviewed": "2.9.2",
+      "reviewed": "2.9.6",
       "reviewPolicy": "exact",
       "declaredSurface": "Load the compiled ESM artifact from node_modules (BYONM), read plugin/rule/domain metadata, and expand typed configuration. Running the oxlint CLI under Deno is not part of the declared surface."
     }

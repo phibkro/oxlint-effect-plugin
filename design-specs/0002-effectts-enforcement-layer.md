@@ -23,7 +23,7 @@ The repository and package names stay unchanged:
 - package: `@phibkro/oxlint-effect-plugin`
 - default rule namespace: `effect/*`
 - current technology target: `effect-v4`
-- exact reviewed Effect release: `4.0.0-rc.108`
+- exact reviewed Effect release: `4.0.0-rc.109`
 
 The product description changes from “an Effect lint plugin” to:
 
@@ -115,7 +115,7 @@ The project dialect adds role policy, explicit rule overrides, and recorded esca
 
 ### 4.2 Admitted semantic vocabulary
 
-| Responsibility              | Admitted vocabulary                                                                          | Exact RC.108 evidence                                                                                                                               |
+| Responsibility              | Admitted vocabulary                                                                          | Exact RC.109 evidence                                                                                                                               |
 | --------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Domain model                | `Schema`, schema classes                                                                     | `node_modules/effect/src/Schema.ts`                                                                                                                 |
 | Domain branching            | `Match` when typed pattern exhaustiveness improves domain code                               | `node_modules/effect/src/Match.ts`                                                                                                                  |
@@ -141,7 +141,7 @@ The project dialect adds role policy, explicit rule overrides, and recorded esca
 
 The pinned public service module is `Context`, not `ServiceMap`. `Config<T>` is an Effect-backed decoder, and its default provider can read ambient environment.
 
-The installed `effect@4.0.0-rc.108` package supplies the pinned source for exact API claims.
+The installed `effect@4.0.0-rc.109` package supplies the pinned source for exact API claims.
 
 ### 4.3 Restricted pure TypeScript kernel
 
@@ -449,7 +449,7 @@ One rule can observe several AST forms. `async`, `await`, and `Promise.all` rema
 
 Verdict: a rule is viable, but only as an optional project-dialect rule. It is not part of the required EffectTS floor.
 
-Pinned beta.102 `Match` supports ordered patterns, tagged unions, fallbacks, and typed exhaustiveness. The AST exposes every `SwitchStatement`, so a syntax diagnostic is reliable.
+Pinned RC.109 `Match` supports ordered patterns, tagged unions, fallbacks, and typed exhaustiveness. The AST exposes every `SwitchStatement`, so a syntax diagnostic is reliable.
 
 The proposed rule is `prefer-match-over-switch` in the `modeling` family. When enabled at `error`, it disallows switch statements in its configured domain-facing groups.
 
@@ -737,7 +737,7 @@ This edit is not safe in general:
 + Console.log(value)
 ```
 
-Pinned beta.102 `Console.log` returns `Effect.Effect<void>`. A bare replacement creates a floating Effect and does not run the log.
+Pinned RC.109 `Console.log` returns `Effect.Effect<void>`. A bare replacement creates a floating Effect and does not run the log.
 
 The automatic tracer case is narrower:
 
@@ -1015,7 +1015,7 @@ A compiler becomes relevant only if valid EffectTS needs semantics ordinary Type
 
 | Source                                             | License                  | Reuse decision                                                                                                        |
 | -------------------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| Effect v4 RC.108 source and current guides         | MIT                      | Exact API claims use the installed RC.108 source.                                                                     |
+| Effect v4 RC.109 source and current guides         | MIT                      | Exact API claims use the installed RC.109 source.                                                                     |
 | Oxlint 1.77.0 plugin, fix, typed, and output APIs  | MIT                      | Reuse plugin surface, spans, severity, formats, fixes, and suggestions.                                               |
 | `@effect/tsgo@0.36.4`                              | MIT                      | Keep typed authority and original identities. Reuse supported CLI, LSP, and preset surfaces; do not use private data. |
 | TypeScript-Go `7.1.0-dev.20260722.1` internal host | MIT                      | Boundary evidence only. Reject the internal Go host as a public JavaScript API.                                       |
@@ -1031,7 +1031,7 @@ A compiler becomes relevant only if valid EffectTS needs semantics ordinary Type
 
 Primary references:
 
-- [Effect RC.108](https://github.com/Effect-TS/effect/tree/effect%404.0.0-rc.108)
+- [Effect RC.109](https://github.com/Effect-TS/effect/tree/effect%404.0.0-rc.109)
 - [Oxlint JS plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins)
 - [Oxlint automatic fixes](https://oxc.rs/docs/guide/usage/linter/automatic-fixes)
 - [Oxlint output formats](https://oxc.rs/docs/guide/usage/linter/output-formats.html)

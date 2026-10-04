@@ -22,7 +22,7 @@ export interface Observability {
 export const sample = Effect.gen(function* () {
   const at = yield* Clock.currentTimeMillis;
   const noise = yield* Random.next;
-  const region = yield* Config.String("REGION");
+  const region = yield* Config.string("REGION");
   yield* Effect.sleep("1 second");
   return { at: new Date(at), noise, region };
 });

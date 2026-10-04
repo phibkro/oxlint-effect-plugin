@@ -29,7 +29,7 @@ const expectedTechnology = {
   name: "effect",
   domain: "effect-v4",
   major: 4,
-  reviewed: "4.0.0-rc.108",
+  reviewed: "4.0.0-rc.109",
   reviewPolicy: "exact",
 };
 if (

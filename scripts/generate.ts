@@ -344,11 +344,13 @@ for (const info of RULE_REGISTRY) {
   );
   const workflow = [
     "1. Read the project role, platform, boundary, and trusted-dependency configuration.",
-    "2. Keep pure local computation as plain TypeScript.",
-    "3. Use Effect for effectful computation, Schema for domain and representation boundaries, services for capabilities, Layers for implementations, and Scope for lifetimes.",
-    "4. Run EffectTS enforcement and @effect/tsgo.",
-    "5. Apply only machine-applicable fixes; treat other suggestions as semantic refactors.",
-    "6. Use a narrow two-line reasoned exception only for genuine interop.",
+    "2. Use Effect as the application language; keep only total dependency-free leaf calculations as direct functions.",
+    "3. Reuse existing Effect core, platform, and unstable services before defining a project Service; a custom Service must add a domain contract or policy.",
+    "4. Express remaining dependencies and authority as Services, confine concrete runtime and vendor imports to Layer implementations, and select Layers only at composition roots.",
+    "5. Use Schema for domain and representation boundaries, Scope for lifetimes, and Effect-native modules for failure, resources, concurrency, and observability.",
+    "6. Run EffectTS enforcement and @effect/tsgo.",
+    "7. Apply only machine-applicable fixes; treat other suggestions as semantic refactors.",
+    "8. Use a narrow two-line reasoned exception only for genuine interop.",
   ];
   const escape = [
     "```ts",
@@ -414,7 +416,7 @@ for (const info of RULE_REGISTRY) {
   derivations.push({
     path: "guidance/prompts/implement.md",
     content:
-      "Implement the requested change inside the configured EffectTS role and boundaries. Keep pure computation in TypeScript. Use Effect-native computation, failures, capabilities, resources, concurrency, observability, and Schema boundaries. Run EffectTS and @effect/tsgo; do not bypass diagnostics.\n",
+      "Implement the requested change inside the configured EffectTS role and boundaries. Use Effect as the application language. Keep total dependency-free leaf calculations direct. Reuse existing Effect core, platform, and unstable services before defining a project Service; a custom Service must add a domain contract or policy. Express remaining dependencies and authority as Services, confine concrete runtime and vendor imports to Layer implementations, and select Layers only at composition roots. Use Effect-native failures, resources, concurrency, observability, and Schema boundaries. Run EffectTS and @effect/tsgo; do not bypass diagnostics.\n",
   });
   derivations.push({
     path: "guidance/prompts/refactor-to-effect.md",

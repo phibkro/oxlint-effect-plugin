@@ -10,9 +10,9 @@ export const REVIEWED_DEPENDENCIES = {
   oxlint: "1.77.0",
   oxfmt: "0.61.0",
   typescript: "7.0.2",
-  effect: "4.0.0-rc.108",
-  "@effect/platform-node": "4.0.0-rc.108",
-  "@effect/platform-bun": "4.0.0-rc.108",
+  effect: "4.0.0-rc.109",
+  "@effect/platform-node": "4.0.0-rc.109",
+  "@effect/platform-bun": "4.0.0-rc.109",
   "@effect/tsgo": "0.36.4",
   "oxlint-tsgolint": "7.0.2001",
 } as const;
@@ -39,8 +39,8 @@ export const satisfiesOxlintFloor = (range: unknown, floor: string): boolean => 
 
 export const REVIEWED_RUNTIMES = {
   bun: "1.3.13",
-  node: "24.18.0",
-  deno: "2.9.2",
+  node: "24.19.0",
+  deno: "2.9.6",
 } as const;
 
 export const REVIEWED_NODE_ENGINE = "^20.19.0 || >=22.12.0";

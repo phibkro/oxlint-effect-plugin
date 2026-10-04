@@ -222,7 +222,7 @@ Current rules do not justify a topology configuration axis.
 | Executable         | Process lifetime, signals, `runMain`, `Layer.launch`, CLI environment                 | Existing composition-root and platform policy cover shipped rules |
 | Library            | Open requirements, no execution, no final platform provision                          | Existing pure/effect-library roles cover shipped rules            |
 
-Evidence was read from the installed `effect@4.0.0-rc.108` package:
+Evidence was read from the installed `effect@4.0.0-rc.109` package:
 
 - `Layer.launch` models a long-running executable lifetime
   (`node_modules/effect/src/Layer.ts:3897-3898`).
