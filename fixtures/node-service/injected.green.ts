@@ -6,7 +6,7 @@ import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 
 export const snapshot = Effect.gen(function* () {
-  const region = yield* Config.string("REGION");
+  const region = yield* Config.String("REGION");
   const at = yield* Clock.currentTimeMillis;
   return { region, at: new Date(at) };
 });

@@ -4,7 +4,6 @@ import * as S from "effect/Schema";
 export class User extends EffectSchema.Opaque<User>()(
   EffectSchema.Struct({ name: EffectSchema.String }),
 ) {
-
   static empty(): User {
     return EffectSchema.decodeUnknownSync(User)({ name: "" });
   }

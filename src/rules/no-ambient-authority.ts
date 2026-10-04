@@ -44,7 +44,7 @@ const REMEDIES: Readonly<Record<Capability, string>> = {
   random: "Use the Effect Random service (effect/Random, e.g. Random.next).",
   crypto: "Inject a declared cryptographic capability as an Effect service.",
   network:
-    "Use an injected HTTP/socket capability (e.g. effect/unstable/http) provided by the composition root.",
+    "Use an injected HTTP/socket capability (e.g. effect/http) provided by the composition root.",
   timer: "Use Effect scheduling (Effect.sleep, Effect.schedule) instead of ambient timers.",
   environment:
     "Read configuration through effect/Config and a ConfigProvider supplied at the composition root.",
