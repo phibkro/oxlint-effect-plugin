@@ -16,7 +16,7 @@
 
 - Recognize the Effect 4 `Effect.callback` boundary, in place of the removed `Effect.async`, as an admitted native-Promise wrapper for runtime adapters in `no-native-promise-control-flow`, and point the ambient-network remedy at `effect/http`.
 
-- Type the `effect()` expansion as mutable `[severity, options]` rule tuples, so `defineConfig({ ...effect(input) })` type-checks against Oxlint's own configuration type.
+- Type the `effect()` expansion with mutable arrays and rule settings that are either a bare severity or a `[severity, options]` pair, so `defineConfig({ ...effect(input) })` type-checks against Oxlint's own configuration type and a consumer-completed fragment can set a rule to a bare `"off"` and keep the `OxlintConfigFragment` annotation. Oxlint validates the options of an off plugin rule, so `["off", {}]` does not load. Runtime output is unchanged.
 
 - Declare `repository` and write the `effx` bin target as `dist/cli.js` in `package.json`. npm 11 removes a `./`-prefixed bin target at publish, which would have shipped the package without its CLI, and npm provenance requires `repository.url` to match the publishing repository.
 

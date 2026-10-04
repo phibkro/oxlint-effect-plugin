@@ -73,25 +73,38 @@ export interface ImportClosurePolicy {
 }
 
 /**
- * Expanded rule settings keyed by qualified rule name. Each entry pairs a
- * severity with its structured options, the shape Oxlint accepts for an
- * external plugin rule.
+ * A rule that carries structured options, as `effect()` and `expandGroupRules`
+ * emit it: the `[severity, options]` pair Oxlint accepts for a plugin rule.
  */
-type ExpandedRules = Record<string, [severity: Severity, options: Record<string, unknown>]>;
+type RuleWithOptions = [severity: Severity, options: Record<string, unknown>];
+
+/** Rules `expandGroupRules` enables for one group, keyed by qualified rule name. */
+type ExpandedRules = Record<string, RuleWithOptions>;
+
+/**
+ * A rule setting Oxlint accepts for a plugin rule: a bare severity, or a
+ * severity with structured options. A rule that is switched off must be the
+ * bare `"off"`: Oxlint validates the options of an off plugin rule against the
+ * rule's schema, so `["off", {}]` fails to load.
+ */
+type OxlintRuleSetting = Severity | RuleWithOptions;
 
 /*
  * The expansion result is a fresh value owned by the caller. Its arrays and
  * records are mutable so the fragment is assignable to Oxlint's own
- * `defineConfig` input, which declares mutable arrays.
+ * `defineConfig` input, which declares mutable arrays. Rule settings admit a
+ * bare severity so a caller can complete the fragment, for example with an
+ * explicit `"off"` for every rule a later group does not enable, and keep the
+ * annotation.
  */
 export interface OxlintOverride {
   files: string[];
-  rules: ExpandedRules;
+  rules: Record<string, OxlintRuleSetting>;
 }
 
 export interface OxlintConfigFragment {
   jsPlugins: { name: string; specifier: string }[];
-  rules: ExpandedRules;
+  rules: Record<string, OxlintRuleSetting>;
   overrides: OxlintOverride[];
 }
 function assertKnownRuleKeys(
