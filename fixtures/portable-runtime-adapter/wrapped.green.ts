@@ -1,6 +1,6 @@
 // role: runtime-adapter, platform: portable (strict) — native Promise
 // mechanics are admitted only inside Effect.tryPromise / Effect.promise /
-// Effect.async wrappers around external APIs.
+// Effect.callback wrappers around external APIs.
 
 import * as Effect from "effect/Effect";
 
@@ -19,8 +19,16 @@ export const readEffect = (client: ExternalClient, key: string) =>
   });
 
 export const firstValue = (client: ExternalClient) =>
-  Effect.async<string>((resume) => {
+  Effect.callback<string>((resume) => {
     const controller = new AbortController();
     client.subscribe((value) => resume(Effect.succeed(value)), controller.signal);
     return Effect.sync(() => controller.abort());
+  });
+
+export const bridgedRead = (client: ExternalClient, key: string) =>
+  Effect.callback<string>((resume, signal) => {
+    void (async () => {
+      const value = await client.read(key);
+      if (!signal.aborted) resume(Effect.succeed(value));
+    })();
   });

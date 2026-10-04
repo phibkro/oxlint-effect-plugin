@@ -66,20 +66,18 @@ Until these commands exist and pass, report only the checks actually run.
 
 ## Current status
 
-Tracers 0001 through 0003 are implemented and integrated locally. The package
-exposes seven AST/scope-aware Effect rules through the strict-by-default
-`effect()` builder. Explicit `recommended` lowering, orthogonal role, platform,
-and boundary applicability, stable structured diagnostics, import closure,
-reasoned escapes, one bounded Console repair, and agent guidance are integrated.
+The [generated rule catalog](README.md#rules) defines the available rules and
+their applicability. Regenerate it through `bun run gen`; do not maintain a
+second rule count here. The `effect()` builder is strict by default, with
+explicit `recommended` lowering.
 
-The current working tree passed frozen install, the full repository check, and
-packed Bun/Node/Deno acceptance with an 85/85 oracle matrix. Generic typed
-diagnostics are verified through `oxlint-tsgolint`; Effect-specific typed
-diagnostics remain owned by `@effect/tsgo`. The package has not been published.
-The tracked `effx` Stage 0 coordinator tracer now preserves real Effect and stock
-TypeScript provider diagnostics, semantic identity and channel probes, standard
-LSP command routing, lifecycle and failure evidence, and a local performance
-baseline. This is implementation evidence, not a shipped CLI, daemon, or LSP.
+Consult [current adoption status](docs/current-status.md) for the bounded
+`effx` CLI journey and its limits, and [package.json](package.json) for the
+exported entry points. Effect-specific typed diagnostics remain owned by
+`@effect/tsgo`. Acceptance records under `docs/acceptance/` describe the runs
+they record; they do not establish that the current checkout passes. Run the
+applicable validation commands above and report the source revision and checks
+actually observed.
 Syntax/scope analysis does not claim type proof, arbitrary alias or wrapper
 provenance, package purity, or arbitrary typed `.then`/`.catch`/`.finally`
 detection.

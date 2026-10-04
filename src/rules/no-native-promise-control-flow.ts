@@ -48,7 +48,7 @@ const PROMISE_STATIC_CONTROL_FLOW = new Set([
   "try",
   "withResolvers",
 ]);
-const EFFECT_PROMISE_WRAPPERS = new Set(["tryPromise", "promise", "async"]);
+const EFFECT_PROMISE_WRAPPERS = new Set(["tryPromise", "promise", "callback"]);
 const ASYNC_FUNCTION_TYPES = new Set([
   "FunctionDeclaration",
   "FunctionExpression",
@@ -127,7 +127,7 @@ export const noNativePromiseControlFlow: Rule = {
           rule: RULE_NAME,
           finding,
           remedy: adapterMode
-            ? "Runtime adapters may use native Promise mechanics only inside an imported Effect.tryPromise, Effect.promise (non-rejecting), or Effect.async boundary with cancellation mapped where available."
+            ? "Runtime adapters may use native Promise mechanics only inside an imported Effect.tryPromise, Effect.promise (non-rejecting), or Effect.callback boundary with cancellation mapped where available."
             : "Model the computation as an Effect and keep final promise execution in a composition root or controlled test.",
           domains,
         }),

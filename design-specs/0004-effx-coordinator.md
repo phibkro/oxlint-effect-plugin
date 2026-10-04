@@ -545,7 +545,7 @@ Use `bun run scripts/accept-effx-0001.ts write` only to record a reviewed eviden
 
 | Area | Observed result |
 | --- | --- |
-| Provider seam | One client-facing proxy started the pinned `@effect/tsgo` 0.36.4 LSP and the pinned TypeScript 7.0.2 executable. The stock LSP was hidden behind the tracer's diagnostic-sidecar interface. |
+| Provider seam | One client-facing proxy started the pinned `@effect/tsgo` 0.48.0 LSP and the pinned TypeScript 7.0.2 executable. The stock LSP was hidden behind the tracer's diagnostic-sidecar interface. |
 | Diagnostic ownership | The merged result retained Effect code 377001 from `@effect/tsgo` and generic TS2322 from stock TypeScript. The merge removed the duplicate generic diagnostic from the Effect provider. |
 | Push and pull | Provider push publications and client pull diagnostics used per-provider caches. The proxy returned a client-facing `unchanged` report without losing the prior merged set. |
 | Cancellation | A live diagnostic request received `$/cancelRequest` in both providers. One provider returned `RequestCancelled` (`-32800`), and the proxy returned its last complete merged publication. This fallback is reported as an observed unsupported operation. |
@@ -716,7 +716,7 @@ No current evidence justifies another compiler fork.
 - Unresolved aliases and opaque wrapper provenance remain explicit unsupported identity cases.
 - Cancellation currently relies on the last complete merged publication when one provider cancels a pull.
 - A future TypeScript API revision can change or remove the unstable provider contract.
-- The reviewed `@effect/tsgo` pin trails upstream, which now also patches Oxlint and TypeScript surfaces.
+- The reviewed `@effect/tsgo` pin is exact and moves only by re-review, while upstream also patches Oxlint and TypeScript surfaces.
 - The provider re-review cadence and policy for consumer-applied patches are undecided.
 - Arbitrary typed `.then`, `.catch`, and `.finally` domain ownership remains unimplemented.
 - Migration baselines remain a separate product decision.

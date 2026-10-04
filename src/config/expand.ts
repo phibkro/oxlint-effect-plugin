@@ -72,15 +72,40 @@ export interface ImportClosurePolicy {
   readonly groups: readonly ImportClosureGroup[];
 }
 
+/**
+ * A rule that carries structured options, as `effect()` and `expandGroupRules`
+ * emit it: the `[severity, options]` pair Oxlint accepts for a plugin rule.
+ */
+type RuleWithOptions = [severity: Severity, options: Record<string, unknown>];
+
+/** Rules `expandGroupRules` enables for one group, keyed by qualified rule name. */
+type ExpandedRules = Record<string, RuleWithOptions>;
+
+/**
+ * A rule setting Oxlint accepts for a plugin rule: a bare severity, or a
+ * severity with structured options. A rule that is switched off must be the
+ * bare `"off"`: Oxlint validates the options of an off plugin rule against the
+ * rule's schema, so `["off", {}]` fails to load.
+ */
+type OxlintRuleSetting = Severity | RuleWithOptions;
+
+/*
+ * The expansion result is a fresh value owned by the caller. Its arrays and
+ * records are mutable so the fragment is assignable to Oxlint's own
+ * `defineConfig` input, which declares mutable arrays. Rule settings admit a
+ * bare severity so a caller can complete the fragment, for example with an
+ * explicit `"off"` for every rule a later group does not enable, and keep the
+ * annotation.
+ */
 export interface OxlintOverride {
-  readonly files: readonly string[];
-  readonly rules: Readonly<Record<string, unknown>>;
+  files: string[];
+  rules: Record<string, OxlintRuleSetting>;
 }
 
 export interface OxlintConfigFragment {
-  readonly jsPlugins: readonly { readonly name: string; readonly specifier: string }[];
-  readonly rules: Readonly<Record<string, unknown>>;
-  readonly overrides: readonly OxlintOverride[];
+  jsPlugins: { name: string; specifier: string }[];
+  rules: Record<string, OxlintRuleSetting>;
+  overrides: OxlintOverride[];
 }
 function assertKnownRuleKeys(
   record: Readonly<Record<string, unknown>> | undefined,
@@ -204,10 +229,10 @@ function expandValidatedGroupRules(
   group: RuleGroup,
   pluginName: string,
   policy: ExpansionPolicy,
-): Record<string, unknown> {
+): ExpandedRules {
   const strictness = group.strictness ?? policy.strictness ?? "strict";
   const boundaries = [...(group.boundaries ?? [])].toSorted();
-  const rules: Record<string, unknown> = {};
+  const rules: ExpandedRules = {};
 
   const promiseRuleInfo = RULE_INFO_BY_NAME["no-native-promise-control-flow"];
   const promiseRuleActive =
@@ -250,7 +275,7 @@ export function expandGroupRules(
   group: RuleGroup,
   pluginName: string = DEFAULT_PLUGIN_NAME,
   policy: ExpansionPolicy = {},
-): Record<string, unknown> {
+): ExpandedRules {
   assertValidGroup(group, 0);
   if (
     policy.strictness !== undefined &&

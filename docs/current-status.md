@@ -101,11 +101,12 @@ effx check
 effx check --format json
 ```
 
-The check discovers TypeScript source files, runs Oxlint, TypeScript 7.0.2, and
-Effect TSGO 0.36.4, then combines governed and external diagnostics in one ordered
-stream. A clean check returns exit status `0`. A check with diagnostics returns `1`.
-Invalid configuration, missing providers, provider version mismatch, malformed
-provider output, or another operational failure returns `2`.
+The check discovers TypeScript source files, runs Oxlint, TypeScript, and Effect TSGO at
+the exact releases recorded under `reviewed` in `compatibility.json`, then combines
+governed and external diagnostics in one ordered stream. A clean check returns exit
+status `0`. A check with diagnostics returns `1`. Invalid configuration, missing
+providers, provider version mismatch, malformed provider output, or another operational
+failure returns `2`.
 
 The strict profile reports eight default EffectTS syntax and scope rules. A ninth
 package-barrel rule is available only when the project configures package roots and
@@ -218,8 +219,8 @@ provides that integration; there is no separate import-closure command.
 The shipped check runs the analysis layers in one bounded process:
 
 1. This package owns EffectTS syntax and scope policy through Oxlint.
-2. TypeScript 7.0.2 owns generic compiler diagnostics.
-3. `@effect/tsgo` 0.36.4 owns Effect-specific typed diagnostics and quick fixes.
+2. TypeScript owns generic compiler diagnostics.
+3. `@effect/tsgo` owns Effect-specific typed diagnostics and quick fixes.
 
 Enabling Oxlint type-aware mode does not provide TypeScript types to JavaScript plugin
 rules. The coordinator combines provider output, but arbitrary typed `.then`, `.catch`,

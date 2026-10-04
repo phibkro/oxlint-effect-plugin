@@ -10,6 +10,8 @@ import {
   REVIEWED_DEPENDENCIES,
   REVIEWED_RUNTIMES,
 } from "../../scripts/compatibility-policy.js";
+import { REVIEWED_EFFECT_VERSION } from "../../src/effect-version.js";
+import { REVIEWED_PROVIDER_VERSIONS } from "../../src/providers.js";
 
 const root = join(import.meta.dir, "../..");
 const source = {
@@ -23,6 +25,16 @@ const asRecord = (value: unknown): Record<string, unknown> => value as Record<st
 describe("compatibility policy mutation resistance", () => {
   test("accepts the exact checked-in package, compatibility, and lock state", () => {
     expect(() => assertCompatibilityState(source)).not.toThrow();
+  });
+
+  test("shipped provider and Effect pins equal the policy table", () => {
+    const policy: Readonly<Record<string, string>> = REVIEWED_DEPENDENCIES;
+    const providers: Readonly<Record<string, string>> = REVIEWED_PROVIDER_VERSIONS;
+    expect(REVIEWED_EFFECT_VERSION).toBe(REVIEWED_DEPENDENCIES.effect);
+    expect(Object.keys(providers).length).toBeGreaterThan(0);
+    for (const name of Object.keys(providers)) {
+      expect(providers[name]).toBe(policy[name]);
+    }
   });
 
   test("rejects every reviewed compatibility-entry mutation", () => {

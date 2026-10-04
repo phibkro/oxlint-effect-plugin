@@ -5,6 +5,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { version as typescriptVersion } from "typescript";
 
+import { REVIEWED_PROVIDER_VERSIONS } from "../../src/providers.js";
+
 type JsonRpcId = number | string | null;
 
 type JsonRpcRequest = {
@@ -497,6 +499,8 @@ class LspProxy {
   private readonly mergedDiagnostics = new Map<string, readonly Diagnostic[]>();
   private readonly effectPublished = new Map<string, readonly Diagnostic[]>();
   private readonly stockPublished = new Map<string, readonly Diagnostic[]>();
+  private readonly inFlightDiagnosticPulls = new Set<string>();
+  private readonly cancelledDiagnosticPulls = new Set<string>();
 
   constructor(
     private readonly effect: ProviderLspTransport,
@@ -579,9 +583,16 @@ class LspProxy {
       return;
     }
     if (message.method === "textDocument/diagnostic") {
-      const response = await this.handleDiagnosticPull(message);
-      this.sendClient(response);
-      this.clientFacing.diagnostic = response;
+      const key = idKey(message.id);
+      this.inFlightDiagnosticPulls.add(key);
+      try {
+        const response = await this.handleDiagnosticPull(message);
+        this.sendClient(response);
+        this.clientFacing.diagnostic = response;
+      } finally {
+        this.inFlightDiagnosticPulls.delete(key);
+        this.cancelledDiagnosticPulls.delete(key);
+      }
       return;
     }
 
@@ -655,6 +666,13 @@ class LspProxy {
       this.effect.request(message),
       this.sidecar.request(message),
     ]);
+    if (this.cancelledDiagnosticPulls.has(idKey(message.id))) {
+      return {
+        jsonrpc: "2.0",
+        id: message.id,
+        error: { code: -32_800, message: "Diagnostic pull cancelled by client." },
+      };
+    }
     if (effectResponse.error === undefined && sidecarResponse.error === undefined) {
       const effectResult = effectResponse.result as
         | { readonly kind?: unknown; readonly items?: readonly Diagnostic[] }
@@ -695,6 +713,14 @@ class LspProxy {
   }
 
   private handleClientNotification(message: JsonRpcNotification): void {
+    if (message.method === "$/cancelRequest") {
+      const params = message.params as { readonly id?: unknown } | undefined;
+      const id = params?.id;
+      if (typeof id === "number" || typeof id === "string" || id === null) {
+        const key = idKey(id);
+        if (this.inFlightDiagnosticPulls.has(key)) this.cancelledDiagnosticPulls.add(key);
+      }
+    }
     if (message.method === "textDocument/didOpen") {
       const params = message.params as
         | { readonly textDocument?: { readonly uri?: unknown; readonly text?: unknown } }
@@ -890,8 +916,10 @@ const run = async (): Promise<ProbeResult> => {
     },
     { method: "shutdown/exit", observedAction: "both providers shut down and cleanup was awaited" },
   ];
-  const expectedTypeScriptVersion = process.env.EFFX_EXPECT_TYPESCRIPT_VERSION ?? "7.0.2";
-  const expectedEffectTsgoVersion = process.env.EFFX_EXPECT_EFFECT_TSGO_VERSION ?? "0.36.4";
+  const expectedTypeScriptVersion =
+    process.env.EFFX_EXPECT_TYPESCRIPT_VERSION ?? REVIEWED_PROVIDER_VERSIONS.typescript;
+  const expectedEffectTsgoVersion =
+    process.env.EFFX_EXPECT_EFFECT_TSGO_VERSION ?? REVIEWED_PROVIDER_VERSIONS["@effect/tsgo"];
   if (typescriptVersion !== expectedTypeScriptVersion) {
     errors.push(
       `expected typescript ${expectedTypeScriptVersion} but observed ${typescriptVersion}`,
@@ -1064,7 +1092,10 @@ const run = async (): Promise<ProbeResult> => {
       identifier: "effectts",
     });
     await clientNotify("$/cancelRequest", { id: canceledPull.id });
-    await canceledPull.response;
+    const canceledResponse = await canceledPull.response;
+    if (canceledResponse.error?.code !== -32_800) {
+      errors.push("cancelled diagnostic pull did not return a cancellation response");
+    }
     await pullDiagnostics(fixtureUri);
 
     const incrementalText = `${sourceText}\n`;

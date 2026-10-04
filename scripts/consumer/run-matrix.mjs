@@ -44,13 +44,9 @@ const packageMetadata = JSON.parse(readFileSync(join(installedRoot, "package.jso
 const compatibilityMetadata = JSON.parse(
   readFileSync(join(installedRoot, "compatibility.json"), "utf8"),
 );
-const expectedTechnology = {
-  name: "effect",
-  domain: "effect-v4",
-  major: 4,
-  reviewed: "4.0.0-rc.108",
-  reviewPolicy: "exact",
-};
+const expectedTechnology = JSON.parse(
+  readFileSync(join(consumerRoot, "expected-technology.json"), "utf8"),
+);
 if (
   packageMetadata.name !== PKG ||
   JSON.stringify(packageMetadata.effectCompatibility) !== JSON.stringify(expectedTechnology) ||
