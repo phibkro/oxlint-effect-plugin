@@ -222,19 +222,19 @@ Current rules do not justify a topology configuration axis.
 | Executable         | Process lifetime, signals, `runMain`, `Layer.launch`, CLI environment                 | Existing composition-root and platform policy cover shipped rules |
 | Library            | Open requirements, no execution, no final platform provision                          | Existing pure/effect-library roles cover shipped rules            |
 
-Evidence was read from the installed `effect@4.0.0-rc.109` package:
+Evidence was read from the installed `effect@4.0.0` package:
 
 - `Layer.launch` models a long-running executable lifetime
-  (`node_modules/effect/src/Layer.ts:3897-3898`).
+  (`node_modules/effect/src/Layer.ts:3936-3937`).
 - HTTP server and router APIs create request scopes and interrupt request fibers
-  (`node_modules/effect/src/unstable/http/HttpServer.ts:102-105` and
-  `HttpRouter.ts:224-227`).
+  (`node_modules/effect/src/http/HttpServer.ts:71-74` and
+  `HttpRouter.ts:236-239`).
 - Reactivity APIs own atom registries, subscriptions, fibers, and disposal
-  (`node_modules/effect/src/unstable/reactivity/AtomRegistry.ts:150-170`,
-  `252-256`, and `686-689`).
+  (`node_modules/effect/src/reactivity/AtomRegistry.ts:159-179`,
+  `266-270`, and `739-742`).
 - CLI execution requires `Terminal`, `Path`, `FileSystem`, `Stdio`, and
   `ChildProcessSpawner` services
-  (`node_modules/effect/src/unstable/cli/Command.ts:391`).
+  (`node_modules/effect/src/cli/Command.ts:405`).
 
 These differences do not yet produce different results for the eight default
 EffectTS rules or the opt-in package-barrel rule. Adding labels now would create

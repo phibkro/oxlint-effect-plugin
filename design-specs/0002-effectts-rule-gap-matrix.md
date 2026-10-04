@@ -50,7 +50,7 @@ No accepted rule should be removed or renamed for Stage 2. The general suppressi
 
 ## 3. Existing TSGO ownership
 
-The pinned `@effect/tsgo@0.36.4` companion remains authoritative for these typed facts.
+The pinned `@effect/tsgo@0.48.0` companion remains authoritative for these typed facts.
 
 | Concern                                 | TSGO diagnostic or group         | EffectTS action                                         | Plugin action                                                                 |
 | --------------------------------------- | -------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------- |
