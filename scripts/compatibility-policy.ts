@@ -7,14 +7,14 @@
  */
 
 export const REVIEWED_DEPENDENCIES = {
-  oxlint: "1.77.0",
-  oxfmt: "0.61.0",
+  oxlint: "1.86.0",
+  oxfmt: "0.71.0",
   typescript: "7.0.2",
-  effect: "4.0.0-rc.109",
-  "@effect/platform-node": "4.0.0-rc.109",
-  "@effect/platform-bun": "4.0.0-rc.109",
-  "@effect/tsgo": "0.36.4",
-  "oxlint-tsgolint": "7.0.2001",
+  effect: "4.0.0",
+  "@effect/platform-node": "4.0.0",
+  "@effect/platform-bun": "4.0.0",
+  "@effect/tsgo": "0.48.0",
+  "oxlint-tsgolint": "7.0.2003",
 } as const;
 /** Lowest oxlint release empirically verified against the packed rule surface. */
 export const SUPPORTED_OXLINT_FLOOR = "1.56.0";
@@ -39,8 +39,8 @@ export const satisfiesOxlintFloor = (range: unknown, floor: string): boolean => 
 
 export const REVIEWED_RUNTIMES = {
   bun: "1.3.13",
-  node: "24.19.0",
-  deno: "2.9.6",
+  node: "24.21.0",
+  deno: "2.9.7",
 } as const;
 
 export const REVIEWED_NODE_ENGINE = "^20.19.0 || >=22.12.0";

@@ -5,8 +5,8 @@ Oxlint JavaScript plugins receive syntax, lexical scope, code-path, and project 
 ## Three coordinated analysis layers
 
 1. **This package:** domain-aware custom policy over Oxc AST and resolved lexical bindings.
-2. **Oxlint typed engine:** generic built-in typed rules via `options.typeAware: true`, backed by exactly pinned `oxlint-tsgolint@7.0.2001`. This does not inject types into JavaScript plugin rules.
-3. **Effect language service:** Effect-specific typed diagnostics via exactly pinned `@effect/tsgo@0.36.4`, including floating Effects, requirements/error-channel diagnostics, strict provision, unsafe assertions, and outdated APIs.
+2. **Oxlint typed engine:** generic built-in typed rules via `options.typeAware: true`, backed by exactly pinned `oxlint-tsgolint@7.0.2003`. This does not inject types into JavaScript plugin rules.
+3. **Effect language service:** Effect-specific typed diagnostics via exactly pinned `@effect/tsgo@0.48.0`, including floating Effects, requirements/error-channel diagnostics, strict provision, unsafe assertions, and outdated APIs.
 
 The repository gate observes one real generic Oxlint typed diagnostic and one real `floatingEffect` diagnostic from @effect/tsgo. Both companions are development-only and absent from this package's runtime graph. The reviewed TSGO release also exports `@effect/tsgo/oxlint-presets`; this package does not import those presets into its runtime or enable overlapping rules twice.
 

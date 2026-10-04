@@ -5,6 +5,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { version as typescriptVersion } from "typescript";
 
+import { REVIEWED_PROVIDER_VERSIONS } from "../../src/providers.js";
+
 type JsonRpcId = number | string | null;
 
 type JsonRpcRequest = {
@@ -914,8 +916,10 @@ const run = async (): Promise<ProbeResult> => {
     },
     { method: "shutdown/exit", observedAction: "both providers shut down and cleanup was awaited" },
   ];
-  const expectedTypeScriptVersion = process.env.EFFX_EXPECT_TYPESCRIPT_VERSION ?? "7.0.2";
-  const expectedEffectTsgoVersion = process.env.EFFX_EXPECT_EFFECT_TSGO_VERSION ?? "0.36.4";
+  const expectedTypeScriptVersion =
+    process.env.EFFX_EXPECT_TYPESCRIPT_VERSION ?? REVIEWED_PROVIDER_VERSIONS.typescript;
+  const expectedEffectTsgoVersion =
+    process.env.EFFX_EXPECT_EFFECT_TSGO_VERSION ?? REVIEWED_PROVIDER_VERSIONS["@effect/tsgo"];
   if (typescriptVersion !== expectedTypeScriptVersion) {
     errors.push(
       `expected typescript ${expectedTypeScriptVersion} but observed ${typescriptVersion}`,

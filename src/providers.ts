@@ -13,9 +13,9 @@ import { EffxFailure, snapshotSource } from "./effx-types.js";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const REVIEWED_PROVIDER_VERSIONS = {
-  oxlint: "1.77.0",
+  oxlint: "1.86.0",
   typescript: "7.0.2",
-  "@effect/tsgo": "0.36.4",
+  "@effect/tsgo": "0.48.0",
 } as const;
 const reviewed = REVIEWED_PROVIDER_VERSIONS;
 

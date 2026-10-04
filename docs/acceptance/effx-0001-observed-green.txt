@@ -3,7 +3,7 @@
   "status": "tracked",
   "outcome": "worked",
   "providers": {
-    "effectTsgoVersion": "0.36.4",
+    "effectTsgoVersion": "0.48.0",
     "effectExecutable": "<repo>/node_modules/@effect/tsgo-linux-x64/artifacts/typescript/7.0.2/tsc",
     "effectExecutableSha256": "<sha256>",
     "typescriptVersion": "7.0.2",
