@@ -14,8 +14,12 @@
     "static-analysis"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phibkro/oxlint-effect-plugin.git"
+  },
   "bin": {
-    "effx": "./dist/cli.js"
+    "effx": "dist/cli.js"
   },
   "files": [
     "dist",
