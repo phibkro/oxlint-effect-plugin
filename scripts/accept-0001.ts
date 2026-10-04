@@ -23,6 +23,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import {
+  EFFECT_COMPATIBILITY,
+  REVIEWED_DEPENDENCIES,
+  SUPPORTED_OXLINT_FLOOR,
   assertCompatibilityDocument,
   assertCompatibilityState,
   assertReviewedRuntimeVersions,
@@ -37,24 +40,33 @@ const note = (line: string): void => {
   console.log(line);
 };
 
-async function exec(
+async function execCapture(
   cmd: readonly string[],
   opts: { cwd?: string; label?: string } = {},
-): Promise<string> {
+): Promise<{ readonly stdout: string; readonly stderr: string }> {
   const proc = Bun.spawn([...cmd], {
     cwd: opts.cwd ?? repoRoot,
     stdout: "pipe",
     stderr: "pipe",
   });
-  const stdout = await new Response(proc.stdout).text();
-  const stderr = await new Response(proc.stderr).text();
-  const exitCode = await proc.exited;
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
+    proc.exited,
+  ]);
   if (exitCode !== 0) {
     throw new Error(
       `${opts.label ?? cmd.join(" ")} exited ${exitCode}\nstdout:\n${stdout}\nstderr:\n${stderr}`,
     );
   }
-  return stdout;
+  return { stdout, stderr };
+}
+
+async function exec(
+  cmd: readonly string[],
+  opts: { cwd?: string; label?: string } = {},
+): Promise<string> {
+  return (await execCapture(cmd, opts)).stdout;
 }
 
 // --- required tools (missing tools fail) -------------------------------------
@@ -210,7 +222,7 @@ auditDistributionIdentity(join(extracted, "package", "dist"));
 note("producer prepack: stale ignored dist oracle eliminated before packing");
 const packedPackage = JSON.parse(
   readFileSync(join(extracted, "package", "package.json"), "utf8"),
-) as { engines?: { node?: string } };
+) as { engines?: { node?: string }; repository?: { url?: string } };
 const packedCompatibility = JSON.parse(
   readFileSync(join(extracted, "package", "compatibility.json"), "utf8"),
 );
@@ -220,8 +232,40 @@ if (packedPackage.engines?.node !== "^20.19.0 || >=22.12.0") {
 }
 note("tarball audit: Node engine floor is ^20.19.0 || >=22.12.0");
 
+// npm trusted publishing requires package.json repository.url to match the
+// publishing GitHub repository, so the packed manifest must declare one.
+if (typeof packedPackage.repository?.url !== "string" || packedPackage.repository.url === "") {
+  throw new Error("packed package.json declares no repository.url required for npm provenance");
+}
+note("tarball audit: repository.url is declared for npm provenance");
+
+// npm 11 silently removes a `bin` entry it has to rewrite, which would publish
+// the package without its `effx` CLI. Observe the real publish normalization.
+const publishDryRun = await execCapture(
+  [
+    "nix",
+    "shell",
+    "nixpkgs#nodejs",
+    "-c",
+    "npm",
+    "publish",
+    "--dry-run",
+    "--ignore-scripts",
+    "--access",
+    "public",
+  ],
+  { label: "npm publish --dry-run" },
+);
+if (/auto-corrected|was invalid and removed/.test(publishDryRun.stderr)) {
+  throw new Error(`npm publish would rewrite package.json:\n${publishDryRun.stderr}`);
+}
+note("npm publish dry-run: package.json accepted without auto-correction (bin kept)");
+
 // --- consumers ---------------------------------------------------------------
-const makeConsumer = (name: string): string => {
+const makeConsumer = (
+  name: string,
+  oxlintVersion: string = REVIEWED_DEPENDENCIES.oxlint,
+): string => {
   const dir = join(scratch, name);
   mkdirSync(dir, { recursive: true });
   writeFileSync(
@@ -233,14 +277,20 @@ const makeConsumer = (name: string): string => {
         type: "module",
         dependencies: {
           "@phibkro/oxlint-effect-plugin": `file:${tarballPath}`,
-          oxlint: "1.77.0",
-          typescript: "7.0.2",
-          "@effect/tsgo": "0.36.4",
+          oxlint: oxlintVersion,
+          typescript: REVIEWED_DEPENDENCIES.typescript,
+          "@effect/tsgo": REVIEWED_DEPENDENCIES["@effect/tsgo"],
         },
       },
       null,
       2,
     )}\n`,
+  );
+  // The consumer scripts verify the packed metadata against the policy's
+  // technology block, passed in as data rather than copied into each script.
+  writeFileSync(
+    join(dir, "expected-technology.json"),
+    `${JSON.stringify(EFFECT_COMPATIBILITY, null, 2)}\n`,
   );
   cpSync(join(repoRoot, "fixtures"), join(dir, "fixtures"), {
     recursive: true,
@@ -282,6 +332,17 @@ const makeConsumer = (name: string): string => {
     { cwd: dir, label: "node packed effx check journey" },
   );
   note(`node-consumer: ${checkOutput.trim()}`);
+}
+
+// Oxlint floor consumer: the supported rule-engine range is a verified
+// interval, so its lower bound runs the same matrix as the reviewed release.
+{
+  const dir = makeConsumer("oxlint-floor-consumer", SUPPORTED_OXLINT_FLOOR);
+  await exec(["bun", "install", "--ignore-scripts"], { cwd: dir, label: "floor consumer install" });
+  const output = await exec(["bun", "run-matrix.mjs"], { cwd: dir, label: "oxlint floor matrix" });
+  note(
+    `oxlint-floor-consumer (oxlint ${SUPPORTED_OXLINT_FLOOR}): ${output.trim().split("\n").join("\n  ")}`,
+  );
 }
 
 // Deno-oriented consumer: declared journey over the compiled artifact only.

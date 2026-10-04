@@ -25,13 +25,9 @@ const packageMetadata = JSON.parse(await Deno.readTextFile(new URL("../package.j
 const compatibilityMetadata = JSON.parse(
   await Deno.readTextFile(new URL("../compatibility.json", resolved)),
 );
-const expectedTechnology = {
-  name: "effect",
-  domain: "effect-v4",
-  major: 4,
-  reviewed: "4.0.0-rc.109",
-  reviewPolicy: "exact",
-};
+const expectedTechnology = JSON.parse(
+  await Deno.readTextFile(new URL("./expected-technology.json", import.meta.url)),
+);
 if (
   packageMetadata.name !== PKG ||
   JSON.stringify(packageMetadata.effectCompatibility) !== JSON.stringify(expectedTechnology) ||
